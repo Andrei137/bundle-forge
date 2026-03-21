@@ -1,0 +1,25 @@
+meta {
+  name: Update Me
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{url}}/publishers
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{validPublisherJWT}}
+}
+
+body:json {
+  {
+    
+  }
+}
+
+settings {
+  encodeUrl: true
+}

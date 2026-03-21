@@ -1,0 +1,24 @@
+meta {
+  name: Request Developer
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{url}}/auth/request/developer
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "Developer1",
+    "password": "{{password}}",
+    "email": "developer@test.com",
+    "website": "http://example.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

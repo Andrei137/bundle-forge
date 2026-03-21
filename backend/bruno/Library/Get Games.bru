@@ -1,0 +1,15 @@
+meta {
+  name: Get Games
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{url}}/library
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

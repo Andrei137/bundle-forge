@@ -1,0 +1,22 @@
+meta {
+  name: Announce
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{url}}/games
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Hollow Knight",
+    "price": 12.99
+  }
+}
+
+settings {
+  encodeUrl: true
+}

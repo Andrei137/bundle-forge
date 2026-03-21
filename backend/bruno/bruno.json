@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "BundleForge",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

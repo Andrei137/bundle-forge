@@ -1,0 +1,15 @@
+{
+  "packages": [
+    "nodejs@25.8.1",
+    "eslint_d@15.0.0"
+  ],
+  "env": {
+    "DEVBOX_COREPACK_ENABLED": "true"
+  },
+  "shell": {
+    "init_hook": [
+      "pnpm install"
+    ],
+    "scripts": {}
+  }
+}

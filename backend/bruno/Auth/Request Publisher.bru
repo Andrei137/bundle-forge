@@ -1,0 +1,24 @@
+meta {
+  name: Request Publisher
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{url}}/auth/request/publisher
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "Publisher1",
+    "password": "{{password}}",
+    "email": "publisher@test.com",
+    "website": "https://example.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

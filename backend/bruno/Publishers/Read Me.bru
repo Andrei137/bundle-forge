@@ -1,0 +1,19 @@
+meta {
+  name: Read Me
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{url}}/publishers/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{validPublisherJWT}}
+}
+
+settings {
+  encodeUrl: true
+}

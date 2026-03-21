@@ -1,0 +1,19 @@
+meta {
+  name: Get Contracts
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{url}}/games/1/contracts
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{validDeveloperJWT}}
+}
+
+settings {
+  encodeUrl: true
+}

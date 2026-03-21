@@ -1,0 +1,15 @@
+meta {
+  name: Read All
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{url}}/developers
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

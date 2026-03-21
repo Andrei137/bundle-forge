@@ -1,0 +1,16 @@
+meta {
+  name: Customers
+  seq: 3
+}
+
+headers {
+  Authorization: Bearer {{validCustomerJWT}}
+}
+
+auth {
+  mode: inherit
+}
+
+vars:pre-request {
+  endpoint: customers
+}

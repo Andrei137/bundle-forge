@@ -1,0 +1,21 @@
+meta {
+  name: Update Providers
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{url}}/admin/providers/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": "accepted"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

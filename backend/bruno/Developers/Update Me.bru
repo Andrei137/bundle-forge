@@ -1,0 +1,25 @@
+meta {
+  name: Update Me
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{url}}/developers
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{validDeveloperJWT}}
+}
+
+body:json {
+  {
+    
+  }
+}
+
+settings {
+  encodeUrl: true
+}

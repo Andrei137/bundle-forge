@@ -1,0 +1,26 @@
+meta {
+  name: Delete
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{url}}/contracts/1
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{validPublisherJWT}}
+}
+
+body:json {
+  {
+    "partnerId": 1,
+    "gameId": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

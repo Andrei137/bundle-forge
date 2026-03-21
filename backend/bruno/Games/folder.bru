@@ -1,0 +1,16 @@
+meta {
+  name: Games
+  seq: 6
+}
+
+headers {
+  Authorization: Bearer {{validDeveloperJWT}}
+}
+
+auth {
+  mode: inherit
+}
+
+vars:pre-request {
+  endpoint: games
+}

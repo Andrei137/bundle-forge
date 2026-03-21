@@ -1,0 +1,25 @@
+meta {
+  name: Update Me
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{url}}/customers
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{validCustomerJWT}}
+}
+
+body:json {
+  {
+    "email": "johndoe12@yahoo.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
