@@ -1,0 +1,29 @@
+package com.unibuc.bundle_forge.mapper;
+
+import com.unibuc.bundle_forge.dto.ProviderCreateDto;
+import com.unibuc.bundle_forge.dto.ProviderResponseDto;
+import com.unibuc.bundle_forge.model.Provider;
+import com.unibuc.bundle_forge.utils.MapperUtils;
+import org.springframework.stereotype.Component;
+
+@Component
+public abstract class ProviderMapper<U extends Provider, D extends ProviderCreateDto> extends UserMapper<U, D> {
+
+    @Override
+    public void updateEntityFromDto(D dto, U entity) {
+        super.updateEntityFromDto(dto, entity);
+        MapperUtils.setIfPresent(dto.getWebsite(), entity::setWebsite);
+    }
+
+    public ProviderResponseDto toProviderResponseDto(Provider entity, String type) {
+        return ProviderResponseDto.builder()
+                .id(entity.getId())
+                .username(entity.getUsername())
+                .email(entity.getEmail())
+                .website(entity.getWebsite())
+                .status(entity.getStatus())
+                .type(type)
+                .build();
+    }
+
+}

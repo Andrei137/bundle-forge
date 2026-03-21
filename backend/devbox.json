@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.0/.schema/devbox.schema.json",
+  "packages": [
+    "mysql84@8.4.8",
+    "bruno@3.1.4",
+    "nodemon@3.1.14",
+    "maven@3.9.12"
+  ],
+  "shell": {
+    "init_hook": [
+      "if [ ! -f .env ]; then cp .env.example .env; fi",
+      "if grep -q '<.*>' .env; then echo -e \"\\033[31mPlease replace all placeholders from .env and enter the devbox shell again\\033[0m\"; fi",
+      "export $(grep -v '^#' .env | sed 's/#.*//' | xargs -I {} echo export '{}')"
+    ],
+    "scripts": {
+      "idea": [
+        "nohup idea-ultimate >/dev/null 2>&1 &"
+      ],
+      "datagrip": [
+        "nohup datagrip >/dev/null 2>&1 &"
+      ],
+      "bruno": [
+        "nohup bruno >/dev/null 2>&1 &"
+      ],
+      "app:run": [
+        "env $(grep -v '^#' .env | xargs) mvn -f bundle-forge/pom.xml spring-boot:run"
+      ],
+      "app:dev": [
+        "nodemon --watch bundle-forge/src --watch bundle-forge/src/main/resources --ext java,xml,yml,properties --signal SIGTERM --exec \"env $(grep -v '^#' .env | xargs) mvn -f bundle-forge/pom.xml spring-boot:run -Dspring-boot.run.fork=false\""
+      ],
+      "db:run": [
+        "devbox services start mysql"
+      ],
+      "db:kill": [
+        "devbox services down"
+      ],
+      "db:setup": [
+        "bash -c \"sed -e 's|<DB_PASS>|${DB_PASS}|g' -e 's|<DB_USER>|${DB_USER}|g' -e 's|<DB_NAME>|${DB_NAME}|g' database-utils/setup.sql | mysql -u root\""
+      ],
+      "db:connect": [
+        "mysql -u $DB_USER --password=\"$DB_PASS\" -D $DB_NAME"
+      ],
+      "db:root": [
+        "mysql -u root"
+      ]
+    }
+  }
+}

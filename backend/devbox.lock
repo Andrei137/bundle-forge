@@ -1,0 +1,246 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "bruno@3.1.4": {
+      "last_modified": "2026-03-07T23:46:50Z",
+      "resolved": "github:NixOS/nixpkgs/0e6cdd5be64608ef630c2e41f8d51d484468492f#bruno",
+      "source": "devbox-search",
+      "version": "3.1.4",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/zcxxahsqfk3kxcgg0qc2lhp2hp5206rc-bruno-3.1.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/zcxxahsqfk3kxcgg0qc2lhp2hp5206rc-bruno-3.1.4"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ipdh75gg88hcsm199w8w4xikr5bl36gw-bruno-3.1.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/ipdh75gg88hcsm199w8w4xikr5bl36gw-bruno-3.1.4"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/br2kgcpgg5dd9sq8l2rid2c9ca46xy59-bruno-3.1.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/br2kgcpgg5dd9sq8l2rid2c9ca46xy59-bruno-3.1.4"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/j1vp8m3ggxfc9k2x908gbw56n9sqa49j-bruno-3.1.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/j1vp8m3ggxfc9k2x908gbw56n9sqa49j-bruno-3.1.4"
+        }
+      }
+    },
+    "github:NixOS/nixpkgs/nixpkgs-unstable": {
+      "last_modified": "2026-03-18T13:30:56Z",
+      "resolved": "github:NixOS/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512?lastModified=1773840656&narHash=sha256-9tpvMGFteZnd3gRQZFlRCohVpqooygFuy9yjuyRL2C0%3D"
+    },
+    "glibcLocales@latest": {
+      "last_modified": "2026-02-23T15:40:43Z",
+      "resolved": "github:NixOS/nixpkgs/80d901ec0377e19ac3f7bb8c035201e2e098cc97#glibcLocales",
+      "source": "devbox-search",
+      "version": "2.42-51",
+      "systems": {
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/2m0bi1my8d60caywvn71iw3gqn3qy9vc-glibc-locales-2.42-51",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/2m0bi1my8d60caywvn71iw3gqn3qy9vc-glibc-locales-2.42-51"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/0qlmqvyckf8zyx03n00azgznnkzgi5xw-glibc-locales-2.42-51",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/0qlmqvyckf8zyx03n00azgznnkzgi5xw-glibc-locales-2.42-51"
+        }
+      }
+    },
+    "maven@3.9.12": {
+      "last_modified": "2026-02-23T15:40:43Z",
+      "resolved": "github:NixOS/nixpkgs/80d901ec0377e19ac3f7bb8c035201e2e098cc97#maven",
+      "source": "devbox-search",
+      "version": "3.9.12",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/njv115l854b6s5xi8z5s9bv1azicq3wk-maven-3.9.12",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/njv115l854b6s5xi8z5s9bv1azicq3wk-maven-3.9.12"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/60qkfjzwrb323k2yp76fvfi8lbbc0qq1-maven-3.9.12",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/60qkfjzwrb323k2yp76fvfi8lbbc0qq1-maven-3.9.12"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/z7w3vf9hcfhk8njv3f8yisb578xpprlv-maven-3.9.12",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/z7w3vf9hcfhk8njv3f8yisb578xpprlv-maven-3.9.12"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/xy25nymi63dy0ilp373hp6q1p5cbdir9-maven-3.9.12",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/xy25nymi63dy0ilp373hp6q1p5cbdir9-maven-3.9.12"
+        }
+      }
+    },
+    "mysql84@8.4.8": {
+      "last_modified": "2026-02-23T15:40:43Z",
+      "plugin_version": "0.0.4",
+      "resolved": "github:NixOS/nixpkgs/80d901ec0377e19ac3f7bb8c035201e2e098cc97#mysql84",
+      "source": "devbox-search",
+      "version": "8.4.8",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ck21cyqpaghiiqpvpqiwiwkajpq6yqyl-mysql-8.4.8",
+              "default": true
+            },
+            {
+              "name": "static",
+              "path": "/nix/store/rlqam2pkjq7yvw2lvhimfmf3kzkyz8nz-mysql-8.4.8-static"
+            }
+          ],
+          "store_path": "/nix/store/ck21cyqpaghiiqpvpqiwiwkajpq6yqyl-mysql-8.4.8"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/phmhksvb7xk39hws717pxgkkv8dsw2bj-mysql-8.4.8",
+              "default": true
+            },
+            {
+              "name": "static",
+              "path": "/nix/store/cxcviivsi1y6r9739gqhkdlpips5zn2d-mysql-8.4.8-static"
+            }
+          ],
+          "store_path": "/nix/store/phmhksvb7xk39hws717pxgkkv8dsw2bj-mysql-8.4.8"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/3svjzanwb0mxyz7z26qmx4s1z6f7y5mm-mysql-8.4.8",
+              "default": true
+            },
+            {
+              "name": "static",
+              "path": "/nix/store/8040j10zfk0nbvsvwdbln9bpxpgp147g-mysql-8.4.8-static"
+            }
+          ],
+          "store_path": "/nix/store/3svjzanwb0mxyz7z26qmx4s1z6f7y5mm-mysql-8.4.8"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7y8h52d3y351fpf3vxvaqqxdl5wvfq4d-mysql-8.4.8",
+              "default": true
+            },
+            {
+              "name": "static",
+              "path": "/nix/store/whnvsddsy4vl8nkhhz8bz3xabq4jgmc5-mysql-8.4.8-static"
+            }
+          ],
+          "store_path": "/nix/store/7y8h52d3y351fpf3vxvaqqxdl5wvfq4d-mysql-8.4.8"
+        }
+      }
+    },
+    "nodemon@3.1.14": {
+      "last_modified": "2026-02-27T06:27:13Z",
+      "resolved": "github:NixOS/nixpkgs/c0f3d81a7ddbc2b1332be0d8481a672b4f6004d6#nodemon",
+      "source": "devbox-search",
+      "version": "3.1.14",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/a2zmb08fy4d8dpc03lb50wssqx2kj3z2-nodemon-3.1.14",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/a2zmb08fy4d8dpc03lb50wssqx2kj3z2-nodemon-3.1.14"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/srvqnrw00khpsfh6xpns9ywbvqccax24-nodemon-3.1.14",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/srvqnrw00khpsfh6xpns9ywbvqccax24-nodemon-3.1.14"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/3cp03di7zb61kk4f2ssnc3llxp2nmirc-nodemon-3.1.14",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/3cp03di7zb61kk4f2ssnc3llxp2nmirc-nodemon-3.1.14"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/a7d9mr40gg0i2dq4gy238cr91arcwlx9-nodemon-3.1.14",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/a7d9mr40gg0i2dq4gy238cr91arcwlx9-nodemon-3.1.14"
+        }
+      }
+    }
+  }
+}
