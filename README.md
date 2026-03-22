@@ -22,4 +22,4 @@ Aplicatia contine mai multe roluri:
 TODO
 
 # Diagram Entitate-Relatie
-TODO
+<img src="https://github.com/Andrei137/bundle-forge/blob/main/docs/bundle-force.drawio.png">
