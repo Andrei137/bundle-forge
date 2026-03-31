@@ -1,0 +1,165 @@
+.CardPanelCarouselHeading {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-h);
+  text-align: left;
+  margin: 0 0 16px;
+}
+
+.CardPanelCarousel__panel {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.CardPanelCarousel__main {
+  flex: 1 1 55%;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+
+.CardPanelCarousel__main__badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #212121;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.CardPanelCarousel__main__body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.CardPanelCarousel__main__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+}
+
+.CardPanelCarousel__main__desc {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+}
+
+.CardPanelCarousel__main__price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: auto;
+}
+
+.CardPanelCarousel__main__btn {
+  margin-top: 12px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #212121;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: opacity 0.2s;
+}
+
+.CardPanelCarousel__main__btn:hover {
+  opacity: 0.85;
+}
+
+.CardPanelCarousel__support {
+  flex: 1 1 45%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.CardPanelCarousel__support__container {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow 0.2s;
+}
+
+.CardPanelCarousel__support__container:hover {
+  box-shadow: var(--shadow);
+}
+
+.CardPanelCarousel__support__badge {
+  display: inline-block;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.CardPanelCarousel__support__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+}
+
+.CardPanelCarousel__support__price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: auto;
+}
+
+.CardPanelCarousel__support__btn {
+  margin-top: 6px;
+  padding: 5px 12px;
+  border-radius: 5px;
+  border: none;
+  background: var(--accent-bg);
+  color: #212121;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.CardPanelCarousel__support__btn:hover {
+  opacity: 0.75;
+}
+
+@media (max-width: 1024px) {
+  .CardPanelCarousel__panel {
+    flex-direction: column;
+  }
+
+  .CardPanelCarousel__support {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .CardPanelCarousel__support {
+    grid-template-columns: 1fr;
+  }
+}
