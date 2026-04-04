@@ -1,0 +1,10 @@
+export { Header } from './Header';
+export { HeroSection } from './HeroSection';
+export { Sidebar } from './Sidebar';
+export { GameGrid } from './GameGrid';
+export { GameCard } from './GameCard';
+export { FeaturedDeals } from './FeaturedDeals';
+export { BundlesSection } from './BundlesSection';
+export { ShoppingCart } from './ShoppingCart';
+export { GameDetailsModal } from './GameDetailsModal';
+export { Footer } from './Footer';
