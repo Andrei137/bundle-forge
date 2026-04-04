@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchQuery } from '../redux/slices/filtersSlice';
 import { toggleCart } from '../redux/slices/uiSlice';
+import logoImg from '@/assets/icons/bundle-forge-logo.svg';
 import './Header.css';
 
 export const Header = () => {
@@ -17,9 +18,7 @@ export const Header = () => {
         <div className="header-container">
           {/* Logo */}
           <a href="/" className="logo">
-            <svg className="logo-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
+            <img src={logoImg} alt="Bundle Forge Logo" style={{ width: 'auto', height: '60px' }} />
             <span className="logo-text">BUNDLE FORGE</span>
           </a>
 
