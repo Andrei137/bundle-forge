@@ -1,6 +1,5 @@
 import {
   Header,
-  HeroSection,
   FeaturedDeals,
   Sidebar,
   GameGrid,
@@ -19,7 +18,6 @@ function App() {
       <GameDetailsModal />
 
       <main className="main-content">
-        <HeroSection />
         <FeaturedDeals />
         <BundlesSection />
 

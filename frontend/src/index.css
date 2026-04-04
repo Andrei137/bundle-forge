@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Global reset and base styles */
 * {
@@ -14,13 +12,15 @@
   --primary-dark: #e68900;
   --secondary: #ffd700;
   --dark-bg: #1C1C1C;
-  --card-bg: #252540;
+  --card-bg: #2a2a2a;
+  --header-bg: #232323;
+  --nav-bg: #1f1f1f;
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
   --text-tertiary: #808080;
-  --border: rgba(255, 152, 0, 0.2);
+  --border: rgba(255, 255, 255, 0.1);
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 12px 24px rgba(255, 152, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 html {
