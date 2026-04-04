@@ -18,7 +18,7 @@ export const Header = () => {
         <div className="header-container">
           {/* Logo */}
           <a href="/" className="logo">
-            <img src={logoImg} alt="Bundle Forge Logo" style={{ width: 'auto', height: '60px' }} />
+            <img src={logoImg} alt="Bundle Forge Logo" style={{ width: 'auto', height: '50px' }} />
             <span className="logo-text">BUNDLE FORGE</span>
           </a>
 
