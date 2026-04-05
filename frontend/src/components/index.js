@@ -4,6 +4,7 @@ export { Sidebar } from './Sidebar';
 export { GameGrid } from './GameGrid';
 export { GameCard } from './GameCard';
 export { FeaturedDeals } from './FeaturedDeals';
+export { TopSellers } from './TopSellers';
 export { BundlesSection } from './BundlesSection';
 export { ShoppingCart } from './ShoppingCart';
 export { GameDetailsModal } from './GameDetailsModal';

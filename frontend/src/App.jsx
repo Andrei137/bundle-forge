@@ -1,6 +1,7 @@
 import {
   Header,
   FeaturedDeals,
+  TopSellers,
   Sidebar,
   GameGrid,
   BundlesSection,
@@ -19,6 +20,7 @@ function App() {
 
       <main className="main-content">
         <FeaturedDeals />
+        <TopSellers />
         <BundlesSection />
 
         <div className="content-wrapper">
