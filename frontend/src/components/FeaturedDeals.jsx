@@ -53,7 +53,6 @@ export const FeaturedDeals = () => {
         <h2 className="fd-heading">Featured Deals</h2>
 
         <div className="fd-slider-wrapper">
-          {/* Left Arrow */}
           <button
             className="fd-arrow fd-arrow--left"
             onClick={() => setSlide(s => Math.max(0, s - 1))}
@@ -63,9 +62,7 @@ export const FeaturedDeals = () => {
             <svg viewBox="0 0 320 512"><path fill="currentColor" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/></svg>
           </button>
 
-          {/* Panel */}
           <div className="fd-panel">
-            {/* Main large card */}
             {mainGame && (
               <div className="fd-main-card">
                 <img src={mainGame.image} alt={mainGame.title} className="fd-main-img" />
@@ -92,7 +89,6 @@ export const FeaturedDeals = () => {
               </div>
             )}
 
-            {/* 2x2 Support Grid */}
             <div className="fd-support-grid">
               {supportGames.map((game) => (
                 <div key={game.id} className="fd-support-card">
@@ -133,7 +129,6 @@ export const FeaturedDeals = () => {
             </div>
           </div>
 
-          {/* Right Arrow */}
           <button
             className="fd-arrow fd-arrow--right"
             onClick={() => setSlide(s => Math.min(totalSlides - 1, s + 1))}
@@ -144,7 +139,6 @@ export const FeaturedDeals = () => {
           </button>
         </div>
 
-        {/* Dots */}
         <div className="fd-dots">
           {Array.from({ length: totalSlides }, (_, i) => (
             <button
