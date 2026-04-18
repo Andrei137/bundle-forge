@@ -23,21 +23,20 @@
 }
 
 .view-all-link {
-  color: #ffd700;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border: 1px solid #ffd700;
+  color: #f90;
+  border: 1px solid #f90;
   border-radius: 4px;
-  transition: all 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
 }
 
 .view-all-link:hover {
-  background: #ffd700;
-  color: #1a1a1a;
+  background: #f90;
+  color: #fff;
 }
 
 /* Filter Tabs */

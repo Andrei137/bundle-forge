@@ -20,7 +20,6 @@ export const TopSellers = () => {
   };
 
   const formatPrice = (price) => {
-    // Convert USD to RON (approximate rate)
     const ronPrice = (price * 4.97).toFixed(2);
     return `RON ${ronPrice}`;
   };
@@ -32,7 +31,6 @@ export const TopSellers = () => {
           <h2 className="section-title">Top Sellers</h2>
         </div>
 
-        {/* Filter Tabs */}
         <div className="filter-tabs">
           {filters.map(filter => (
             <button
@@ -46,7 +44,6 @@ export const TopSellers = () => {
           <a href="#" className="view-all-link" style={{ marginLeft: 'auto' }}>VIEW ALL</a>
         </div>
 
-        {/* Products Grid */}
         <div className="top-sellers-grid">
           {topSellers.map((game, index) => (
             <div key={game.id} className={`top-seller-card ${index === 0 ? 'card-large' : ''}`}>

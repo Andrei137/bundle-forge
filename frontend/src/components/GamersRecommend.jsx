@@ -42,22 +42,17 @@ export const GamersRecommend = () => {
     <section className="gr-section">
       <div className="gr-container">
 
-        {/* Header */}
         <div className="gr-header">
           <h2 className="gr-title">Bundle Forge Gamers Recommend</h2>
           <a href="#" className="gr-view-all">VIEW ALL</a>
         </div>
 
-        {/* Slider */}
         <div className="gr-slider">
-          {/* Left Arrow */}
           <button className="gr-arrow gr-arrow--left" onClick={prev} disabled={current === 0} aria-label="Previous">
             <svg viewBox="0 0 320 512"><path fill="currentColor" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/></svg>
           </button>
 
-          {/* Card */}
           <div className="gr-card">
-            {/* Left: Image */}
             <div className="gr-card-left">
               {slide.discount > 0 && (
                 <div className="gr-price-overlay">
@@ -74,13 +69,11 @@ export const GamersRecommend = () => {
                 </svg>
               </button>
               <img src={slide.image} alt={slide.title} className="gr-cover-img" />
-              {/* Slide progress bar */}
               <div className="gr-progress-bar">
                 <div className="gr-progress-fill" style={{ width: `${((current + 1) / slides.length) * 100}%` }} />
               </div>
             </div>
 
-            {/* Right: Info */}
             <div className="gr-card-right">
               <h3 className="gr-game-title">{slide.title}</h3>
               <StarRating filled={5} />
@@ -110,13 +103,11 @@ export const GamersRecommend = () => {
             </div>
           </div>
 
-          {/* Right Arrow */}
           <button className="gr-arrow gr-arrow--right" onClick={next} disabled={current === slides.length - 1} aria-label="Next">
             <svg viewBox="0 0 320 512"><path fill="currentColor" d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></svg>
           </button>
         </div>
 
-        {/* Dots */}
         <div className="gr-dots">
           {slides.map((_, i) => (
             <button
