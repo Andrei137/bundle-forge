@@ -8,6 +8,7 @@ import {
   BundlesSection,
   ShoppingCart,
   GameDetailsModal,
+  GameFinder,
   Footer
 } from './components'
 import './App.css'
@@ -23,12 +24,7 @@ function App() {
         <FeaturedDeals />
         <TopSellers />
         <GameBundlesSlider />
-        <BundlesSection />
-
-        <div className="content-wrapper">
-          <Sidebar />
-          <GameGrid />
-        </div>
+        <GameFinder />
       </main>
 
       <Footer />

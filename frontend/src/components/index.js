@@ -10,3 +10,4 @@ export { BundlesSection } from './BundlesSection';
 export { ShoppingCart } from './ShoppingCart';
 export { GameDetailsModal } from './GameDetailsModal';
 export { Footer } from './Footer';
+export { GameFinder } from './GameFinder';
