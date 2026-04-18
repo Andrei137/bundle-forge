@@ -1,49 +1,84 @@
+import { useState } from 'react';
 import './Footer.css';
+
+const PaymentIcon = ({ name }) => (
+  <div className="payment-icon" title={name}>{name}</div>
+);
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState('');
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <footer className="footer">
-      <div className="footer-container">
-        <div className="footer-section">
-          <h3>Bundle Forge</h3>
-          <p>Your destination for amazing game deals and bundles</p>
-        </div>
 
-        <div className="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href="#games">Games</a></li>
-            <li><a href="#bundles">Bundles</a></li>
-            <li><a href="#deals">Deals</a></li>
-            <li><a href="#about">About</a></li>
-          </ul>
-        </div>
+      {/* Back to Top */}
+      <button className="back-to-top" onClick={scrollToTop}>
+        BACK TO TOP
+      </button>
 
-        <div className="footer-section">
-          <h4>Support</h4>
-          <ul>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="#terms">Terms</a></li>
-            <li><a href="#privacy">Privacy</a></li>
-          </ul>
-        </div>
+      {/* Main Footer Columns */}
+      <div className="footer-main">
+        <div className="footer-container">
 
-        <div className="footer-section">
-          <h4>Follow Us</h4>
-          <div className="social-links">
-            <a href="#" className="social-link">Twitter</a>
-            <a href="#" className="social-link">Discord</a>
-            <a href="#" className="social-link">Reddit</a>
+          {/* Browse Categories */}
+          <div className="footer-col">
+            <h4 className="footer-col-title">Browse Categories</h4>
+            <ul className="footer-links">
+              {['Black Friday', 'Game Deals', 'Bundles', 'All Games', 'Top Sellers', 'Latest Deals', 'New Releases', 'Upcoming Games', 'VR Games', 'Steam Deck Games', 'Games by Franchise', 'Games like', 'Free to Play'].map(l => (
+                <li key={l}><a href="#">{l}</a></li>
+              ))}
+            </ul>
           </div>
+
+          {/* Games by Genre */}
+          <div className="footer-col">
+            <h4 className="footer-col-title">Games by Genre</h4>
+            <ul className="footer-links">
+              {['Action', 'Adventure', 'Anime', 'Casual', 'Co-op', 'Racing', 'RPG', 'Shooter', 'Simulation', 'Sports', 'Strategy', 'View All'].map(l => (
+                <li key={l}><a href="#">{l}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Information */}
+          <div className="footer-col">
+            <h4 className="footer-col-title">Information</h4>
+            <ul className="footer-links">
+              {['About Bundle Forge', 'Support', 'Community', 'Bundle Forge Extension', 'Bundle Forge Blog', 'Bundle Forge Coupons', 'Publishing Partners', 'Affiliate Partners', 'Redeem Code', 'Gift a game', 'Best Games of 2025'].map(l => (
+                <li key={l}><a href="#">{l}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter + Social */}
+          <div className="footer-col">
+            <h4 className="footer-col-title">Join our Newsletter</h4>
+            <div className="newsletter-form">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="newsletter-input"
+              />
+              <button className="newsletter-btn">Sign Up</button>
+            </div>
+            <p className="newsletter-note">
+              You can unsubscribe via the newsletter at any time. By subscribing to our newsletter you agree to our{' '}
+              <a href="#">Privacy Policy</a>.
+            </p>
+            
+            <div style={{ marginTop: '1.25rem' }}>
+              <button className="footer-action-btn">Language / Currency &rsaquo;</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <div className="footer-bottom">
-        <p>&copy; {currentYear} Bundle Forge. All rights reserved.</p>
-      </div>
     </footer>
   );
 };

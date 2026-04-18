@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   GameDetailsModal,
   GameFinder,
+  GamersRecommend,
   Footer
 } from './components'
 import './App.css'
@@ -25,6 +26,7 @@ function App() {
         <TopSellers />
         <GameBundlesSlider />
         <GameFinder />
+        <GamersRecommend />
       </main>
 
       <Footer />
