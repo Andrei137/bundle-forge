@@ -30,7 +30,6 @@ export const TopSellers = () => {
       <div className="top-sellers-container">
         <div className="top-sellers-header">
           <h2 className="section-title">Top Sellers</h2>
-          <a href="#" className="view-all-link">VIEW ALL</a>
         </div>
 
         {/* Filter Tabs */}
@@ -44,6 +43,7 @@ export const TopSellers = () => {
               {filter}
             </button>
           ))}
+          <a href="#" className="view-all-link" style={{ marginLeft: 'auto' }}>VIEW ALL</a>
         </div>
 
         {/* Products Grid */}
