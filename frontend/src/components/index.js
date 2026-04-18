@@ -1,5 +1,4 @@
 export { Header } from './Header';
-export { HeroSection } from './HeroSection';
 export { Sidebar } from './Sidebar';
 export { GameGrid } from './GameGrid';
 export { GameCard } from './GameCard';
