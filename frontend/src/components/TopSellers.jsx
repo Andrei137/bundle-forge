@@ -58,7 +58,7 @@ export const TopSellers = () => {
 
         <div className="ts-grid">
           {topSellers.map((game, index) => (
-            <div key={game.id} className={`ts-card ${index === 0 ? 'ts-card--large' : ''}`}>
+            <div key={game.id} className="ts-card">
               <div className="ts-card-img-wrap">
                 <img src={game.image} alt={game.title} className="ts-card-img" />
                 {index === 2 && (
