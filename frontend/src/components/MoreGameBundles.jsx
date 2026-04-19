@@ -153,14 +153,13 @@ export const MoreGameBundles = ({ bundles = BUNDLES }) => {
                       loading="lazy"
                     />
                     <div className="mgb-card-overlay">
+                      <span className="mgb-quick-look">
+                        {bundle.title}
+                      </span>
                       <button className="mgb-view-btn">
                         <ViewIcon />
                         VIEW
                       </button>
-                      <span className="mgb-quick-look">
-                        <EyeIcon />
-                        Quick Look
-                      </span>
                     </div>
                   </div>
                 </a>

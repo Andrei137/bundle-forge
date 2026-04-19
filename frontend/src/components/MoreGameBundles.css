@@ -134,7 +134,8 @@
 }
 
 .mgb-card:hover .mgb-card-overlay {
-  opacity: 1;
+  opacity: 0.95;
+  background-color: #111111;
 }
 
 .mgb-view-btn {
