@@ -385,7 +385,7 @@
 .sim-right--reset {
   background-image:
     linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.75)),
-    url('../assets/images/login-bg-reset.jpg');
+    url('../assets/images/login-bg-arc.jpg');
 }
 
 .sim-right-content { text-align: center; width: 100%; }
