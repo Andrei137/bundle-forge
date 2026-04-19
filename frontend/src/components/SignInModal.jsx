@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './SignInModal.css';
 
+/* ── Icons ── */
 const FacebookIcon = () => (
   <svg viewBox="0 0 24 24" fill="#1877F2" width="20" height="20">
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -41,16 +42,120 @@ const EyeIcon = ({ open }) => (
   )
 );
 
-export const SignInModal = ({ isOpen, onClose }) => {
+/* ── Reusable checkbox ── */
+const Checkbox = ({ id, checked, onChange, label }) => (
+  <label className="sim-checkbox-label" htmlFor={id}>
+    <input id={id} type="checkbox" className="sim-checkbox" checked={checked} onChange={onChange} />
+    <span className="sim-checkbox-custom" />
+    {label}
+  </label>
+);
+
+/* ── Sign-In form ── */
+const SignInContent = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(false);
 
+  return (
+    <>
+      <h2 className="sim-title">SIGN IN</h2>
+      <form className="sim-form" onSubmit={e => e.preventDefault()}>
+        <label className="sim-label" htmlFor="si-email">Email Address</label>
+        <input id="si-email" type="email" className="sim-input" value={email}
+          onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+
+        <label className="sim-label" htmlFor="si-password">Password</label>
+        <div className="sim-pw-wrap">
+          <input id="si-password" type={showPassword ? 'text' : 'password'}
+            className="sim-input sim-input--pw" value={password}
+            onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
+          <button type="button" className="sim-pw-toggle" onClick={() => setShowPassword(v => !v)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}>
+            <EyeIcon open={showPassword} />
+          </button>
+        </div>
+
+        <div className="sim-row">
+          <Checkbox id="si-keep" checked={keepSignedIn}
+            onChange={e => setKeepSignedIn(e.target.checked)} label="Keep me signed in" />
+          <a href="/forgot-password" className="sim-forgot">Forgot password?</a>
+        </div>
+
+        <button type="submit" className="sim-submit">SIGN IN</button>
+      </form>
+
+      <div className="sim-divider"><span>Or sign in with</span></div>
+      <div className="sim-socials">
+        <button className="sim-social-btn"><FacebookIcon /> Sign in with Facebook</button>
+        <button className="sim-social-btn"><GoogleIcon /> Sign in with Google</button>
+      </div>
+    </>
+  );
+};
+
+/* ── Register form ── */
+const RegisterContent = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
+  const [emailPref, setEmailPref] = useState('');
+
+  return (
+    <>
+      <h2 className="sim-title">CREATE ACCOUNT</h2>
+
+      <form className="sim-form" onSubmit={e => e.preventDefault()}>
+        <label className="sim-label" htmlFor="reg-email">Email Address</label>
+        <input id="reg-email" type="email" className="sim-input" value={email}
+          onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+
+        <label className="sim-label" htmlFor="reg-password">Password</label>
+        <div className="sim-pw-wrap">
+          <input id="reg-password" type={showPassword ? 'text' : 'password'}
+            className="sim-input sim-input--pw" value={password}
+            onChange={e => setPassword(e.target.value)} autoComplete="new-password" required />
+          <button type="button" className="sim-pw-toggle" onClick={() => setShowPassword(v => !v)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}>
+            <EyeIcon open={showPassword} />
+          </button>
+        </div>
+
+        <div className="sim-row sim-row--solo">
+          <Checkbox id="reg-keep" checked={keepSignedIn}
+            onChange={e => setKeepSignedIn(e.target.checked)} label="Keep me signed in" />
+        </div>
+
+        <button type="submit" className="sim-submit">REGISTER</button>
+      </form>
+
+      <div className="sim-divider"><span>Or register with</span></div>
+      <div className="sim-socials sim-socials--reg">
+        <button className="sim-social-btn"><FacebookIcon /> Register with Facebook</button>
+        <button className="sim-social-btn"><GoogleIcon /> Sign in with Google</button>
+      </div>
+
+      <p className="sim-terms">
+        By creating an account you agree to our{' '}
+        <a href="/terms">Terms of service</a> and <a href="/privacy">Privacy policy</a>.
+      </p>
+    </>
+  );
+};
+
+/* ── Modal shell ── */
+export const SignInModal = ({ isOpen, onClose }) => {
+  const [mode, setMode] = useState('signin'); // 'signin' | 'register'
+
+  // Reset mode whenever modal opens
+  useEffect(() => { if (isOpen) setMode('signin'); }, [isOpen]);
+
   useEffect(() => {
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
-    if (isOpen) document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
+    const onKey = e => { if (e.key === 'Escape') onClose(); };
+    if (isOpen) document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
   useEffect(() => {
@@ -60,96 +165,45 @@ export const SignInModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: wire up auth logic
-    console.log('Sign in:', { email, keepSignedIn });
-  };
+  const isRegister = mode === 'register';
 
   return (
-    <div className="sim-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label="Sign in">
-      <div className="sim-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="sim-backdrop" onClick={onClose} role="dialog" aria-modal="true"
+      aria-label={isRegister ? 'Create account' : 'Sign in'}>
+      <div className="sim-modal" onClick={e => e.stopPropagation()}>
 
+        {/* Left panel */}
         <div className="sim-left">
           <button className="sim-close" onClick={onClose} aria-label="Close">✕</button>
-
-          <h2 className="sim-title">SIGN IN</h2>
-
-          <form className="sim-form" onSubmit={handleSubmit}>
-            <label className="sim-label" htmlFor="sim-email">Email Address</label>
-            <input
-              id="sim-email"
-              type="email"
-              className="sim-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-            />
-
-            <label className="sim-label" htmlFor="sim-password">Password</label>
-            <div className="sim-pw-wrap">
-              <input
-                id="sim-password"
-                type={showPassword ? 'text' : 'password'}
-                className="sim-input sim-input--pw"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-              <button
-                type="button"
-                className="sim-pw-toggle"
-                onClick={() => setShowPassword(v => !v)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                <EyeIcon open={showPassword} />
-              </button>
-            </div>
-
-            <div className="sim-row">
-              <label className="sim-checkbox-label">
-                <input
-                  type="checkbox"
-                  className="sim-checkbox"
-                  checked={keepSignedIn}
-                  onChange={(e) => setKeepSignedIn(e.target.checked)}
-                />
-                <span className="sim-checkbox-custom" />
-                Keep me signed in
-              </label>
-              <a href="/forgot-password" className="sim-forgot">Forgot password?</a>
-            </div>
-
-            <button type="submit" className="sim-submit">SIGN IN</button>
-          </form>
-
-          <div className="sim-divider"><span>Or sign in with</span></div>
-
-          <div className="sim-socials">
-            <button className="sim-social-btn">
-              <FacebookIcon /> Sign in with Facebook
-            </button>
-            <button className="sim-social-btn">
-              <GoogleIcon /> Sign in with Google
-            </button>
-            <button className="sim-social-btn">
-              <FandomIcon /> Sign in with Fandom
-            </button>
-            <button className="sim-social-btn sim-social-btn--magic">
-              <MagicIcon /> Get magic sign in link
-            </button>
+          <div className="sim-left-inner">
+            {isRegister ? <RegisterContent /> : <SignInContent />}
           </div>
         </div>
 
-        <div className="sim-right">
+        {/* Right panel — flips content based on mode */}
+        <div className={`sim-right ${isRegister ? 'sim-right--register' : 'sim-right--signin'}`}>
           <div className="sim-right-content">
-            <h3 className="sim-right-title">ARE YOU NEW<br />TO BUNDLE FORGE?</h3>
-            <p className="sim-right-desc">
-              If you don't have a Bundle Forge account, use this option to access the registration form.
-            </p>
-            <button className="sim-create-btn">CREATE ACCOUNT</button>
+            {isRegister ? (
+              <>
+                <h3 className="sim-right-title">ALREADY HAVE<br />AN ACCOUNT?</h3>
+                <p className="sim-right-desc">
+                  If you already have a Bundle Forge account, use this option to access the sign in form.
+                </p>
+                <button className="sim-create-btn" onClick={() => setMode('signin')}>
+                  SIGN IN
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="sim-right-title">ARE YOU NEW<br />TO BUNDLE FORGE?</h3>
+                <p className="sim-right-desc">
+                  If you don't have a Bundle Forge account, use this option to access the registration form.
+                </p>
+                <button className="sim-create-btn" onClick={() => setMode('register')}>
+                  CREATE ACCOUNT
+                </button>
+              </>
+            )}
           </div>
         </div>
 
