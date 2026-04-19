@@ -108,7 +108,6 @@ export const Header = () => {
               </li>
               <li className="nav-item"><a href="/upcoming" className="nav-link">Upcoming Games</a></li>
               <li className="nav-item"><a href="/new" className="nav-link">New Releases</a></li>
-              <li className="nav-item"><a href="/mystery" className="nav-link">Mystery</a></li>
             </ul>
           </div>
         </nav>
