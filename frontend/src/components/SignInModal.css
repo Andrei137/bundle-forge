@@ -1,3 +1,7 @@
+/* ============================================================
+   Sign In / Create Account / Reset Password Modal
+   ============================================================ */
+
 .sim-backdrop {
   position: fixed;
   inset: 0;
@@ -31,6 +35,7 @@
   to   { transform: translateY(0);    opacity: 1; }
 }
 
+/* ── Left panel (white) ── */
 .sim-left {
   flex: 1;
   background: #fff;
@@ -63,6 +68,23 @@
 }
 .sim-close:hover { color: #111; }
 
+/* ── Back button (reset mode) ── */
+.sim-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1.25rem;
+  transition: color 0.15s;
+}
+.sim-back-btn:hover { color: #333; }
+
+/* ── Typography ── */
 .sim-title {
   font-size: 1.75rem;
   font-weight: 900;
@@ -90,7 +112,6 @@
   margin-bottom: 0.35rem;
   margin-top: 0.75rem;
 }
-
 .sim-form > .sim-label:first-of-type { margin-top: 0; }
 
 .sim-input {
@@ -126,6 +147,7 @@
 }
 .sim-pw-toggle:hover { color: #333; }
 
+/* ── Checkbox + forgot row ── */
 .sim-row {
   display: flex;
   align-items: center;
@@ -172,11 +194,15 @@
   transform: rotate(45deg);
 }
 
+/* Forgot password — now a button */
 .sim-forgot {
+  background: none;
+  border: none;
   color: #f90;
   font-size: 0.875rem;
-  text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
+  padding: 0;
   transition: color 0.15s;
 }
 .sim-forgot:hover { color: #e08800; }
@@ -223,10 +249,7 @@
   background: #fff;
   transition: border-color 0.15s;
 }
-
-.sim-radio-label input[type="radio"]:checked + .sim-radio-custom {
-  border-color: #f90;
-}
+.sim-radio-label input[type="radio"]:checked + .sim-radio-custom { border-color: #f90; }
 .sim-radio-label input[type="radio"]:checked + .sim-radio-custom::after {
   content: '';
   position: absolute;
@@ -235,6 +258,7 @@
   border-radius: 50%;
 }
 
+/* ── Submit button ── */
 .sim-submit {
   width: 100%;
   background: #f90;
@@ -251,6 +275,37 @@
 }
 .sim-submit:hover { background: #e08800; }
 
+/* Extra top margin for reset form's lone button */
+.sim-submit--reset { margin-top: 1.25rem; }
+
+/* ── Reset success state ── */
+.sim-reset-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 1rem 0 0.5rem;
+  animation: sim-fade-in 0.3s ease;
+}
+
+.sim-reset-success__title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+}
+
+.sim-reset-success__desc {
+  font-size: 0.875rem;
+  color: #555;
+  line-height: 1.55;
+  margin: 0 0 0.5rem;
+}
+
+.sim-reset-success .sim-submit { margin-top: 0.25rem; }
+
+/* ── Divider ── */
 .sim-divider {
   display: flex;
   align-items: center;
@@ -274,13 +329,8 @@
   gap: 0.6rem;
 }
 
-/* Register: 2-col top row + full-width third */
-.sim-socials--reg {
-  grid-template-columns: 1fr 1fr;
-}
-.sim-social-btn--full {
-  grid-column: 1 / -1;
-}
+.sim-socials--reg { grid-template-columns: 1fr 1fr; }
+.sim-social-btn--full { grid-column: 1 / -1; }
 
 .sim-social-btn {
   display: flex;
@@ -318,7 +368,6 @@
   padding: 2rem 1.75rem;
   background-size: cover;
   background-position: center top;
-  transition: background-image 0.3s ease;
 }
 
 .sim-right--signin {
@@ -333,10 +382,13 @@
     url('../assets/images/login-bg-totalwar.jpg');
 }
 
-.sim-right-content {
-  text-align: center;
-  width: 100%;
+.sim-right--reset {
+  background-image:
+    linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.75)),
+    url('../assets/images/login-bg-reset.jpg');
 }
+
+.sim-right-content { text-align: center; width: 100%; }
 
 .sim-right-title {
   color: #fff;

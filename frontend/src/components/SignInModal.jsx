@@ -42,6 +42,12 @@ const EyeIcon = ({ open }) => (
   )
 );
 
+const BackArrowIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+    <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 /* ── Reusable checkbox ── */
 const Checkbox = ({ id, checked, onChange, label }) => (
   <label className="sim-checkbox-label" htmlFor={id}>
@@ -52,7 +58,7 @@ const Checkbox = ({ id, checked, onChange, label }) => (
 );
 
 /* ── Sign-In form ── */
-const SignInContent = () => {
+const SignInContent = ({ onForgot }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -80,7 +86,10 @@ const SignInContent = () => {
         <div className="sim-row">
           <Checkbox id="si-keep" checked={keepSignedIn}
             onChange={e => setKeepSignedIn(e.target.checked)} label="Keep me signed in" />
-          <a href="/forgot-password" className="sim-forgot">Forgot password?</a>
+          {/* Forgot password — switches mode instead of navigating */}
+          <button type="button" className="sim-forgot" onClick={onForgot}>
+            Forgot password?
+          </button>
         </div>
 
         <button type="submit" className="sim-submit">SIGN IN</button>
@@ -145,11 +154,84 @@ const RegisterContent = () => {
   );
 };
 
+/* ── Reset Password form ── */
+const ResetContent = ({ onBack }) => {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TODO: call reset password API
+    setSubmitted(true);
+  };
+
+  return (
+    <>
+      <button type="button" className="sim-back-btn" onClick={onBack}>
+        <BackArrowIcon /> Back to Sign In
+      </button>
+
+      <h2 className="sim-title">RESET PASSWORD</h2>
+
+      {submitted ? (
+        <div className="sim-reset-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f90" strokeWidth="2" width="40" height="40">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round"/>
+            <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <p className="sim-reset-success__title">Check your inbox</p>
+          <p className="sim-reset-success__desc">
+            We've sent a password reset link to <strong>{email}</strong>.
+            If you don't see it, check your spam folder.
+          </p>
+          <button type="button" className="sim-submit" onClick={onBack}>
+            BACK TO SIGN IN
+          </button>
+        </div>
+      ) : (
+        <form className="sim-form" onSubmit={handleSubmit}>
+          <label className="sim-label" htmlFor="rp-email">Email Address</label>
+          <input id="rp-email" type="email" className="sim-input" value={email}
+            onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+
+          <button type="submit" className="sim-submit sim-submit--reset">
+            RESET PASSWORD
+          </button>
+        </form>
+      )}
+    </>
+  );
+};
+
+/* ── Right-panel config per mode ── */
+const RIGHT_PANEL = {
+  signin: {
+    cls: 'sim-right--signin',
+    title: <>ARE YOU NEW<br />TO BUNDLE FORGE?</>,
+    desc: "If you don't have a Bundle Forge account, use this option to access the registration form.",
+    cta: 'CREATE ACCOUNT',
+    next: 'register',
+  },
+  register: {
+    cls: 'sim-right--register',
+    title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
+    desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
+    cta: 'SIGN IN',
+    next: 'signin',
+  },
+  reset: {
+    cls: 'sim-right--reset',
+    title: <>REMEMBER YOUR<br />PASSWORD?</>,
+    desc: 'Head back to the sign in form and access your Bundle Forge account.',
+    cta: 'SIGN IN',
+    next: 'signin',
+  },
+};
+
 /* ── Modal shell ── */
 export const SignInModal = ({ isOpen, onClose }) => {
-  const [mode, setMode] = useState('signin'); // 'signin' | 'register'
+  const [mode, setMode] = useState('signin'); // 'signin' | 'register' | 'reset'
 
-  // Reset mode whenever modal opens
   useEffect(() => { if (isOpen) setMode('signin'); }, [isOpen]);
 
   useEffect(() => {
@@ -165,45 +247,30 @@ export const SignInModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const isRegister = mode === 'register';
+  const panel = RIGHT_PANEL[mode];
 
   return (
-    <div className="sim-backdrop" onClick={onClose} role="dialog" aria-modal="true"
-      aria-label={isRegister ? 'Create account' : 'Sign in'}>
+    <div className="sim-backdrop" onClick={onClose} role="dialog" aria-modal="true">
       <div className="sim-modal" onClick={e => e.stopPropagation()}>
 
         {/* Left panel */}
         <div className="sim-left">
           <button className="sim-close" onClick={onClose} aria-label="Close">✕</button>
           <div className="sim-left-inner">
-            {isRegister ? <RegisterContent /> : <SignInContent />}
+            {mode === 'signin'    && <SignInContent  onForgot={() => setMode('reset')} />}
+            {mode === 'register'  && <RegisterContent />}
+            {mode === 'reset'     && <ResetContent   onBack={() => setMode('signin')} />}
           </div>
         </div>
 
-        {/* Right panel — flips content based on mode */}
-        <div className={`sim-right ${isRegister ? 'sim-right--register' : 'sim-right--signin'}`}>
+        {/* Right panel */}
+        <div className={`sim-right ${panel.cls}`}>
           <div className="sim-right-content">
-            {isRegister ? (
-              <>
-                <h3 className="sim-right-title">ALREADY HAVE<br />AN ACCOUNT?</h3>
-                <p className="sim-right-desc">
-                  If you already have a Bundle Forge account, use this option to access the sign in form.
-                </p>
-                <button className="sim-create-btn" onClick={() => setMode('signin')}>
-                  SIGN IN
-                </button>
-              </>
-            ) : (
-              <>
-                <h3 className="sim-right-title">ARE YOU NEW<br />TO BUNDLE FORGE?</h3>
-                <p className="sim-right-desc">
-                  If you don't have a Bundle Forge account, use this option to access the registration form.
-                </p>
-                <button className="sim-create-btn" onClick={() => setMode('register')}>
-                  CREATE ACCOUNT
-                </button>
-              </>
-            )}
+            <h3 className="sim-right-title">{panel.title}</h3>
+            <p className="sim-right-desc">{panel.desc}</p>
+            <button className="sim-create-btn" onClick={() => setMode(panel.next)}>
+              {panel.cta}
+            </button>
           </div>
         </div>
 
