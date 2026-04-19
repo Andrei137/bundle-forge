@@ -2,14 +2,11 @@ import {
   Header,
   FeaturedDeals,
   TopSellers,
-  GameBundlesSlider,
-  Sidebar,
-  GameGrid,
-  BundlesSection,
   ShoppingCart,
   GameDetailsModal,
   GameFinder,
   GamersRecommend,
+  MoreGameBundles,
   Footer
 } from './components'
 import './App.css'
@@ -24,7 +21,7 @@ function App() {
       <main className="main-content">
         <FeaturedDeals />
         <TopSellers />
-        <GameBundlesSlider />
+        <MoreGameBundles />
         <GameFinder />
         <GamersRecommend />
       </main>
