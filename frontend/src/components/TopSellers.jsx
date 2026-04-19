@@ -28,7 +28,7 @@ export const TopSellers = () => {
   const games = useSelector(state => state.games.all);
   const [activeFilter, setActiveFilter] = useState('All Products');
 
-  const filters = ['All Products', 'Games', 'Game Bundles', 'Books & Comics', 'Other'];
+  const filters = ['All Products', 'Games', 'Game Bundles'];
 
   const topSellers = games.slice(0, 11);
 

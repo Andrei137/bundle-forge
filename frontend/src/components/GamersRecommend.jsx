@@ -69,9 +69,6 @@ export const GamersRecommend = () => {
                 </svg>
               </button>
               <img src={slide.image} alt={slide.title} className="gr-cover-img" />
-              <div className="gr-progress-bar">
-                <div className="gr-progress-fill" style={{ width: `${((current + 1) / slides.length) * 100}%` }} />
-              </div>
             </div>
 
             <div className="gr-card-right">
