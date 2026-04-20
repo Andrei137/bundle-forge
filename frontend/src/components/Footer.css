@@ -198,30 +198,6 @@
   flex-wrap: wrap;
 }
 
-.trustpilot {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.trustpilot-logo {
-  color: #00b67a;
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
-.trustpilot-stars {
-  color: #00b67a;
-  font-size: 1rem;
-  letter-spacing: 2px;
-}
-
-.trustpilot-text {
-  color: #888;
-  font-size: 0.8rem;
-}
-
 .footer-bottom-actions {
   display: flex;
   gap: 0.75rem;

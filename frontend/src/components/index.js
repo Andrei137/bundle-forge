@@ -11,3 +11,4 @@ export { Footer } from './Footer';
 export { GameFinder } from './GameFinder';
 export { GamersRecommend } from './GamersRecommend';
 export { MoreGameBundles } from './MoreGameBundles';
+export { Game } from './Game';
