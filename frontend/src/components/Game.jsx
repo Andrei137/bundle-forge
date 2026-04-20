@@ -121,7 +121,6 @@ Seamlessly switch between intense gunplay and hacking to solve puzzles, bypass s
       Languages: 'English, Japanese, French, German, Spanish',
     },
   },
-  payments: ['paypal', 'visa', 'mastercard', 'gpay', 'bnpl'],
 };
 
 /* ── Star rating display ── */
@@ -275,15 +274,6 @@ export const Game = ({ game = GAME_DATA }) => {
             <button className="gp-cart-btn" onClick={handleAddToCart}>
               <CartIcon /> Add To Cart
             </button>
-
-            <div className="gp-payments">
-              <span className="gp-payments-label">Payments:</span>
-              <div className="gp-payment-icons">
-                {['PayPal','VISA','MC','GPay','BNPL'].map(p => (
-                  <span key={p} className="gp-payment-icon">{p}</span>
-                ))}
-              </div>
-            </div>
 
           </div>
         </div>
