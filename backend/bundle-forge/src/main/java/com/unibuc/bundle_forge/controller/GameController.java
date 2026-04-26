@@ -45,9 +45,10 @@ public class GameController {
     @RequireProvider({Developer.class})
     public ResponseEntity<GameResponseDto> announceGame(
             @RequestPart("game") @Valid GameCreateDto gameCreateDto,
-            @RequestPart("file") MultipartFile file
+            @RequestPart("cover") MultipartFile coverFile,
+            @RequestPart("images") List<MultipartFile> imagesFiles
     ) {
-        return ResponseUtils.created(gameService.announceGame(gameCreateDto, file));
+        return ResponseUtils.created(gameService.announceGame(gameCreateDto, coverFile, imagesFiles));
     }
 
     @PutMapping("/{gameId}")

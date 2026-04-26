@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -39,6 +40,9 @@ public final class GameResponseDto {
     private Game.Status status;
 
     @JsonView(ViewUtils.Public.class)
-    private Image image;
+    private byte[] cover;
+
+    @JsonView(ViewUtils.Public.class)
+    private List<byte[]> images;
 
 }

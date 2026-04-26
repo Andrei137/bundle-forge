@@ -61,10 +61,13 @@ public final class GameService {
                 .toList();
     }
 
-    public GameResponseDto announceGame(GameCreateDto gameCreateDto, MultipartFile file) {
+    public GameResponseDto announceGame(GameCreateDto gameCreateDto, MultipartFile coverFile, List<MultipartFile> imagesFiles) {
         Game game = gameMapper.toEntity(gameCreateDto);
-        Image image = imageService.uploadImage(file);
-        game.setCover(image);
+        Image cover = imageService.uploadImage(coverFile);
+        List<Image> images = imageService.uploadImages(imagesFiles);
+
+        game.setCover(cover);
+        game.setImages(images);
         game.setDeveloper((Developer) jwtService.getCurrentProvider());
         return gameMapper.toResponseDto(gameRepository.save(game));
     }

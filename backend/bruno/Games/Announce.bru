@@ -6,7 +6,7 @@ meta {
 
 post {
   url: {{url}}/games
-  body: json
+  body: multipartForm
   auth: inherit
 }
 
@@ -17,6 +17,20 @@ body:json {
   }
 }
 
+body:multipart-form {
+  game: '''
+    {
+      "title": "Hollow Knight 2",
+      "price": 12.99
+    }
+  ''' @contentType(application/json)
+  cover: @file(/home/andrei/programming/config/dotfiles/.nixos/modules/nixos/wallpaper/wallpaper.jpg)
+  images: @file(/run/media/andrei/Windows/Users/Andrei/Pictures/League Of Legends/Debonair Zed.jpg)
+  images: @file(/run/media/andrei/Windows/Users/Andrei/Pictures/League Of Legends/Galaxy Slayer Zed.jpg)
+  images: @file(/run/media/andrei/Windows/Users/Andrei/Pictures/League Of Legends/Zed.jpg)
+}
+
 settings {
   encodeUrl: true
+  timeout: 0
 }

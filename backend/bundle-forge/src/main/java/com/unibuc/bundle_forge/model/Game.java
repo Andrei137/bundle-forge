@@ -69,11 +69,9 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     private List<String> links = new ArrayList<>();
 
     @OneToOne
-    @JsonIgnore
     private Image cover;
 
     @OneToMany
-    @JsonIgnore
     @Builder.Default
     private List<Image> images = new ArrayList<>();
 

@@ -4,6 +4,7 @@ import com.unibuc.bundle_forge.dto.GameCreateDto;
 import com.unibuc.bundle_forge.dto.GameResponseDto;
 import com.unibuc.bundle_forge.dto.GameUpdateDto;
 import com.unibuc.bundle_forge.model.Game;
+import com.unibuc.bundle_forge.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,8 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public final class GameMapper {
+
+    private final ImageService imageService;
 
     public void updateEntityFromDto(GameUpdateDto dto, Game entity) {
         Optional.ofNullable(dto.getDiscountPercentage()).ifPresent(entity::setDiscountPercentage);
@@ -37,6 +40,8 @@ public final class GameMapper {
                 .discountPercentage(entity.getDiscountPercentage())
                 .initialPrice(entity.getPrice())
                 .status(entity.getStatus())
+                .cover(imageService.getImage(entity.getCover()))
+                .images(imageService.getImages(entity.getImages()))
                 .build();
     }
 
