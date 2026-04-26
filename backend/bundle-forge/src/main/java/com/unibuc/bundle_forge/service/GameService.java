@@ -7,16 +7,15 @@ import com.unibuc.bundle_forge.dto.GameUpdateDto;
 import com.unibuc.bundle_forge.exception.ForbiddenException;
 import com.unibuc.bundle_forge.exception.NotFoundException;
 import com.unibuc.bundle_forge.mapper.GameMapper;
-import com.unibuc.bundle_forge.model.Contract;
-import com.unibuc.bundle_forge.model.Developer;
-import com.unibuc.bundle_forge.model.Game;
-import com.unibuc.bundle_forge.model.Provider;
+import com.unibuc.bundle_forge.model.*;
 import com.unibuc.bundle_forge.repository.ContractRepository;
 import com.unibuc.bundle_forge.repository.GameRepository;
 import com.unibuc.bundle_forge.utils.EnumUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,6 +27,7 @@ public final class GameService {
     private final ContractRepository contractRepository;
     private final JwtService jwtService;
     private final GameMapper gameMapper;
+    private final ImageService imageService;
 
     public Game getGame(Integer gameId) {
         return gameRepository.findById(gameId).orElseThrow(
@@ -61,8 +61,10 @@ public final class GameService {
                 .toList();
     }
 
-    public GameResponseDto announceGame(GameCreateDto gameCreateDto) {
+    public GameResponseDto announceGame(GameCreateDto gameCreateDto, MultipartFile file) {
         Game game = gameMapper.toEntity(gameCreateDto);
+        Image image = imageService.uploadImage(file);
+        game.setCover(image);
         game.setDeveloper((Developer) jwtService.getCurrentProvider());
         return gameMapper.toResponseDto(gameRepository.save(game));
     }

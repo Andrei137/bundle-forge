@@ -1,0 +1,371 @@
+.gr-section {
+  padding: 2.5rem 0;
+}
+
+.gr-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Header */
+.gr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.gr-title {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.gr-view-all {
+  color: #f90;
+  border: 1px solid #f90;
+  border-radius: 4px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.gr-view-all:hover {
+  background: #f90;
+  color: #fff;
+}
+
+/* Slider wrapper */
+.gr-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Arrows */
+.gr-arrow {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.15s;
+  z-index: 2;
+}
+
+.gr-arrow:disabled {
+  color: #444;
+  cursor: default;
+}
+
+.gr-arrow:not(:disabled):hover {
+  color: #fff;
+}
+
+.gr-arrow svg {
+  width: 14px;
+  height: 24px;
+  display: block;
+}
+
+/* Card */
+.gr-card {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 45% 1fr;
+  background: #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+/* Left: Image */
+.gr-card-left {
+  position: relative;
+  overflow: hidden;
+}
+
+.gr-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gr-price-overlay {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+  background: rgba(0,0,0,0.65);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+}
+
+.gr-discount-badge {
+  background: #000000;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+}
+
+.gr-price-stack {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.gr-was-price {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.65rem;
+  text-decoration: line-through;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gr-now-price {
+  color: #f90;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gr-wishlist-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  z-index: 2;
+  opacity: 0;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.gr-wishlist-btn:hover {
+  background: rgba(0,0,0,0.75);
+  color: #f90;
+}
+
+.gr-wishlist-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Progress bar at bottom of image */
+.gr-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.15);
+  opacity: 0;
+  transition: opacity 0.2s;  
+}
+
+/* Right: Info */
+.gr-card-right {
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gr-game-title {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.gr-card-left:hover .gr-wishlist-btn,
+.gr-card-left:hover .gr-progress-bar {
+  opacity: 1;
+}
+
+/* Stars */
+.gr-stars {
+  display: flex;
+  gap: 3px;
+}
+
+.gr-star {
+  width: 20px;
+  height: 20px;
+  fill: #555;
+}
+
+.gr-star--filled {
+  fill: #f5c518;
+}
+
+/* Tags */
+.gr-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.gr-tag {
+  background: #3a3a3a;
+  color: #ccc;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 3px;
+  border: 1px solid #4a4a4a;
+}
+
+/* Review */
+.gr-review-quote {
+  color: #ccc;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin: 0;
+  font-style: italic;
+  flex: 1;
+}
+
+.gr-read-full {
+  color: #f90;
+  font-size: 0.875rem;
+  text-decoration: none;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.gr-read-full:hover {
+  text-decoration: underline;
+}
+
+/* Bottom row */
+.gr-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid #3a3a3a;
+}
+
+.gr-reviewer {
+  color: #aaa;
+  font-size: 0.875rem;
+}
+
+.gr-helpful {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gr-helpful-text {
+  color: #888;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.gr-like-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gr-like-btn:hover {
+  background: #43a047;
+}
+
+.gr-like-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Dots */
+.gr-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.gr-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #444;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.gr-dot--active {
+  background: #fff;
+  transform: scale(1.2);
+}
+
+.gr-dot:not(.gr-dot--active):hover {
+  background: #888;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .gr-card {
+    grid-template-columns: 1fr;
+  }
+
+  .gr-card-left {
+    aspect-ratio: 16/9;
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 600px) {
+  .gr-card-right {
+    padding: 1rem;
+  }
+
+  .gr-card-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .gr-helpful {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

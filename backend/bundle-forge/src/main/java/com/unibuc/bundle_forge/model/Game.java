@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -62,6 +63,19 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @JsonView(ViewUtils.Public.class)
     @Builder.Default
     private LocalDate releaseDate = LocalDate.now();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private List<String> links = new ArrayList<>();
+
+    @OneToOne
+    @JsonIgnore
+    private Image cover;
+
+    @OneToMany
+    @JsonIgnore
+    @Builder.Default
+    private List<Image> images = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
