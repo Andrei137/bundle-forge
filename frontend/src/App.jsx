@@ -9,6 +9,7 @@ import {
   GamersRecommend,
   MoreGameBundles,
   Game,
+  Bundle,
   Footer
 } from './components'
 import './App.css'
@@ -51,6 +52,15 @@ function App() {
           element={
             <Layout>
               <Game />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/bundle/:slug"
+          element={
+            <Layout>
+              <Bundle />
             </Layout>
           }
         />
