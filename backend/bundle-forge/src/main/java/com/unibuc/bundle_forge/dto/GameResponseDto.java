@@ -2,6 +2,7 @@ package com.unibuc.bundle_forge.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.unibuc.bundle_forge.model.Game;
+import com.unibuc.bundle_forge.model.Image;
 import com.unibuc.bundle_forge.utils.ViewUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,5 +37,8 @@ public final class GameResponseDto {
 
     @JsonView(ViewUtils.Provider.class)
     private Game.Status status;
+
+    @JsonView(ViewUtils.Public.class)
+    private Image image;
 
 }

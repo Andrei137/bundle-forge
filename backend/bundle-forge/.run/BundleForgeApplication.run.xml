@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BundleForgeApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="bundle-forge" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.unibuc.bundle_forge.BundleForgeApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
