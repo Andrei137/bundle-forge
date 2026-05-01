@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageService {
 
-    @Value("${file.upload-dir}")
+    @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
     private final ImageRepository imageRepository;
@@ -57,7 +57,7 @@ public class ImageService {
             Files.copy(stream, targetFile, StandardCopyOption.REPLACE_EXISTING);
 
             Image image = new Image();
-            image.setPath(storedName);
+            image.setPath("/" + uploadDir + "/" + storedName);
 
             return imageRepository.save(image);
         }
@@ -72,29 +72,6 @@ public class ImageService {
             images.add(uploadImage(file));
         }
         return images;
-    }
-
-    public byte[] getImage(Image image) {
-        try {
-            String storedFileName = image.getPath();
-            Path filePath = storagePath.resolve(storedFileName).normalize();
-
-            if (!Files.exists(filePath)) {
-                throw new ValidationException("File not found: " + storedFileName);
-            }
-
-            return Files.readAllBytes(filePath);
-        } catch (IOException e) {
-            throw new ValidationException("Failed to read file: " + e.getMessage());
-        }
-    }
-
-    public List<byte[]> getImages(List<Image> images) {
-        List <byte[]> result = new ArrayList<>();
-        for (Image image : images) {
-            result.add(getImage(image));
-        }
-        return result;
     }
 
 }

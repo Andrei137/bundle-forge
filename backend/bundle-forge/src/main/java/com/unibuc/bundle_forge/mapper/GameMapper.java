@@ -4,6 +4,7 @@ import com.unibuc.bundle_forge.dto.GameCreateDto;
 import com.unibuc.bundle_forge.dto.GameResponseDto;
 import com.unibuc.bundle_forge.dto.GameUpdateDto;
 import com.unibuc.bundle_forge.model.Game;
+import com.unibuc.bundle_forge.model.Image;
 import com.unibuc.bundle_forge.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,8 +41,8 @@ public final class GameMapper {
                 .discountPercentage(entity.getDiscountPercentage())
                 .initialPrice(entity.getPrice())
                 .status(entity.getStatus())
-                .cover(imageService.getImage(entity.getCover()))
-                .images(imageService.getImages(entity.getImages()))
+                .cover(entity.getCover().getPath())
+                .images(entity.getImages().stream().map(Image::getPath).toList())
                 .build();
     }
 

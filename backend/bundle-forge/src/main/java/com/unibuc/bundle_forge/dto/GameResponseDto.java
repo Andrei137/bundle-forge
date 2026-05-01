@@ -40,9 +40,9 @@ public final class GameResponseDto {
     private Game.Status status;
 
     @JsonView(ViewUtils.Public.class)
-    private byte[] cover;
+    private String cover;
 
     @JsonView(ViewUtils.Public.class)
-    private List<byte[]> images;
+    private List<String> images;
 
 }
