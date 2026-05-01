@@ -9,6 +9,7 @@ import {
   GamersRecommend,
   MoreGameBundles,
   Game,
+  SearchPage,
   Bundle,
   Footer
 } from './components'
@@ -61,6 +62,15 @@ function App() {
           element={
             <Layout>
               <Bundle />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/search"
+          element={
+            <Layout>
+              <SearchPage />
             </Layout>
           }
         />
