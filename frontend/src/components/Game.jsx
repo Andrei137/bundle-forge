@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import youtubeIcon from '../assets/icons/youtube-icon-white.svg';
@@ -60,6 +60,10 @@ const MetacriticIcon = () => (
 
 export default function SliderVideo({ image, youtubeId, title }) {
   const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    setIsPlaying(false);
+  }, [youtubeId]);
 
   return (
     <div className="SliderVideo">
