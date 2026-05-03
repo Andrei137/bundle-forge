@@ -46,6 +46,13 @@ const CheckCircleIcon = () => (
   </svg>
 );
 
+// All 3 slots always render — missing ones are invisible placeholders that preserve equal width
+const ALL_PLATFORM_SLOTS = [
+  { id: 'windows', label: 'Windows', icon: <WindowsIcon className="os-icon" /> },
+  { id: 'mac',     label: 'Mac',     icon: <AppleIcon className="os-icon" /> },
+  { id: 'linux',   label: 'Linux',   icon: <LinuxIcon className="os-icon" /> },
+];
+
 export default function SliderVideo({ image, youtubeId, title }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -204,103 +211,37 @@ function AboutTab({ game }) {
   );
 }
 
-const REQUIREMENTS = {
-  windows: {
-    minimum: {
-      note: 'Requires a 64-bit processor and operating system',
-      OS: 'Windows 11 (64 bit)',
-      Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
-      Memory: '16 GB RAM',
-      Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
-      DirectX: 'Version 12',
-      Network: 'Broadband Internet connection',
-      Storage: '40 GB available space',
-    },
-    recommended: {
-      note: 'Requires a 64-bit processor and operating system',
-      OS: 'Windows 11 (64 bit)',
-      Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
-      Memory: '16 GB RAM',
-      Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
-      DirectX: 'Version 12',
-      Network: 'Broadband Internet connection',
-      Storage: '40 GB available space',
-    },
-  },
-  mac: {
-    minimum: {
-      note: 'Requires a 64-bit processor and operating system',
-      OS: 'macOS 12.0 Monterey or later',
-      Processor: 'Apple M1 / Intel Core i7 (8th gen or later)',
-      Memory: '16 GB RAM',
-      Graphics: 'Apple M1 GPU / AMD Radeon Pro 5300M 4 GB',
-      Network: 'Broadband Internet connection',
-      Storage: '40 GB available space',
-    },
-    recommended: {
-      note: 'Requires a 64-bit processor and operating system',
-      OS: 'macOS 13.0 Ventura or later',
-      Processor: 'Apple M2 Pro / Intel Core i9 (9th gen or later)',
-      Memory: '16 GB RAM',
-      Graphics: 'Apple M2 Pro GPU / AMD Radeon Pro 5700 XT 16 GB',
-      Network: 'Broadband Internet connection',
-      Storage: '40 GB available space (SSD)',
-    },
-  },
-  linux: {
-    minimum: {
-      note: 'Requires a 64-bit processor and operating system',
-      OS: 'Ubuntu 20.04 / SteamOS 3.0',
-      Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
-      Memory: '16 GB RAM',
-      Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
-      'Vulkan API': 'Version 1.3',
-      Network: 'Broadband Internet connection',
-      Storage: '40 GB available space',
-    },
-    recommended: {
-      note: 'Requires a 64-bit processor and operating system',
-      OS: 'Ubuntu 22.04 / SteamOS 3.4+',
-      Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
-      Memory: '16 GB RAM',
-      Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
-      'Vulkan API': 'Version 1.3',
-      Network: 'Broadband Internet connection',
-      Storage: '40 GB available space (SSD)',
-    },
-  },
-};
-
-// All 3 slots always render — missing ones are invisible placeholders that preserve equal width
-const ALL_PLATFORM_SLOTS = [
-  { id: 'windows', label: 'Windows', icon: <WindowsIcon className="os-icon" /> },
-  { id: 'mac',     label: 'Mac',     icon: <AppleIcon className="os-icon" /> },
-  { id: 'linux',   label: 'Linux',   icon: <LinuxIcon className="os-icon" /> },
-];
-
-function RequirementsTab({ availablePlatforms = ['windows', 'mac', 'linux'] }) {
-  const firstAvailable = ALL_PLATFORM_SLOTS.find(p => availablePlatforms.includes(p.id))?.id ?? 'windows';
+function RequirementsTab({ game }) {
+  const firstAvailable = ALL_PLATFORM_SLOTS.find(p => Object.hasOwn(game.systemRequirements, p.id))?.id ?? 'windows';
   const [platform, setPlatform] = useState(firstAvailable);
-  const reqs = REQUIREMENTS[platform];
+  const reqs = game.systemRequirements[platform];
+
+  const available = ALL_PLATFORM_SLOTS.filter(({ id }) =>
+    Object.hasOwn(game.systemRequirements, id)
+  );
+
+  const unavailable = ALL_PLATFORM_SLOTS.filter(({ id }) =>
+    !Object.hasOwn(game.systemRequirements, id)
+  );
 
   return (
     <div className="gp-req-section">
       <div className="gp-req-tab-bar">
-        {ALL_PLATFORM_SLOTS.map(({ id, label, icon }) => {
-          const available = availablePlatforms.includes(id);
-          if (!available) {
-            return <div key={id} className="gp-req-tab-ghost" aria-hidden="true" />;
-          }
-          return (
-            <button
-              key={id}
-              className={`gp-req-platform-tab ${platform === id ? 'gp-req-platform-tab--active' : ''}`}
-              onClick={() => setPlatform(id)}
-            >
-              {icon} {label}
-            </button>
-          );
-        })}
+        {available.map(({ id, label, icon }) => (
+          <button
+            key={id}
+            className={`gp-req-platform-tab ${
+              platform === id ? 'gp-req-platform-tab--active' : ''
+            }`}
+            onClick={() => setPlatform(id)}
+          >
+            {icon} {label}
+          </button>
+        ))}
+
+        {unavailable.map(({ id }) => (
+          <div key={id} className="gp-req-tab-ghost" aria-hidden="true" />
+        ))}
       </div>
 
       <div className="gp-req-card">
@@ -394,6 +335,72 @@ It is the near future, and protagonists Hugh and his android companion Diana, mu
         Link:           'https://www.capcom.com',
       },
     },
+    systemRequirements: {
+      windows: {
+        minimum: {
+          note: 'Requires a 64-bit processor and operating system',
+          OS: 'Windows 11 (64 bit)',
+          Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
+          Memory: '16 GB RAM',
+          Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
+          DirectX: 'Version 12',
+          Network: 'Broadband Internet connection',
+          Storage: '40 GB available space',
+        },
+        recommended: {
+          note: 'Requires a 64-bit processor and operating system',
+          OS: 'Windows 11 (64 bit)',
+          Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
+          Memory: '16 GB RAM',
+          Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
+          DirectX: 'Version 12',
+          Network: 'Broadband Internet connection',
+          Storage: '40 GB available space',
+        },
+      },
+      mac2: {
+        minimum: {
+          note: 'Requires a 64-bit processor and operating system',
+          OS: 'macOS 12.0 Monterey or later',
+          Processor: 'Apple M1 / Intel Core i7 (8th gen or later)',
+          Memory: '16 GB RAM',
+          Graphics: 'Apple M1 GPU / AMD Radeon Pro 5300M 4 GB',
+          Network: 'Broadband Internet connection',
+          Storage: '40 GB available space',
+        },
+        recommended: {
+          note: 'Requires a 64-bit processor and operating system',
+          OS: 'macOS 13.0 Ventura or later',
+          Processor: 'Apple M2 Pro / Intel Core i9 (9th gen or later)',
+          Memory: '16 GB RAM',
+          Graphics: 'Apple M2 Pro GPU / AMD Radeon Pro 5700 XT 16 GB',
+          Network: 'Broadband Internet connection',
+          Storage: '40 GB available space (SSD)',
+        },
+      },
+      linux: {
+        minimum: {
+          note: 'Requires a 64-bit processor and operating system',
+          OS: 'Ubuntu 20.04 / SteamOS 3.0',
+          Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
+          Memory: '16 GB RAM',
+          Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
+          'Vulkan API': 'Version 1.3',
+          Network: 'Broadband Internet connection',
+          Storage: '40 GB available space',
+        },
+        recommended: {
+          note: 'Requires a 64-bit processor and operating system',
+          OS: 'Ubuntu 22.04 / SteamOS 3.4+',
+          Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
+          Memory: '16 GB RAM',
+          Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
+          'Vulkan API': 'Version 1.3',
+          Network: 'Broadband Internet connection',
+          Storage: '40 GB available space (SSD)',
+        },
+      },
+    }
   };
 };
 
@@ -500,7 +507,13 @@ export const Game = () => {
               <div className="gp-drm-row">
                 <SteamIcon width="20" height="20" fill="#fff" />
                 <span className="gp-drm-label">STEAM</span>
-                <WindowsIcon className="os-icon" />
+                  {ALL_PLATFORM_SLOTS.map(({ id, icon, label }) =>
+                    Object.hasOwn(game.systemRequirements, id) ? (
+                      <div key={id} className="gp-platform-icon" title={label}>
+                        {icon}
+                      </div>
+                    ) : null
+                  )}
               </div>
               <button
                 className={`gp-wishlist-btn ${wishlist ? 'gp-wishlist-btn--active' : ''}`}
@@ -564,7 +577,7 @@ export const Game = () => {
           {activeTab === 'about' ? (
             <AboutTab game={game} />
           ) : (
-            <RequirementsTab />
+            <RequirementsTab game={game} />
           )}
         </div>
 
