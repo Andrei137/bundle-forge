@@ -26,13 +26,6 @@ const HeartIcon = ({ filled }) => (
   </svg>
 );
 
-const PlayIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
-    <circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.6)"/>
-    <polygon points="10 8 16 12 10 16 10 8" fill="#fff"/>
-  </svg>
-);
-
 const SteamIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
@@ -58,6 +51,20 @@ const MetacriticIcon = () => (
   </svg>
 );
 
+const ExternalLinkIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+    <polyline points="15 3 21 3 21 9"/>
+    <line x1="10" y1="14" x2="21" y2="3"/>
+  </svg>
+);
+
+const CheckCircleIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style={{ color: '#4caf50' }}>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+  </svg>
+);
+
 export default function SliderVideo({ image, youtubeId, title }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -70,24 +77,10 @@ export default function SliderVideo({ image, youtubeId, title }) {
       {!isPlaying ? (
         <>
           <div className="SliderVideo__slide">
-            <img
-              src={image}
-              alt={title}
-              className="SliderVideo__img"
-              loading="eager"
-            />
-
+            <img src={image} alt={title} className="SliderVideo__img" loading="eager" />
             <div className="slide-video-button-container">
-              <button
-                className="SliderVideo__button"
-                onClick={() => setIsPlaying(true)}
-                aria-label="Play trailer"
-              >
-                <img
-                  width={80}
-                  src={youtubeIcon}
-                  alt="YouTube-play-button"
-                />
+              <button className="SliderVideo__button" onClick={() => setIsPlaying(true)} aria-label="Play trailer">
+                <img width={80} src={youtubeIcon} alt="YouTube-play-button" />
               </button>
             </div>
           </div>
@@ -115,6 +108,249 @@ const StarRating = ({ rating, max = 5 }) => (
     ))}
   </div>
 );
+
+function AboutTab({ game }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const CHAR_LIMIT = 800;
+  const fullText = game.about.description;
+  const isLong = fullText.length > CHAR_LIMIT;
+  const displayText = expanded || !isLong ? fullText : fullText.slice(0, CHAR_LIMIT) + '…';
+
+  const col1Details = {
+    Platform:       game.about.details.Platform ?? 'Steam',
+    'Release Date': game.about.details['Release Date'],
+    Developer:      game.about.details.Developer,
+    Publisher:      game.about.details.Publisher,
+    Rating:         game.about.details.Rating ?? 'PEGI 18',
+    Link:           game.about.details.Link ?? null,
+  };
+
+  const genres     = ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure', 'Story Rich', 'Souls-like'];
+  const themes     = ['Cute', 'Sci-fi', 'Funny', 'Futuristic', 'Robots', 'Hacking', 'Space', 'Realistic', 'Female Protagonist', 'Psychological Horror'];
+  const playStyles = ['Singleplayer', 'Third Person', '3D', 'Artificial Intelligence'];
+
+  return (
+    <div className="gp-about-grid-new">
+      <div className="gp-about-content-new">
+        <h3 className="gp-about-sub">About this game</h3>
+        <div className="gp-about-text">
+          {displayText.split('\n\n').map((para, i) => (
+            <p key={i} className="gp-about-para">{para.trim()}</p>
+          ))}
+        </div>
+        {isLong && (
+          <button className="gp-show-more-btn" onClick={() => setExpanded(v => !v)}>
+            {expanded ? 'Show less ▲' : 'Show more ▼'}
+          </button>
+        )}
+      </div>
+
+      <div className="gp-game-details-new">
+        <h3 className="gp-about-sub">Game Details</h3>
+
+        <div className="gp-details-two-col">
+          <div className="gp-details-sub-col">
+            {Object.entries(col1Details).map(([key, val]) => {
+              if (!val) return null;
+              if (key === 'Link') return (
+                <div key={key} className="gp-detail-row-new">
+                  <span className="gp-detail-key-new">{key}:</span>
+                  <a href={val} className="gp-detail-link" target="_blank" rel="noreferrer">
+                    View the website <ExternalLinkIcon />
+                  </a>
+                </div>
+              );
+              return (
+                <div key={key} className="gp-detail-row-new">
+                  <span className="gp-detail-key-new">{key}:</span>
+                  <span className="gp-detail-val-new">{val}</span>
+                </div>
+              );
+            })}
+
+            <div className="gp-detail-row-new">
+              <span className="gp-detail-key-new">Steam Deck:</span>
+              <span className="gp-detail-val-new gp-steam-deck-verified">
+                <CheckCircleIcon /> Verified
+              </span>
+            </div>
+
+            <div className="gp-detail-row-new">
+              <span className="gp-detail-key-new">Languages:</span>
+              <span className="gp-detail-val-new">
+                {game.about.details.Languages
+                  ? (() => {
+                      const langs = game.about.details.Languages.split(', ');
+                      const SHOW = 1;
+                      return (
+                        <>
+                          {langs.slice(0, SHOW).join(', ')}
+                          {langs.length > SHOW && (
+                            <span className="gp-langs-more"> +{langs.length - SHOW} more</span>
+                          )}
+                        </>
+                      );
+                    })()
+                  : 'English'}
+              </span>
+            </div>
+          </div>
+
+          <div className="gp-details-sub-col">
+            <div className="gp-tag-group">
+              <span className="gp-tag-group-label">Genres:</span>
+              <div className="gp-tag-links">
+                {genres.map(g => <a key={g} href="#" className="gp-tag-link">{g}</a>)}
+              </div>
+            </div>
+            <div className="gp-tag-group">
+              <span className="gp-tag-group-label">Themes:</span>
+              <div className="gp-tag-links">
+                {themes.map(t => <a key={t} href="#" className="gp-tag-link">{t}</a>)}
+              </div>
+            </div>
+            <div className="gp-tag-group">
+              <span className="gp-tag-group-label">Play Styles:</span>
+              <div className="gp-tag-links">
+                {playStyles.map(p => <a key={p} href="#" className="gp-tag-link">{p}</a>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const REQUIREMENTS = {
+  windows: {
+    minimum: {
+      note: 'Requires a 64-bit processor and operating system',
+      OS: 'Windows 11 (64 bit)',
+      Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
+      Memory: '16 GB RAM',
+      Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
+      DirectX: 'Version 12',
+      Network: 'Broadband Internet connection',
+      Storage: '40 GB available space',
+    },
+    recommended: {
+      note: 'Requires a 64-bit processor and operating system',
+      OS: 'Windows 11 (64 bit)',
+      Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
+      Memory: '16 GB RAM',
+      Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
+      DirectX: 'Version 12',
+      Network: 'Broadband Internet connection',
+      Storage: '40 GB available space',
+    },
+  },
+  mac: {
+    minimum: {
+      note: 'Requires a 64-bit processor and operating system',
+      OS: 'macOS 12.0 Monterey or later',
+      Processor: 'Apple M1 / Intel Core i7 (8th gen or later)',
+      Memory: '16 GB RAM',
+      Graphics: 'Apple M1 GPU / AMD Radeon Pro 5300M 4 GB',
+      Network: 'Broadband Internet connection',
+      Storage: '40 GB available space',
+    },
+    recommended: {
+      note: 'Requires a 64-bit processor and operating system',
+      OS: 'macOS 13.0 Ventura or later',
+      Processor: 'Apple M2 Pro / Intel Core i9 (9th gen or later)',
+      Memory: '16 GB RAM',
+      Graphics: 'Apple M2 Pro GPU / AMD Radeon Pro 5700 XT 16 GB',
+      Network: 'Broadband Internet connection',
+      Storage: '40 GB available space (SSD)',
+    },
+  },
+  linux: {
+    minimum: {
+      note: 'Requires a 64-bit processor and operating system',
+      OS: 'Ubuntu 20.04 / SteamOS 3.0',
+      Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
+      Memory: '16 GB RAM',
+      Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
+      'Vulkan API': 'Version 1.3',
+      Network: 'Broadband Internet connection',
+      Storage: '40 GB available space',
+    },
+    recommended: {
+      note: 'Requires a 64-bit processor and operating system',
+      OS: 'Ubuntu 22.04 / SteamOS 3.4+',
+      Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
+      Memory: '16 GB RAM',
+      Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
+      'Vulkan API': 'Version 1.3',
+      Network: 'Broadband Internet connection',
+      Storage: '40 GB available space (SSD)',
+    },
+  },
+};
+
+// All 3 slots always render — missing ones are invisible placeholders that preserve equal width
+const ALL_PLATFORM_SLOTS = [
+  { id: 'windows', label: 'Windows', icon: <WindowsIcon /> },
+  { id: 'mac',     label: 'Mac',     icon: <WindowsIcon /> },
+  { id: 'linux',   label: 'Linux',   icon: <WindowsIcon /> },
+];
+
+function RequirementsTab({ availablePlatforms = ['windows', 'mac', 'linux'] }) {
+  const firstAvailable = ALL_PLATFORM_SLOTS.find(p => availablePlatforms.includes(p.id))?.id ?? 'windows';
+  const [platform, setPlatform] = useState(firstAvailable);
+  const reqs = REQUIREMENTS[platform];
+
+  return (
+    <div className="gp-req-section">
+      <div className="gp-req-tab-bar">
+        {ALL_PLATFORM_SLOTS.map(({ id, label, icon }) => {
+          const available = availablePlatforms.includes(id);
+          if (!available) {
+            return <div key={id} className="gp-req-tab-ghost" aria-hidden="true" />;
+          }
+          return (
+            <button
+              key={id}
+              className={`gp-req-platform-tab ${platform === id ? 'gp-req-platform-tab--active' : ''}`}
+              onClick={() => setPlatform(id)}
+            >
+              {icon} {label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="gp-req-card">
+        <h3 className="gp-about-sub" style={{ marginBottom: '1.25rem' }}>Product Requirements</h3>
+        <div className="gp-req-two-col">
+          <div className="gp-req-col">
+            <h4 className="gp-req-col-title">Minimum:</h4>
+            <p className="gp-req-note">{reqs.minimum.note}</p>
+            {Object.entries(reqs.minimum).filter(([k]) => k !== 'note').map(([key, val]) => (
+              <div key={key} className="gp-req-row">
+                <span className="gp-req-key">{key}:</span>
+                <span className={`gp-req-val ${key === 'Additional Notes' ? 'gp-req-val--muted' : ''}`}>{val}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="gp-req-col">
+            <h4 className="gp-req-col-title">Recommended:</h4>
+            <p className="gp-req-note">{reqs.recommended.note}</p>
+            {Object.entries(reqs.recommended).filter(([k]) => k !== 'note').map(([key, val]) => (
+              <div key={key} className="gp-req-row">
+                <span className="gp-req-key">{key}:</span>
+                <span className={`gp-req-val ${key === 'Additional Notes' ? 'gp-req-val--muted' : ''}`}>{val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const fetchGame = async (gameId) => {
   const response = await fetch(`${API_URL}/games/${gameId}`);
@@ -164,14 +400,17 @@ const fetchGame = async (gameId) => {
     about: {
       description: `PRAGMATA is an all-new Science Fiction action-adventure from Capcom. Set in a near-future version of New York, you play as a soldier who discovers a mysterious girl with unbelievable hacking abilities. Together you'll traverse a world transformed by technology, uncovering a vast and shocking conspiracy.
 
-  Seamlessly switch between intense gunplay and hacking to solve puzzles, bypass security, and overcome enemies. Your companion's extraordinary abilities open up entirely new ways to interact with the environment.`,
+Seamlessly switch between intense gunplay and hacking to solve puzzles, bypass security, and overcome enemies. Your companion's extraordinary abilities open up entirely new ways to interact with the environment.
+
+It is the near future, and protagonists Hugh and his android companion Diana, must work together as they make their way through the cold lunar research station.`,
       details: {
-        Platform: 'PC',
-        Genre: 'Action, Adventure',
-        Publisher: 'Capcom',
-        Developer: 'Capcom',
-        'Release Date': 'TBA 2024',
-        Languages: 'English, Japanese, French, German, Spanish',
+        Platform:       'Steam',
+        'Release Date': 'April 17, 2026',
+        Developer:      'CAPCOM Co. Ltd.',
+        Publisher:      'CAPCOM',
+        Rating:         'PEGI 18',
+        Languages:      'English, Japanese, French, German, Spanish, Italian, Portuguese, Chinese, Korean, Russian, Polish, Czech, Turkish, Arabic',
+        Link:           'https://www.capcom.com',
       },
     },
   };
@@ -184,7 +423,6 @@ export const Game = () => {
   const [wishlist, setWishlist] = useState(false);
   const [activeThumb, setActiveThumb] = useState(0);
   const [activeTab, setActiveTab] = useState('about');
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const { data: game, isLoading, error } = useQuery({
     queryKey: ['game', gameId],
@@ -192,13 +430,8 @@ export const Game = () => {
     enabled: !!gameId,
   });
 
-  if (isLoading) {
-    return <div className="gp-page"><div className="gp-container"><p>Loading...</p></div></div>;
-  }
-
-  if (error || !game) {
-    return <div className="gp-page"><div className="gp-container"><p>Error: {error?.message ?? 'Game not found'}</p></div></div>;
-  }
+  if (isLoading) return <div className="gp-page"><div className="gp-container"><p>Loading...</p></div></div>;
+  if (error || !game) return <div className="gp-page"><div className="gp-container"><p>Error: {error?.message ?? 'Game not found'}</p></div></div>;
 
   const edition = game.editions.find(e => e.id === selectedEdition);
 
@@ -226,25 +459,19 @@ export const Game = () => {
           <StarRating rating={game.rating} />
           <span className="gp-rating-val">{game.rating}</span>
           <span className="gp-rating-count">{game.userRatings} User Rating</span>
-
           <div className="gp-rating-sep" />
-
           <div className="gp-metacritic">
             <span className="gp-metacritic-badge">{game.metacritic}</span>
             <MetacriticIcon />
             <span className="gp-metacritic-label">metacritic</span>
           </div>
-
           <div className="gp-rating-sep" />
-
           <div className="gp-steam-rating">
             <SteamIcon />
             <span className="gp-steam-score">STEAM {game.steamRating.score}%</span>
             <span className="gp-steam-label">| {game.steamRating.label}</span>
           </div>
-
           <div className="gp-rating-sep" />
-
           <div className="gp-thumbs">
             <ThumbsUpIcon />
             <span>{game.recommendPercent}% of users recommend this</span>
@@ -252,9 +479,7 @@ export const Game = () => {
         </div>
 
         <div className="gp-content-grid">
-
           <div className="gp-media-col">
-
             <div className="gp-main-viewer">
               {game.media[activeThumb]?.type === 'youtube' ? (
                 <SliderVideo
@@ -263,17 +488,11 @@ export const Game = () => {
                   title="PRAGMATA - Main Trailer"
                 />
               ) : (
-                <>
-                  <img
-                    src={
-                      game.media[activeThumb]?.thumb
-                        ?.replace('w=200', 'w=840')
-                        .replace('h=112', 'h=473') || game.mainImage
-                    }
-                    alt={game.title}
-                    className="gp-main-img"
-                  />
-                </>
+                <img
+                  src={game.media[activeThumb]?.thumb?.replace('w=200', 'w=840').replace('h=112', 'h=473') || game.mainImage}
+                  alt={game.title}
+                  className="gp-main-img"
+                />
               )}
             </div>
 
@@ -285,21 +504,17 @@ export const Game = () => {
                   onClick={() => setActiveThumb(i)}
                 >
                   <img src={m.thumb} alt={`Screenshot ${i + 1}`} />
-                  {m.type === 'youtube' && <span className="gp-thumb-play">
-                      <img
-                        src={youtubeIcon}
-                        alt="YouTube-play-button"
-                      />
+                  {m.type === 'youtube' && (
+                    <span className="gp-thumb-play">
+                      <img src={youtubeIcon} alt="YouTube-play-button" />
                     </span>
-                  }
+                  )}
                 </button>
               ))}
             </div>
-
           </div>
 
           <div className="gp-sidebar">
-
             <div className="gp-sidebar-top">
               <div className="gp-drm-row">
                 <SteamIcon />
@@ -316,9 +531,7 @@ export const Game = () => {
             </div>
 
             <div className="gp-tags">
-              {game.tags.map(tag => (
-                <span key={tag} className="gp-tag">{tag}</span>
-              ))}
+              {game.tags.map(tag => <span key={tag} className="gp-tag">{tag}</span>)}
             </div>
 
             <p className="gp-description">{game.description}</p>
@@ -348,45 +561,30 @@ export const Game = () => {
             <button className="gp-cart-btn" onClick={handleAddToCart}>
               <CartIcon /> Add To Cart
             </button>
-
           </div>
         </div>
 
+        {/* ── About Section ── */}
         <div className="gp-about-section">
           <div className="gp-about-header">
             <h2 className="gp-section-title">About {game.title}</h2>
             <div className="gp-about-tabs">
-              <button className={`gp-about-tab ${activeTab === 'about' ? 'gp-about-tab--active' : ''}`}
-                onClick={() => setActiveTab('about')}>About</button>
-              <button className={`gp-about-tab ${activeTab === 'requirements' ? 'gp-about-tab--active' : ''}`}
-                onClick={() => setActiveTab('requirements')}>Requirements</button>
+              <button
+                className={`gp-about-tab ${activeTab === 'about' ? 'gp-about-tab--active' : ''}`}
+                onClick={() => setActiveTab('about')}
+              >About</button>
+              <button
+                className={`gp-about-tab ${activeTab === 'requirements' ? 'gp-about-tab--active' : ''}`}
+                onClick={() => setActiveTab('requirements')}
+              >Requirements</button>
             </div>
           </div>
 
-          <div className="gp-about-grid">
-            <div className="gp-about-content">
-              <h3 className="gp-about-sub">About this game</h3>
-              {game.about.description.split('\n\n').map((para, i) => (
-                <p key={i} className="gp-about-para">{para}</p>
-              ))}
-            </div>
-
-            <div className="gp-game-details">
-              <h3 className="gp-about-sub">Game Details</h3>
-              <div className="gp-details-list">
-                {Object.entries(game.about.details).map(([key, val]) => (
-                  <div key={key} className="gp-detail-row">
-                    <span className="gp-detail-key">{key}:</span>
-                    <span className="gp-detail-val">{val}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="gp-detail-tags">
-                <span className="gp-drm-tag"><SteamIcon /> STEAM</span>
-                <span className="gp-platform-tag"><WindowsIcon /></span>
-              </div>
-            </div>
-          </div>
+          {activeTab === 'about' ? (
+            <AboutTab game={game} />
+          ) : (
+            <RequirementsTab />
+          )}
         </div>
 
       </div>
