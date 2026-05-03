@@ -49,7 +49,7 @@ function App() {
         />
 
         <Route
-          path="/game/:slug"
+          path="/game/:id"
           element={
             <Layout>
               <Game />
@@ -58,7 +58,7 @@ function App() {
         />
 
         <Route
-          path="/bundle/:slug"
+          path="/bundle/:id"
           element={
             <Layout>
               <Bundle />

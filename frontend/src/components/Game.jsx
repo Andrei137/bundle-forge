@@ -1,9 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import './Game.css';
 
-/* ── Icons ── */
+const API_URL = import.meta.env.VITE_API_URL;
+
 const StarIcon = ({ filled }) => (
   <svg viewBox="0 0 24 24" fill={filled ? '#f90' : 'none'} stroke="#f90" strokeWidth="1.5" width="16" height="16">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -41,19 +44,6 @@ const WindowsIcon = () => (
   </svg>
 );
 
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" width="14" height="14">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
-
-const ChevronIcon = ({ dir = 'right' }) => (
-  <svg viewBox="0 0 320 512" fill="currentColor" width="10" height="10"
-    style={{ transform: dir === 'left' ? 'rotate(180deg)' : 'none' }}>
-    <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
-  </svg>
-);
-
 const ThumbsUpIcon = () => (
   <svg viewBox="0 0 512 512" fill="currentColor" width="14" height="14">
     <path d="M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"/>
@@ -67,63 +57,6 @@ const MetacriticIcon = () => (
   </svg>
 );
 
-/* ── Sample game data ── */
-const GAME_DATA = {
-  title: 'PRAGMATA',
-  rating: 4.6,
-  userRatings: 1,
-  metacritic: 88,
-  steamRating: { score: 97, label: 'Overwhelmingly Positive' },
-  recommendPercent: 100,
-  tags: ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure'],
-  description: "Capcom's newest IP—PRAGMATA. An all-new Science Fiction action adventure with its own unique hacking twist!",
-  drm: 'steam',
-  platforms: ['windows'],
-  activatesIn: 'Romania',
-  editions: [
-    { id: 'standard',       label: 'Standard',       price: 250.72, originalPrice: 305.89, discount: 18 },
-    { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
-  ],
-  media: [
-    { type: 'video', thumb: 'https://fanatical.imgix.net/product/original/88296cba-29aa-409f-b099-74bea05d9a64.jpeg?auto=compress,format&w=200&fit=crop&h=112', src: '#' },
-    { type: 'video', thumb: 'https://fanatical.imgix.net/product/original/125cf666-d1a7-463c-b233-72308b902adc.jpeg?auto=compress,format&w=200&fit=crop&h=112', src: '#' },
-    { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/6ff252a3-a628-428a-a7fd-602a78505002.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
-    { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
-    { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/b43142b4-3bf7-42bd-8e84-572e5934ae21.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
-  ],
-  mainImage: 'https://fanatical.imgix.net/product/original/88296cba-29aa-409f-b099-74bea05d9a64.jpeg?auto=compress,format&w=840&fit=crop&h=473',
-  specialOffers: [
-    {
-      id: 1,
-      image: 'https://fanatical.imgix.net/product/original/125cf666-d1a7-463c-b233-72308b902adc.jpeg?auto=compress,format&w=600&fit=crop&h=300',
-      title: 'Purchase Early to Receive',
-      subtitle: 'IN GAME OUTFITS!',
-      subtitleColor: '#f90',
-    },
-    {
-      id: 2,
-      image: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=600&fit=crop&h=300',
-      title: 'Shop the Level Up Sale',
-      subtitle: 'WIN UP TO £1500!',
-      subtitleColor: '#f90',
-    },
-  ],
-  about: {
-    description: `PRAGMATA is an all-new Science Fiction action-adventure from Capcom. Set in a near-future version of New York, you play as a soldier who discovers a mysterious girl with unbelievable hacking abilities. Together you'll traverse a world transformed by technology, uncovering a vast and shocking conspiracy.
-
-Seamlessly switch between intense gunplay and hacking to solve puzzles, bypass security, and overcome enemies. Your companion's extraordinary abilities open up entirely new ways to interact with the environment.`,
-    details: {
-      Platform: 'PC',
-      Genre: 'Action, Adventure',
-      Publisher: 'Capcom',
-      Developer: 'Capcom',
-      'Release Date': 'TBA 2024',
-      Languages: 'English, Japanese, French, German, Spanish',
-    },
-  },
-};
-
-/* ── Star rating display ── */
 const StarRating = ({ rating, max = 5 }) => (
   <div className="gp-stars">
     {Array.from({ length: max }, (_, i) => (
@@ -132,14 +65,88 @@ const StarRating = ({ rating, max = 5 }) => (
   </div>
 );
 
-/* ── Main component ── */
-export const Game = ({ game = GAME_DATA }) => {
+const fetchGame = async (gameId) => {
+  const response = await fetch(`${API_URL}/games/${gameId}`);
+  if (!response.ok) throw new Error('Failed to fetch game');
+  const data = await response.json();
+
+  return {
+    title: data.title,
+    rating: 4.6,
+    userRatings: 1,
+    metacritic: 88,
+    steamRating: { score: 97, label: 'Overwhelmingly Positive' },
+    recommendPercent: 100,
+    tags: ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure'],
+    description: "Capcom's newest IP—PRAGMATA. An all-new Science Fiction action adventure with its own unique hacking twist!",
+    drm: 'steam',
+    platforms: ['windows'],
+    activatesIn: 'Romania',
+    editions: [
+      { id: 'standard',       label: 'Standard',       price: 250.72, originalPrice: 305.89, discount: 18 },
+      { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
+    ],
+    media: [
+      { type: 'video', thumb: 'https://fanatical.imgix.net/product/original/88296cba-29aa-409f-b099-74bea05d9a64.jpeg?auto=compress,format&w=200&fit=crop&h=112', src: '#' },
+      { type: 'video', thumb: 'https://fanatical.imgix.net/product/original/125cf666-d1a7-463c-b233-72308b902adc.jpeg?auto=compress,format&w=200&fit=crop&h=112', src: '#' },
+      { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/6ff252a3-a628-428a-a7fd-602a78505002.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
+      { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
+      { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/b43142b4-3bf7-42bd-8e84-572e5934ae21.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
+    ],
+    mainImage: 'https://fanatical.imgix.net/product/original/88296cba-29aa-409f-b099-74bea05d9a64.jpeg?auto=compress,format&w=840&fit=crop&h=473',
+    specialOffers: [
+      {
+        id: 1,
+        image: 'https://fanatical.imgix.net/product/original/125cf666-d1a7-463c-b233-72308b902adc.jpeg?auto=compress,format&w=600&fit=crop&h=300',
+        title: 'Purchase Early to Receive',
+        subtitle: 'IN GAME OUTFITS!',
+        subtitleColor: '#f90',
+      },
+      {
+        id: 2,
+        image: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=600&fit=crop&h=300',
+        title: 'Shop the Level Up Sale',
+        subtitle: 'WIN UP TO £1500!',
+        subtitleColor: '#f90',
+      },
+    ],
+    about: {
+      description: `PRAGMATA is an all-new Science Fiction action-adventure from Capcom. Set in a near-future version of New York, you play as a soldier who discovers a mysterious girl with unbelievable hacking abilities. Together you'll traverse a world transformed by technology, uncovering a vast and shocking conspiracy.
+
+  Seamlessly switch between intense gunplay and hacking to solve puzzles, bypass security, and overcome enemies. Your companion's extraordinary abilities open up entirely new ways to interact with the environment.`,
+      details: {
+        Platform: 'PC',
+        Genre: 'Action, Adventure',
+        Publisher: 'Capcom',
+        Developer: 'Capcom',
+        'Release Date': 'TBA 2024',
+        Languages: 'English, Japanese, French, German, Spanish',
+      },
+    },
+  };
+};
+
+export const Game = () => {
   const dispatch = useDispatch();
-  const [selectedEdition, setSelectedEdition] = useState(game.editions[0].id);
+  const { id: gameId } = useParams();
+  const [selectedEdition, setSelectedEdition] = useState('standard');
   const [wishlist, setWishlist] = useState(false);
   const [activeThumb, setActiveThumb] = useState(0);
-  const [offerSlide, setOfferSlide] = useState(0);
   const [activeTab, setActiveTab] = useState('about');
+
+  const { data: game, isLoading, error } = useQuery({
+    queryKey: ['game', gameId],
+    queryFn: () => fetchGame(gameId),
+    enabled: !!gameId,
+  });
+
+  if (isLoading) {
+    return <div className="gp-page"><div className="gp-container"><p>Loading...</p></div></div>;
+  }
+
+  if (error || !game) {
+    return <div className="gp-page"><div className="gp-container"><p>Error: {error?.message ?? 'Game not found'}</p></div></div>;
+  }
 
   const edition = game.editions.find(e => e.id === selectedEdition);
 
