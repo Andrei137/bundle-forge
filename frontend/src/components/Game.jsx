@@ -3,10 +3,13 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
+import CartIcon from '../assets/icons/cart.svg?react';
 import youtubeIcon from '../assets/icons/youtube-icon-white.svg';
 import WindowsIcon from '../assets/icons/windows.svg?react';
 import AppleIcon from '../assets/icons/apple.svg?react';
 import LinuxIcon from '../assets/icons/linux.svg?react';
+import SteamIcon from '../assets/icons/steam.svg?react';
+import MetacriticIcon from '../assets/icons/metacritic.svg?react';
 import './Game.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -17,34 +20,15 @@ const StarIcon = ({ filled }) => (
   </svg>
 );
 
-const CartIcon = () => (
-  <svg viewBox="0 0 576 512" fill="currentColor" width="18" height="18">
-    <path d="M0 24C0 10.7 10.7 0 24 0L69.5 0c22 0 41.5 12.8 50.6 32l411 0c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3l-288.5 0 5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5L488 336c13.3 0 24 10.7 24 24s-10.7 24-24 24l-288.3 0c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5L24 48C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/>
-  </svg>
-);
-
 const HeartIcon = ({ filled }) => (
   <svg viewBox="0 0 24 24" fill={filled ? '#f90' : 'none'} stroke={filled ? '#f90' : 'currentColor'} strokeWidth="2" width="18" height="18">
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
   </svg>
 );
 
-const SteamIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-  </svg>
-);
-
 const ThumbsUpIcon = () => (
   <svg viewBox="0 0 512 512" fill="currentColor" width="14" height="14">
     <path d="M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"/>
-  </svg>
-);
-
-const MetacriticIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-    <circle cx="12" cy="12" r="11" fill="#66cc33" stroke="#4aa528" strokeWidth="1"/>
-    <text x="12" y="16" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">M</text>
   </svg>
 );
 
@@ -459,12 +443,12 @@ export const Game = () => {
           <div className="gp-rating-sep" />
           <div className="gp-metacritic">
             <span className="gp-metacritic-badge">{game.metacritic}</span>
-            <MetacriticIcon />
+            <MetacriticIcon width="30" height="30" />
             <span className="gp-metacritic-label">metacritic</span>
           </div>
           <div className="gp-rating-sep" />
           <div className="gp-steam-rating">
-            <SteamIcon />
+            <SteamIcon width="20" height="20" fill="#fff" />
             <span className="gp-steam-score">STEAM {game.steamRating.score}%</span>
             <span className="gp-steam-label">| {game.steamRating.label}</span>
           </div>
@@ -514,7 +498,7 @@ export const Game = () => {
           <div className="gp-sidebar">
             <div className="gp-sidebar-top">
               <div className="gp-drm-row">
-                <SteamIcon />
+                <SteamIcon width="20" height="20" fill="#fff" />
                 <span className="gp-drm-label">STEAM</span>
                 <WindowsIcon className="os-icon" />
               </div>
