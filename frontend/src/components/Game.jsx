@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
+import youtubeIcon from '../assets/icons/youtube-icon-white.svg';
 import './Game.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -57,6 +58,52 @@ const MetacriticIcon = () => (
   </svg>
 );
 
+export default function SliderVideo({ image, youtubeId, title }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  return (
+    <div className="SliderVideo">
+      {!isPlaying ? (
+        <>
+          <div className="SliderVideo__slide">
+            <img
+              src={image}
+              alt={title}
+              className="SliderVideo__img"
+              loading="eager"
+            />
+
+            <div className="slide-video-button-container">
+              <button
+                className="SliderVideo__button"
+                onClick={() => setIsPlaying(true)}
+                aria-label="Play trailer"
+              >
+                <img
+                  width={80}
+                  src={youtubeIcon}
+                  alt="YouTube-play-button"
+                />
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="videoWrapper">
+          <iframe
+            className="youtube-video"
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+            title={title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 const StarRating = ({ rating, max = 5 }) => (
   <div className="gp-stars">
     {Array.from({ length: max }, (_, i) => (
@@ -87,8 +134,8 @@ const fetchGame = async (gameId) => {
       { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
     ],
     media: [
-      { type: 'video', thumb: 'https://fanatical.imgix.net/product/original/88296cba-29aa-409f-b099-74bea05d9a64.jpeg?auto=compress,format&w=200&fit=crop&h=112', src: '#' },
-      { type: 'video', thumb: 'https://fanatical.imgix.net/product/original/125cf666-d1a7-463c-b233-72308b902adc.jpeg?auto=compress,format&w=200&fit=crop&h=112', src: '#' },
+      { type: 'youtube', thumb: 'https://fanatical.imgix.net/product/original/9f0d852b-5735-4dcf-a4ee-5ddfa549fbd7.jpeg', youtubeId: 'TzBtbtOghV0' },
+      { type: 'youtube', thumb: `https://img.youtube.com/vi/0dlHZUm0iU4/maxresdefault.jpg`, youtubeId: '0dlHZUm0iU4' },
       { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/6ff252a3-a628-428a-a7fd-602a78505002.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
       { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
       { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/b43142b4-3bf7-42bd-8e84-572e5934ae21.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
@@ -133,6 +180,7 @@ export const Game = () => {
   const [wishlist, setWishlist] = useState(false);
   const [activeThumb, setActiveThumb] = useState(0);
   const [activeTab, setActiveTab] = useState('about');
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const { data: game, isLoading, error } = useQuery({
     queryKey: ['game', gameId],
@@ -204,15 +252,24 @@ export const Game = () => {
           <div className="gp-media-col">
 
             <div className="gp-main-viewer">
-              <img
-                src={game.media[activeThumb]?.thumb.replace('w=200', 'w=840').replace('h=112', 'h=473') || game.mainImage}
-                alt={game.title}
-                className="gp-main-img"
-              />
-              {game.media[activeThumb]?.type === 'video' && (
-                <button className="gp-play-btn" aria-label="Play trailer">
-                  <PlayIcon />
-                </button>
+              {game.media[activeThumb]?.type === 'youtube' ? (
+                <SliderVideo
+                  image={game.media[activeThumb].thumb || game.media[activeThumb].mainImage}
+                  youtubeId={game.media[activeThumb].youtubeId}
+                  title="PRAGMATA - Main Trailer"
+                />
+              ) : (
+                <>
+                  <img
+                    src={
+                      game.media[activeThumb]?.thumb
+                        ?.replace('w=200', 'w=840')
+                        .replace('h=112', 'h=473') || game.mainImage
+                    }
+                    alt={game.title}
+                    className="gp-main-img"
+                  />
+                </>
               )}
             </div>
 
@@ -224,7 +281,13 @@ export const Game = () => {
                   onClick={() => setActiveThumb(i)}
                 >
                   <img src={m.thumb} alt={`Screenshot ${i + 1}`} />
-                  {m.type === 'video' && <span className="gp-thumb-play"><PlayIcon /></span>}
+                  {m.type === 'youtube' && <span className="gp-thumb-play">
+                      <img
+                        src={youtubeIcon}
+                        alt="YouTube-play-button"
+                      />
+                    </span>
+                  }
                 </button>
               ))}
             </div>

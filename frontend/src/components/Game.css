@@ -165,9 +165,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.35);
 }
-.gp-thumb-play svg { width: 22px; height: 22px; }
+.gp-thumb-play img { 
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.6));
+  width: 20px;
+  height: auto;
+}
 
 .gp-trustpilot {
   display: flex;
@@ -616,4 +622,39 @@
 
   .gp-thumbs-strip { gap: 0.4rem; }
   .gp-thumb { width: 80px; }
+}
+
+.SliderVideo {
+  position: relative;
+  width: 100%;
+}
+
+.SliderVideo__slide {
+  position: relative;
+}
+
+.SliderVideo__img {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+}
+
+.slide-video-button-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.SliderVideo__button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.6));
+}
+
+.videoWrapper iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
 }
