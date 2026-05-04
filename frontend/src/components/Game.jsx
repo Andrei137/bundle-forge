@@ -224,6 +224,18 @@ function RequirementsTab({ game }) {
     !Object.hasOwn(game.systemRequirements, id)
   );
 
+  console.log("reqs: ", reqs);
+  if (!reqs) {
+    return (
+      <div className="gp-req-section">
+        <div className="gp-req-card">
+          <h3 className="gp-about-sub">Product Requirements</h3>
+          <p className="gp-req-note">No requirements available for this platform.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="gp-req-section">
       <div className="gp-req-tab-bar">
