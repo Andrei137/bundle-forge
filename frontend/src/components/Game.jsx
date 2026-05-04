@@ -49,8 +49,8 @@ const CheckCircleIcon = () => (
 // All 3 slots always render — missing ones are invisible placeholders that preserve equal width
 const ALL_PLATFORM_SLOTS = [
   { id: 'windows', label: 'Windows', icon: <WindowsIcon className="os-icon" /> },
-  { id: 'mac',     label: 'Mac',     icon: <AppleIcon className="os-icon" /> },
   { id: 'linux',   label: 'Linux',   icon: <LinuxIcon className="os-icon" /> },
+  { id: 'mac',     label: 'Mac',     icon: <AppleIcon className="os-icon" /> },
 ];
 
 export default function SliderVideo({ image, youtubeId, title }) {
@@ -281,20 +281,17 @@ const fetchGame = async (gameId) => {
 
   return {
     title: data.title,
-    rating: 4.6,
-    userRatings: 1,
-    metacritic: 88,
-    steamRating: { score: 97, label: 'Overwhelmingly Positive' },
-    recommendPercent: 100,
-    tags: ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure'],
-    description: "Capcom's newest IP—PRAGMATA. An all-new Science Fiction action adventure with its own unique hacking twist!",
-    drm: 'steam',
-    platforms: ['windows'],
-    activatesIn: 'Romania',
+    rating: 4.6, // TODO
+    userRatings: 1, // TODO
+    metacritic: 88, // TODO
+    steamRating: { score: 97, label: 'Overwhelmingly Positive' }, // TODO
+    recommendPercent: 100, // TODO
+    tags: ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure'], // TODO: in db
+    description: "Capcom's newest IP—PRAGMATA. An all-new Science Fiction action adventure with its own unique hacking twist!", // TODO: in db
     editions: [
       { id: 'standard',       label: 'Standard',       price: 250.72, originalPrice: 305.89, discount: 18 },
       { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
-    ],
+    ], // TODO
     media: [
       { type: 'youtube', thumb: 'https://fanatical.imgix.net/product/original/9f0d852b-5735-4dcf-a4ee-5ddfa549fbd7.jpeg', youtubeId: 'TzBtbtOghV0' },
       { type: 'youtube', thumb: `https://img.youtube.com/vi/0dlHZUm0iU4/maxresdefault.jpg`, youtubeId: '0dlHZUm0iU4' },
@@ -302,23 +299,7 @@ const fetchGame = async (gameId) => {
       { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
       { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/b43142b4-3bf7-42bd-8e84-572e5934ae21.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
     ],
-    mainImage: 'https://fanatical.imgix.net/product/original/88296cba-29aa-409f-b099-74bea05d9a64.jpeg?auto=compress,format&w=840&fit=crop&h=473',
-    specialOffers: [
-      {
-        id: 1,
-        image: 'https://fanatical.imgix.net/product/original/125cf666-d1a7-463c-b233-72308b902adc.jpeg?auto=compress,format&w=600&fit=crop&h=300',
-        title: 'Purchase Early to Receive',
-        subtitle: 'IN GAME OUTFITS!',
-        subtitleColor: '#f90',
-      },
-      {
-        id: 2,
-        image: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=600&fit=crop&h=300',
-        title: 'Shop the Level Up Sale',
-        subtitle: 'WIN UP TO £1500!',
-        subtitleColor: '#f90',
-      },
-    ],
+    cover: data.cover,
     about: {
       description: `PRAGMATA is an all-new Science Fiction action-adventure from Capcom. Set in a near-future version of New York, you play as a soldier who discovers a mysterious girl with unbelievable hacking abilities. Together you'll traverse a world transformed by technology, uncovering a vast and shocking conspiracy.
 
@@ -335,72 +316,7 @@ It is the near future, and protagonists Hugh and his android companion Diana, mu
         Link:           'https://www.capcom.com',
       },
     },
-    systemRequirements: {
-      windows: {
-        minimum: {
-          note: 'Requires a 64-bit processor and operating system',
-          OS: 'Windows 11 (64 bit)',
-          Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
-          Memory: '16 GB RAM',
-          Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
-          DirectX: 'Version 12',
-          Network: 'Broadband Internet connection',
-          Storage: '40 GB available space',
-        },
-        recommended: {
-          note: 'Requires a 64-bit processor and operating system',
-          OS: 'Windows 11 (64 bit)',
-          Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
-          Memory: '16 GB RAM',
-          Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
-          DirectX: 'Version 12',
-          Network: 'Broadband Internet connection',
-          Storage: '40 GB available space',
-        },
-      },
-      mac2: {
-        minimum: {
-          note: 'Requires a 64-bit processor and operating system',
-          OS: 'macOS 12.0 Monterey or later',
-          Processor: 'Apple M1 / Intel Core i7 (8th gen or later)',
-          Memory: '16 GB RAM',
-          Graphics: 'Apple M1 GPU / AMD Radeon Pro 5300M 4 GB',
-          Network: 'Broadband Internet connection',
-          Storage: '40 GB available space',
-        },
-        recommended: {
-          note: 'Requires a 64-bit processor and operating system',
-          OS: 'macOS 13.0 Ventura or later',
-          Processor: 'Apple M2 Pro / Intel Core i9 (9th gen or later)',
-          Memory: '16 GB RAM',
-          Graphics: 'Apple M2 Pro GPU / AMD Radeon Pro 5700 XT 16 GB',
-          Network: 'Broadband Internet connection',
-          Storage: '40 GB available space (SSD)',
-        },
-      },
-      linux: {
-        minimum: {
-          note: 'Requires a 64-bit processor and operating system',
-          OS: 'Ubuntu 20.04 / SteamOS 3.0',
-          Processor: 'Intel Core i5-8500 / AMD Ryzen 5 3500',
-          Memory: '16 GB RAM',
-          Graphics: 'NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB',
-          'Vulkan API': 'Version 1.3',
-          Network: 'Broadband Internet connection',
-          Storage: '40 GB available space',
-        },
-        recommended: {
-          note: 'Requires a 64-bit processor and operating system',
-          OS: 'Ubuntu 22.04 / SteamOS 3.4+',
-          Processor: 'Intel Core i7-8700 / AMD Ryzen 5 5500',
-          Memory: '16 GB RAM',
-          Graphics: 'NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB',
-          'Vulkan API': 'Version 1.3',
-          Network: 'Broadband Internet connection',
-          Storage: '40 GB available space (SSD)',
-        },
-      },
-    }
+    systemRequirements: data.systemRequirements,
   };
 };
 
@@ -430,7 +346,7 @@ export const Game = () => {
       price: edition.price,
       originalPrice: edition.originalPrice,
       discount: edition.discount,
-      image: game.mainImage,
+      image: game.cover,
       quantity: 1,
     }));
   };
@@ -471,13 +387,13 @@ export const Game = () => {
             <div className="gp-main-viewer">
               {game.media[activeThumb]?.type === 'youtube' ? (
                 <SliderVideo
-                  image={game.media[activeThumb].thumb || game.media[activeThumb].mainImage}
+                  image={game.media[activeThumb].thumb || game.media[activeThumb].cover}
                   youtubeId={game.media[activeThumb].youtubeId}
                   title="PRAGMATA - Main Trailer"
                 />
               ) : (
                 <img
-                  src={game.media[activeThumb]?.thumb?.replace('w=200', 'w=840').replace('h=112', 'h=473') || game.mainImage}
+                  src={game.media[activeThumb]?.thumb?.replace('w=200', 'w=840').replace('h=112', 'h=473') || game.cover}
                   alt={game.title}
                   className="gp-main-img"
                 />

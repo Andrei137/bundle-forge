@@ -3,6 +3,7 @@ package com.unibuc.bundle_forge.mapper;
 import com.unibuc.bundle_forge.dto.GameCreateDto;
 import com.unibuc.bundle_forge.dto.GameResponseDto;
 import com.unibuc.bundle_forge.dto.GameUpdateDto;
+import com.unibuc.bundle_forge.dto.PlatformRequirements;
 import com.unibuc.bundle_forge.model.Game;
 import com.unibuc.bundle_forge.model.Image;
 import com.unibuc.bundle_forge.service.ImageService;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -25,6 +27,8 @@ public final class GameMapper {
     public Game toEntity(GameCreateDto dto) {
         var builder = Game.builder()
                 .title(dto.getTitle())
+                .description(dto.getDescription())
+                .systemRequirements(dto.getSystemRequirements())
                 .releaseDate(LocalDate.now())
                 .status(Game.Status.ANNOUNCED);
         Optional.ofNullable(dto.getPrice())
@@ -43,6 +47,7 @@ public final class GameMapper {
                 .status(entity.getStatus())
                 .cover(entity.getCover().getPath())
                 .images(entity.getImages().stream().map(Image::getPath).toList())
+                .systemRequirements(entity.getSystemRequirements())
                 .build();
     }
 

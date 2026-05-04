@@ -2,6 +2,8 @@ package com.unibuc.bundle_forge.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.unibuc.bundle_forge.convertor.SystemRequirementsConverter;
+import com.unibuc.bundle_forge.dto.PlatformRequirements;
 import com.unibuc.bundle_forge.utils.EnumUtils;
 import com.unibuc.bundle_forge.utils.ViewUtils;
 import jakarta.persistence.*;
@@ -12,8 +14,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
@@ -52,6 +53,10 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
 
     @Column(nullable = false)
     @JsonView(ViewUtils.Provider.class)
+    private String description;
+
+    @Column(nullable = false)
+    @JsonView(ViewUtils.Provider.class)
     private Double price;
 
     @Column(nullable = false)
@@ -67,6 +72,11 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @Column(nullable = false)
     @Builder.Default
     private List<String> links = new ArrayList<>();
+
+    @Convert(converter = SystemRequirementsConverter.class)
+    @Column(columnDefinition = "json")
+    @Builder.Default
+    private Map<String, PlatformRequirements> systemRequirements = new HashMap<>();
 
     @OneToOne
     private Image cover;
@@ -94,5 +104,13 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @OneToMany(mappedBy = "game")
     @JsonIgnore
     private List<Contract> contracts;
+
+    @ManyToMany
+    @JoinTable(
+        name = "game_tags",
+        joinColumns = @JoinColumn(name = "game_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
 
 }

@@ -2,7 +2,6 @@ package com.unibuc.bundle_forge.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.unibuc.bundle_forge.model.Game;
-import com.unibuc.bundle_forge.model.Image;
 import com.unibuc.bundle_forge.utils.ViewUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -44,5 +44,8 @@ public final class GameResponseDto {
 
     @JsonView(ViewUtils.Public.class)
     private List<String> images;
+
+    @JsonView(ViewUtils.Public.class)
+    private Map<String, PlatformRequirements> systemRequirements;
 
 }

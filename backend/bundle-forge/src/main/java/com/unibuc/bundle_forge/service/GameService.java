@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,6 +32,10 @@ public final class GameService {
         return gameRepository.findById(gameId).orElseThrow(
                 () -> new NotFoundException(String.format("Game with id %d not found", gameId))
         );
+    }
+
+    public GameResponseDto getGameDetails(Integer gameId) {
+        return gameMapper.toResponseDto(getGame(gameId));
     }
 
     private Provider getGameOwner(Game game) {

@@ -40,6 +40,14 @@ public class GameController {
         return ResponseUtils.ok(gameService.getAllGamesOfCurrentProvider(status, title));
     }
 
+    // TODO: change requestmapping for the rest
+    @GetMapping("/{gameId}")
+    public ResponseEntity<GameResponseDto> getGame(
+            @PathVariable Integer gameId
+    ) {
+        return ResponseUtils.ok(gameService.getGameDetails(gameId));
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @JsonView(ViewUtils.Provider.class)
     @RequireProvider({Developer.class})
