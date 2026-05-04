@@ -1,8 +1,6 @@
 package com.unibuc.bundle_forge.service;
 
 import com.unibuc.bundle_forge.exception.ValidationException;
-import com.unibuc.bundle_forge.model.Image;
-import com.unibuc.bundle_forge.repository.ImageRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +25,6 @@ public class ImageService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    private final ImageRepository imageRepository;
     private Path storagePath;
 
     @PostConstruct
@@ -36,7 +33,7 @@ public class ImageService {
         Files.createDirectories(storagePath);
     }
 
-    public Image uploadImage(MultipartFile file) {
+    public String uploadImage(MultipartFile file) {
         if (file.isEmpty()) {
             throw new ValidationException("Empty file");
         }
@@ -56,18 +53,15 @@ public class ImageService {
             InputStream stream = file.getInputStream();
             Files.copy(stream, targetFile, StandardCopyOption.REPLACE_EXISTING);
 
-            Image image = new Image();
-            image.setPath("/" + uploadDir + "/" + storedName);
-
-            return imageRepository.save(image);
+            return  "/" + uploadDir + "/" + storedName;
         }
         catch (IOException e) {
             throw new ValidationException(e.getMessage());
         }
     }
 
-    public List<Image> uploadImages(List<MultipartFile> files) {
-        List<Image> images = new ArrayList<>();
+    public List<String> uploadImages(List<MultipartFile> files) {
+        List<String> images = new ArrayList<>();
         for (MultipartFile file : files) {
             images.add(uploadImage(file));
         }

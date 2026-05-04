@@ -296,11 +296,19 @@ const fetchGame = async (gameId) => {
       { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
     ], // TODO
     media: [
-      { type: 'youtube', thumb: 'https://fanatical.imgix.net/product/original/9f0d852b-5735-4dcf-a4ee-5ddfa549fbd7.jpeg', youtubeId: 'TzBtbtOghV0' },
-      { type: 'youtube', thumb: `https://img.youtube.com/vi/0dlHZUm0iU4/maxresdefault.jpg`, youtubeId: '0dlHZUm0iU4' },
-      { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/6ff252a3-a628-428a-a7fd-602a78505002.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
-      { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/e3ff8f21-e759-4ad9-a291-042607ba6aa8.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
-      { type: 'image', thumb: 'https://fanatical.imgix.net/product/original/b43142b4-3bf7-42bd-8e84-572e5934ae21.jpeg?auto=compress,format&w=200&fit=crop&h=112' },
+      ...(data.youtubeIds ?? []).map((id, index) => ({
+        type: 'youtube',
+        youtubeId: id,
+        thumb:
+          index === 0
+            ? `${API_URL}${data.cover}`
+            : `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+      })),
+
+      ...(data.images ?? []).map((img, index) => ({
+        type: 'image',
+        thumb: `${API_URL}${img}`,
+      })),
     ],
     cover: data.cover,
     about: {

@@ -66,8 +66,8 @@ public final class GameService {
 
     public GameResponseDto announceGame(GameCreateDto gameCreateDto, MultipartFile coverFile, List<MultipartFile> imagesFiles) {
         Game game = gameMapper.toEntity(gameCreateDto);
-        Image cover = imageService.uploadImage(coverFile);
-        List<Image> images = imageService.uploadImages(imagesFiles);
+        String cover = imageService.uploadImage(coverFile);
+        List<String> images = imageService.uploadImages(imagesFiles);
 
         game.setCover(cover);
         game.setImages(images);

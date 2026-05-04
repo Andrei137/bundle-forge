@@ -46,6 +46,9 @@ public final class GameResponseDto {
     private List<String> images;
 
     @JsonView(ViewUtils.Public.class)
+    private List<String> youtubeIds;
+
+    @JsonView(ViewUtils.Public.class)
     private String shortDescription;
 
     @JsonView(ViewUtils.Public.class)

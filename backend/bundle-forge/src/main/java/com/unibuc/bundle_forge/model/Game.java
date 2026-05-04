@@ -63,7 +63,6 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @JsonView(ViewUtils.Provider.class)
     private List<String> languages;
 
-    @Column(nullable = false)
     @JsonView(ViewUtils.Provider.class)
     private String link;
 
@@ -90,12 +89,15 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @Builder.Default
     private Map<String, PlatformRequirements> systemRequirements = new HashMap<>();
 
-    @OneToOne
-    private Image cover;
+    @Column(nullable = false)
+    private String cover;
 
-    @OneToMany
     @Builder.Default
-    private List<Image> images = new ArrayList<>();
+    private List<String> images = new ArrayList<>();
+
+    @JsonView(ViewUtils.Provider.class)
+    @Builder.Default
+    private List<String> youtubeIds = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

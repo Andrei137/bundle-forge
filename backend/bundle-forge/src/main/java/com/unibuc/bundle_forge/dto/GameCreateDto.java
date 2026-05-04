@@ -40,6 +40,10 @@ public final class GameCreateDto {
 
     private String link;
 
+    @NotNull(message = "youtubeIds is required")
+    @Size(min = 1, message = "At least one youtube video id is required")
+    private List<String> youtubeIds;
+
     @NotNull(message = "systemRequirements is required")
     @Size(min = 1, message = "At least one platform is required")
     @Valid

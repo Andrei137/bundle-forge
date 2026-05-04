@@ -20,9 +20,15 @@ body:json {
 body:multipart-form {
   game: '''
     {
-      "title": "Sword of the 42223",
+      "title": "Pragmata",
       "price": 12.99,
-      "description": "ceva",
+      "youtubeIds": ["TzBtbtOghV0", "0dlHZUm0iU4"],
+      "shortDescription": "ceva extraordinar",
+      "longDescription": "ceva nemaintalnit",
+      "languages": [
+         "English"
+       ],
+      "link": "https://www.capcom-games.com/pragmata/en-us/",
       "systemRequirements": {
         "linux": {
             "minimum": {
@@ -67,8 +73,9 @@ body:multipart-form {
       }
     }
   ''' @contentType(application/json)
-  cover: @file(/home/seb/Downloads/build-your-own-killer-bundle.jpeg)
-  images: @file(/home/seb/Downloads/build-your-own-exodus-bundle.jpeg)
+  cover: @file(/home/seb/Downloads/pragmata.jpeg)
+  images: @file(/home/seb/Downloads/pragmata-1.jpg)
+  images: @file(/home/seb/Downloads/pragmata-2.jpg)
 }
 
 settings {
