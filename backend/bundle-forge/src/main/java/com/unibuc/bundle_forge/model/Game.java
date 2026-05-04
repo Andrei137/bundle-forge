@@ -53,7 +53,19 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
 
     @Column(nullable = false)
     @JsonView(ViewUtils.Provider.class)
-    private String description;
+    private String shortDescription;
+
+    @Column(nullable = false)
+    @JsonView(ViewUtils.Provider.class)
+    private String longDescription;
+
+    @Column(nullable = false)
+    @JsonView(ViewUtils.Provider.class)
+    private List<String> languages;
+
+    @Column(nullable = false)
+    @JsonView(ViewUtils.Provider.class)
+    private String link;
 
     @Column(nullable = false)
     @JsonView(ViewUtils.Provider.class)

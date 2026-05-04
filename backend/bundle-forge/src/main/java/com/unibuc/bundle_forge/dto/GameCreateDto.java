@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -26,8 +27,18 @@ public final class GameCreateDto {
     @DecimalMin(value = "0.0", message = "Price must be greater or equal to 0")
     private Double price;
 
-    @NotBlank(message = "description is required and cannot be blank")
-    private String description;
+    @NotBlank(message = "shortDescription is required and cannot be blank")
+    @Size(max = 400, message = "shortDescription must be at most 300 characters")
+    private String shortDescription;
+
+    @NotBlank(message = "longDescription is required and cannot be blank")
+    private String longDescription;
+
+    @NotNull(message = "languages is required")
+    @Size(min = 1, message = "At least one language is required")
+    private List<String> languages;
+
+    private String link;
 
     @NotNull(message = "systemRequirements is required")
     @Size(min = 1, message = "At least one platform is required")

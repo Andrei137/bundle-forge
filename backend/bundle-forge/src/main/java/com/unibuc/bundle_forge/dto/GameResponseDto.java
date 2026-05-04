@@ -46,6 +46,18 @@ public final class GameResponseDto {
     private List<String> images;
 
     @JsonView(ViewUtils.Public.class)
+    private String shortDescription;
+
+    @JsonView(ViewUtils.Public.class)
+    private String longDescription;
+
+    @JsonView(ViewUtils.Public.class)
+    private List<String> languages;
+
+    @JsonView(ViewUtils.Public.class)
+    private String link;
+
+    @JsonView(ViewUtils.Public.class)
     private Map<String, PlatformRequirements> systemRequirements;
 
 }

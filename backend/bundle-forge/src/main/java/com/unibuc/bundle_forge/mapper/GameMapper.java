@@ -1,5 +1,6 @@
 package com.unibuc.bundle_forge.mapper;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.unibuc.bundle_forge.dto.GameCreateDto;
 import com.unibuc.bundle_forge.dto.GameResponseDto;
 import com.unibuc.bundle_forge.dto.GameUpdateDto;
@@ -7,10 +8,12 @@ import com.unibuc.bundle_forge.dto.PlatformRequirements;
 import com.unibuc.bundle_forge.model.Game;
 import com.unibuc.bundle_forge.model.Image;
 import com.unibuc.bundle_forge.service.ImageService;
+import com.unibuc.bundle_forge.utils.ViewUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,7 +30,10 @@ public final class GameMapper {
     public Game toEntity(GameCreateDto dto) {
         var builder = Game.builder()
                 .title(dto.getTitle())
-                .description(dto.getDescription())
+                .shortDescription(dto.getShortDescription())
+                .longDescription(dto.getLongDescription())
+                .languages(dto.getLanguages())
+                .link(dto.getLink())
                 .systemRequirements(dto.getSystemRequirements())
                 .releaseDate(LocalDate.now())
                 .status(Game.Status.ANNOUNCED);
@@ -47,6 +53,10 @@ public final class GameMapper {
                 .status(entity.getStatus())
                 .cover(entity.getCover().getPath())
                 .images(entity.getImages().stream().map(Image::getPath).toList())
+                .shortDescription(entity.getShortDescription())
+                .longDescription(entity.getLongDescription())
+                .languages(entity.getLanguages())
+                .link(entity.getLink())
                 .systemRequirements(entity.getSystemRequirements())
                 .build();
     }

@@ -106,11 +106,10 @@ function AboutTab({ game }) {
   const displayText = expanded || !isLong ? fullText : fullText.slice(0, CHAR_LIMIT) + '…';
 
   const col1Details = {
-    Platform:       game.about.details.Platform ?? 'Steam',
+    Platform:       game.about.details.Platform,
     'Release Date': game.about.details['Release Date'],
     Developer:      game.about.details.Developer,
     Publisher:      game.about.details.Publisher,
-    Rating:         game.about.details.Rating ?? 'PEGI 18',
     Link:           game.about.details.Link ?? null,
   };
 
@@ -156,13 +155,6 @@ function AboutTab({ game }) {
                 </div>
               );
             })}
-
-            <div className="gp-detail-row-new">
-              <span className="gp-detail-key-new">Steam Deck:</span>
-              <span className="gp-detail-val-new gp-steam-deck-verified">
-                <CheckCircleIcon /> Verified
-              </span>
-            </div>
 
             <div className="gp-detail-row-new">
               <span className="gp-detail-key-new">Languages:</span>
@@ -224,7 +216,6 @@ function RequirementsTab({ game }) {
     !Object.hasOwn(game.systemRequirements, id)
   );
 
-  console.log("reqs: ", reqs);
   if (!reqs) {
     return (
       <div className="gp-req-section">
@@ -299,7 +290,7 @@ const fetchGame = async (gameId) => {
     steamRating: { score: 97, label: 'Overwhelmingly Positive' }, // TODO
     recommendPercent: 100, // TODO
     tags: ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure'], // TODO: in db
-    description: "Capcom's newest IP—PRAGMATA. An all-new Science Fiction action adventure with its own unique hacking twist!", // TODO: in db
+    description: data.shortDescription,
     editions: [
       { id: 'standard',       label: 'Standard',       price: 250.72, originalPrice: 305.89, discount: 18 },
       { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
@@ -313,19 +304,14 @@ const fetchGame = async (gameId) => {
     ],
     cover: data.cover,
     about: {
-      description: `PRAGMATA is an all-new Science Fiction action-adventure from Capcom. Set in a near-future version of New York, you play as a soldier who discovers a mysterious girl with unbelievable hacking abilities. Together you'll traverse a world transformed by technology, uncovering a vast and shocking conspiracy.
-
-Seamlessly switch between intense gunplay and hacking to solve puzzles, bypass security, and overcome enemies. Your companion's extraordinary abilities open up entirely new ways to interact with the environment.
-
-It is the near future, and protagonists Hugh and his android companion Diana, must work together as they make their way through the cold lunar research station.`,
+      description: data.longDescription,
       details: {
         Platform:       'Steam',
-        'Release Date': 'April 17, 2026',
-        Developer:      'CAPCOM Co. Ltd.',
-        Publisher:      'CAPCOM',
-        Rating:         'PEGI 18',
-        Languages:      'English, Japanese, French, German, Spanish, Italian, Portuguese, Chinese, Korean, Russian, Polish, Czech, Turkish, Arabic',
-        Link:           'https://www.capcom.com',
+        'Release Date': data.releaseDate,
+        Developer:      'CAPCOM Co. Ltd.', // TODO: in db
+        Publisher:      'CAPCOM', // TODO: in db
+        Languages:      data.languages.join(', '),
+        Link:           data.link,
       },
     },
     systemRequirements: data.systemRequirements,
