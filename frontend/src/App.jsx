@@ -11,6 +11,12 @@ import {
   Game,
   SearchPage,
   Bundle,
+  Account,
+  Orders,
+  ProductLibrary,
+  Wishlist,
+  CouponsRewards,
+  Support,
   Footer
 } from './components'
 import './App.css'
@@ -71,6 +77,78 @@ function App() {
           element={
             <Layout>
               <SearchPage />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/account"
+          element={
+            <Layout>
+              <Account />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/account/login"
+          element={
+            <Layout>
+              <Account />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/account/payment"
+          element={
+            <Layout>
+              <Account />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/orders"
+          element={
+            <Layout>
+              <Orders />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/product-library"
+          element={
+            <Layout>
+              <ProductLibrary />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/wishlist"
+          element={
+            <Layout>
+              <Wishlist />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/coupons-rewards"
+          element={
+            <Layout>
+              <CouponsRewards />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/support"
+          element={
+            <Layout>
+              <Support />
             </Layout>
           }
         />

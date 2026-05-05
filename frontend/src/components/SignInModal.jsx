@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { login } from '../redux/slices/authSlice';
+import { authService } from '../services/authService';
 import './SignInModal.css';
 
 /* ── Icons ── */
@@ -58,27 +61,46 @@ const Checkbox = ({ id, checked, onChange, label }) => (
 );
 
 /* ── Sign-In form ── */
-const SignInContent = ({ onForgot }) => {
+const SignInContent = ({ onForgot, onClose }) => {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    try {
+      const result = await authService.signIn(email, password);
+      dispatch(login({ token: result.token, user: { email }, userType: 'Customer' }));
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
       <h2 className="sim-title">SIGN IN</h2>
-      <form className="sim-form" onSubmit={e => e.preventDefault()}>
+      <form className="sim-form" onSubmit={handleSubmit}>
+        {error && <div style={{ color: '#ff0000', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: '500' }}>{error}</div>}
         <label className="sim-label" htmlFor="si-email">Email Address</label>
         <input id="si-email" type="email" className="sim-input" value={email}
-          onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+          onChange={e => setEmail(e.target.value)} autoComplete="email" required disabled={isLoading} />
 
         <label className="sim-label" htmlFor="si-password">Password</label>
         <div className="sim-pw-wrap">
           <input id="si-password" type={showPassword ? 'text' : 'password'}
             className="sim-input sim-input--pw" value={password}
-            onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
+            onChange={e => setPassword(e.target.value)} autoComplete="current-password" required disabled={isLoading} />
           <button type="button" className="sim-pw-toggle" onClick={() => setShowPassword(v => !v)}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}>
+            aria-label={showPassword ? 'Hide password' : 'Show password'} disabled={isLoading}>
             <EyeIcon open={showPassword} />
           </button>
         </div>
@@ -86,48 +108,61 @@ const SignInContent = ({ onForgot }) => {
         <div className="sim-row">
           <Checkbox id="si-keep" checked={keepSignedIn}
             onChange={e => setKeepSignedIn(e.target.checked)} label="Keep me signed in" />
-          {/* Forgot password — switches mode instead of navigating */}
-          <button type="button" className="sim-forgot" onClick={onForgot}>
+          <button type="button" className="sim-forgot" onClick={onForgot} disabled={isLoading}>
             Forgot password?
           </button>
         </div>
 
-        <button type="submit" className="sim-submit">SIGN IN</button>
+        <button type="submit" className="sim-submit" disabled={isLoading}>
+          {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+        </button>
       </form>
 
       <div className="sim-divider"><span>Or sign in with</span></div>
       <div className="sim-socials">
-        <button className="sim-social-btn"><FacebookIcon /> Sign in with Facebook</button>
-        <button className="sim-social-btn"><GoogleIcon /> Sign in with Google</button>
+        <button className="sim-social-btn" disabled={isLoading}><FacebookIcon /> Sign in with Facebook</button>
+        <button className="sim-social-btn" disabled={isLoading}><GoogleIcon /> Sign in with Google</button>
       </div>
     </>
   );
 };
 
-/* ── Register form ── */
-const RegisterContent = () => {
+/* ── Register email/password form ── */
+const RegisterEmailContent = ({ onNext }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
-  const [emailPref, setEmailPref] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    onNext({ email, password });
+  };
 
   return (
     <>
       <h2 className="sim-title">CREATE ACCOUNT</h2>
 
-      <form className="sim-form" onSubmit={e => e.preventDefault()}>
+      <form className="sim-form" onSubmit={handleSubmit}>
+        {error && <div style={{ color: '#ff0000', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: '500' }}>{error}</div>}
         <label className="sim-label" htmlFor="reg-email">Email Address</label>
         <input id="reg-email" type="email" className="sim-input" value={email}
-          onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+          onChange={e => setEmail(e.target.value)} autoComplete="email" required disabled={isLoading} />
 
         <label className="sim-label" htmlFor="reg-password">Password</label>
         <div className="sim-pw-wrap">
           <input id="reg-password" type={showPassword ? 'text' : 'password'}
             className="sim-input sim-input--pw" value={password}
-            onChange={e => setPassword(e.target.value)} autoComplete="new-password" required />
+            onChange={e => setPassword(e.target.value)} autoComplete="new-password" required disabled={isLoading} />
           <button type="button" className="sim-pw-toggle" onClick={() => setShowPassword(v => !v)}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}>
+            aria-label={showPassword ? 'Hide password' : 'Show password'} disabled={isLoading}>
             <EyeIcon open={showPassword} />
           </button>
         </div>
@@ -137,14 +172,8 @@ const RegisterContent = () => {
             onChange={e => setKeepSignedIn(e.target.checked)} label="Keep me signed in" />
         </div>
 
-        <button type="submit" className="sim-submit">REGISTER</button>
+        <button type="submit" className="sim-submit" disabled={isLoading}>NEXT</button>
       </form>
-
-      <div className="sim-divider"><span>Or register with</span></div>
-      <div className="sim-socials sim-socials--reg">
-        <button className="sim-social-btn"><FacebookIcon /> Register with Facebook</button>
-        <button className="sim-social-btn"><GoogleIcon /> Sign in with Google</button>
-      </div>
 
       <p className="sim-terms">
         By creating an account you agree to our{' '}
@@ -154,15 +183,121 @@ const RegisterContent = () => {
   );
 };
 
+/* ── Register profile form ── */
+const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) => {
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    website: '',
+    displayName: '',
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    try {
+      let result;
+      if (userType === 'customer') {
+        if (!formData.firstName || !formData.lastName || !formData.phoneNumber) {
+          throw new Error('Please fill in all required fields');
+        }
+        result = await authService.signUpCustomer(email, password, formData.firstName, formData.lastName, formData.phoneNumber);
+        dispatch(login({ token: null, user: result, userType: 'Customer' }));
+      } else if (userType === 'developer') {
+        if (!formData.website || !formData.displayName) {
+          throw new Error('Please fill in all required fields');
+        }
+        result = await authService.signUpDeveloper(email, password, formData.website, formData.displayName);
+        dispatch(login({ token: null, user: result, userType: 'Developer' }));
+      } else if (userType === 'publisher') {
+        if (!formData.website || !formData.displayName) {
+          throw new Error('Please fill in all required fields');
+        }
+        result = await authService.signUpPublisher(email, password, formData.website, formData.displayName);
+        dispatch(login({ token: null, user: result, userType: 'Publisher' }));
+      }
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <button type="button" className="sim-back-btn" onClick={onBack} disabled={isLoading}>
+        <BackArrowIcon /> Back to Email
+      </button>
+
+      <h2 className="sim-title">
+        {userType === 'customer' ? 'COMPLETE PROFILE' : userType === 'developer' ? 'DEVELOPER INFO' : 'PUBLISHER INFO'}
+      </h2>
+
+      <form className="sim-form" onSubmit={handleSubmit}>
+        {error && <div style={{ color: '#ff0000', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: '500' }}>{error}</div>}
+
+        {userType === 'customer' && (
+          <>
+            <label className="sim-label" htmlFor="reg-firstname">First Name</label>
+            <input id="reg-firstname" type="text" className="sim-input" name="firstName" value={formData.firstName}
+              onChange={handleChange} required disabled={isLoading} />
+
+            <label className="sim-label" htmlFor="reg-lastname">Last Name</label>
+            <input id="reg-lastname" type="text" className="sim-input" name="lastName" value={formData.lastName}
+              onChange={handleChange} required disabled={isLoading} />
+
+            <label className="sim-label" htmlFor="reg-phone">Phone Number</label>
+            <input id="reg-phone" type="tel" className="sim-input" name="phoneNumber" value={formData.phoneNumber}
+              onChange={handleChange} placeholder="1234567890" pattern="\d{10}" required disabled={isLoading} />
+          </>
+        )}
+
+        {(userType === 'developer' || userType === 'publisher') && (
+          <>
+            <label className="sim-label" htmlFor="reg-website">Website</label>
+            <input id="reg-website" type="url" className="sim-input" name="website" value={formData.website}
+              onChange={handleChange} placeholder="https://example.com" required disabled={isLoading} />
+
+            <label className="sim-label" htmlFor="reg-displayname">Display Name</label>
+            <input id="reg-displayname" type="text" className="sim-input" name="displayName" value={formData.displayName}
+              onChange={handleChange} required disabled={isLoading} />
+          </>
+        )}
+
+        <button type="submit" className="sim-submit" disabled={isLoading}>
+          {isLoading ? 'CREATING...' : 'CREATE ACCOUNT'}
+        </button>
+      </form>
+    </>
+  );
+};
+
 /* ── Reset Password form ── */
 const ResetContent = ({ onBack }) => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: call reset password API
-    setSubmitted(true);
+    setIsLoading(true);
+    try {
+      // TODO: call reset password API
+      setSubmitted(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -192,10 +327,10 @@ const ResetContent = ({ onBack }) => {
         <form className="sim-form" onSubmit={handleSubmit}>
           <label className="sim-label" htmlFor="rp-email">Email Address</label>
           <input id="rp-email" type="email" className="sim-input" value={email}
-            onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+            onChange={e => setEmail(e.target.value)} autoComplete="email" required disabled={isLoading} />
 
-          <button type="submit" className="sim-submit sim-submit--reset">
-            RESET PASSWORD
+          <button type="submit" className="sim-submit sim-submit--reset" disabled={isLoading}>
+            {isLoading ? 'SENDING...' : 'RESET PASSWORD'}
           </button>
         </form>
       )}
@@ -210,9 +345,30 @@ const RIGHT_PANEL = {
     title: <>ARE YOU NEW<br />TO BUNDLE FORGE?</>,
     desc: "If you don't have a Bundle Forge account, use this option to access the registration form.",
     cta: 'CREATE ACCOUNT',
-    next: 'register',
+    next: 'register-email',
   },
-  register: {
+  'register-email': {
+    cls: 'sim-right--register',
+    title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
+    desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
+    cta: 'SIGN IN',
+    next: 'signin',
+  },
+  'register-profile-customer': {
+    cls: 'sim-right--register',
+    title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
+    desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
+    cta: 'SIGN IN',
+    next: 'signin',
+  },
+  'register-profile-developer': {
+    cls: 'sim-right--register',
+    title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
+    desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
+    cta: 'SIGN IN',
+    next: 'signin',
+  },
+  'register-profile-publisher': {
     cls: 'sim-right--register',
     title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
     desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
@@ -230,7 +386,9 @@ const RIGHT_PANEL = {
 
 /* ── Modal shell ── */
 export const SignInModal = ({ isOpen, onClose }) => {
-  const [mode, setMode] = useState('signin'); // 'signin' | 'register' | 'reset'
+  const [mode, setMode] = useState('signin');
+  const [registrationData, setRegistrationData] = useState(null);
+  const [selectedUserType, setSelectedUserType] = useState('customer');
 
   useEffect(() => { if (isOpen) setMode('signin'); }, [isOpen]);
 
@@ -245,6 +403,15 @@ export const SignInModal = ({ isOpen, onClose }) => {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  const handleRegistrationEmailNext = (data) => {
+    setRegistrationData(data);
+    setMode(`register-profile-${selectedUserType}`);
+  };
+
+  const handleRegistrationBack = () => {
+    setMode('register-email');
+  };
+
   if (!isOpen) return null;
 
   const panel = RIGHT_PANEL[mode];
@@ -257,9 +424,64 @@ export const SignInModal = ({ isOpen, onClose }) => {
         <div className="sim-left">
           <button className="sim-close" onClick={onClose} aria-label="Close">✕</button>
           <div className="sim-left-inner">
-            {mode === 'signin'    && <SignInContent  onForgot={() => setMode('reset')} />}
-            {mode === 'register'  && <RegisterContent />}
-            {mode === 'reset'     && <ResetContent   onBack={() => setMode('signin')} />}
+            {mode === 'signin' && <SignInContent onForgot={() => setMode('reset')} onClose={onClose} />}
+            {mode === 'register-email' && (
+              <>
+                <RegisterEmailContent onNext={handleRegistrationEmailNext} />
+                <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e0e0e0' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '1rem' }}>I am a:</p>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {['customer', 'developer', 'publisher'].map(type => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setSelectedUserType(type)}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          border: selectedUserType === type ? '2px solid #f90' : '1px solid #ddd',
+                          borderRadius: '4px',
+                          background: selectedUserType === type ? '#fff' : 'transparent',
+                          color: selectedUserType === type ? '#f90' : '#666',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: selectedUserType === type ? 'bold' : 'normal',
+                        }}
+                      >
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            {mode === 'register-profile-customer' && (
+              <RegisterProfileContent
+                email={registrationData?.email}
+                password={registrationData?.password}
+                userType="customer"
+                onBack={handleRegistrationBack}
+                onClose={onClose}
+              />
+            )}
+            {mode === 'register-profile-developer' && (
+              <RegisterProfileContent
+                email={registrationData?.email}
+                password={registrationData?.password}
+                userType="developer"
+                onBack={handleRegistrationBack}
+                onClose={onClose}
+              />
+            )}
+            {mode === 'register-profile-publisher' && (
+              <RegisterProfileContent
+                email={registrationData?.email}
+                password={registrationData?.password}
+                userType="publisher"
+                onBack={handleRegistrationBack}
+                onClose={onClose}
+              />
+            )}
+            {mode === 'reset' && <ResetContent onBack={() => setMode('signin')} />}
           </div>
         </div>
 

@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchQuery } from '../redux/slices/filtersSlice';
 import { toggleCart } from '../redux/slices/uiSlice';
+import { logout } from '../redux/slices/authSlice';
 import { SignInModal } from './SignInModal';
+import AccountIcon from '@/assets/icons/account.svg?react';
+import OrdersIcon from '@/assets/icons/order_history_keys.svg?react';
+import LibraryIcon from '@/assets/icons/library.svg?react';
+import SignOutIcon from '@/assets/icons/sign-out.svg?react';
 import logoImg from '@/assets/icons/bundle-forge-logo.svg';
 import './Header.css';
 
@@ -10,9 +15,12 @@ export const Header = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
   const searchQuery = useSelector(state => state.filters.searchQuery);
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const userEmail = useSelector(state => state.auth.user?.email);
 
   // Sign-in modal state
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -47,13 +55,138 @@ export const Header = () => {
 
             {/* Header Actions */}
             <div className="header-actions">
-              {/* Sign In — opens modal */}
-              <button
-                className="sign-in-btn"
-                onClick={() => setIsSignInOpen(true)}
-              >
-                Sign in
-              </button>
+              {/* Sign In / My Account */}
+              {isAuthenticated ? (
+                <div className="account-menu" style={{ position: 'relative' }}>
+                  <button
+                    className="sign-in-btn"
+                    onClick={() => setShowAccountMenu(!showAccountMenu)}
+                    style={{ position: 'relative' }}
+                  >
+                    My Account
+                  </button>
+                  {showAccountMenu && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      backgroundColor: '#1a1a1a',
+                      border: '1px solid #333',
+                      borderRadius: '4px',
+                      minWidth: '220px',
+                      zIndex: 100,
+                      marginTop: '8px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
+                    }}>
+                      <div style={{ padding: '12px', borderBottom: '1px solid #333', color: '#888', fontSize: '0.75rem', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Logged in as
+                      </div>
+                      <div style={{ padding: '8px 12px', borderBottom: '1px solid #333', color: '#fff', fontSize: '0.9rem' }}>
+                        {userEmail}
+                      </div>
+
+                      <a
+                        href="/account"
+                        onClick={() => setShowAccountMenu(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          color: '#fff',
+                          textDecoration: 'none',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #222',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <AccountIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                        Account Overview
+                      </a>
+
+                      <a
+                        href="/orders"
+                        onClick={() => setShowAccountMenu(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          color: '#fff',
+                          textDecoration: 'none',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #222',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <OrdersIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                        Order History & Keys
+                      </a>
+
+                      <a
+                        href="/product-library"
+                        onClick={() => setShowAccountMenu(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          color: '#fff',
+                          textDecoration: 'none',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #222',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <LibraryIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                        Product Library
+                      </a>
+
+                      <button
+                        onClick={() => {
+                          dispatch(logout());
+                          setShowAccountMenu(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: '#f90',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem',
+                          fontWeight: '500',
+                          transition: 'background-color 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <SignOutIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  className="sign-in-btn"
+                  onClick={() => setIsSignInOpen(true)}
+                >
+                  Sign in
+                </button>
+              )}
 
               <button className="wishlist-btn">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -108,6 +241,8 @@ export const Header = () => {
               </li>
               <li className="nav-item"><a href="/upcoming" className="nav-link">Upcoming Games</a></li>
               <li className="nav-item"><a href="/new" className="nav-link">New Releases</a></li>
+              <li className="nav-item"><a href="/coupons-rewards" className="nav-link">Coupons & Rewards</a></li>
+              <li className="nav-item"><a href="/support" className="nav-link">Support</a></li>
             </ul>
           </div>
         </nav>
