@@ -316,8 +316,8 @@ const fetchGame = async (gameId) => {
       details: {
         Platform:       'Steam',
         'Release Date': data.releaseDate,
-        Developer:      'CAPCOM Co. Ltd.', // TODO: in db
-        Publisher:      'CAPCOM', // TODO: in db
+        Developer:      data.developer,
+        Publisher:      data.publisher ? data.publisher : data.developer,
         Languages:      data.languages.join(', '),
         Link:           data.link,
       },

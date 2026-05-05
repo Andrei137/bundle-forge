@@ -54,4 +54,8 @@ public abstract class Provider extends User implements EnumUtils.HasStatus<Provi
     @JsonView(ViewUtils.Admin.class)
     private Status status = Status.PENDING;
 
+    @Column(unique = true)
+    @JsonView(ViewUtils.Public.class)
+    private String displayName;
+
 }

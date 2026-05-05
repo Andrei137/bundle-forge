@@ -63,4 +63,10 @@ public final class GameResponseDto {
     @JsonView(ViewUtils.Public.class)
     private Map<String, PlatformRequirements> systemRequirements;
 
+    @JsonView(ViewUtils.Public.class)
+    private String developer;
+
+    @JsonView(ViewUtils.Public.class)
+    private String publisher;
+
 }

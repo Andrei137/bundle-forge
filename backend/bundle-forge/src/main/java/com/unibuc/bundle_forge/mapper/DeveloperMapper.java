@@ -15,6 +15,7 @@ public final class DeveloperMapper extends ProviderMapper<Developer, DeveloperDt
                 .password(JwtService.encryptPassword(dto.getPassword()))
                 .email(dto.getEmail())
                 .website(dto.getWebsite())
+                .displayName(dto.getDisplayName())
                 .status(Provider.Status.PENDING)
                 .build();
     }

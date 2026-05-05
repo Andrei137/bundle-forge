@@ -26,6 +26,9 @@ public final class ProviderResponseDto {
     @JsonView(ViewUtils.Public.class)
     private String website;
 
+    @JsonView(ViewUtils.Public.class)
+    private String displayName;
+
     @JsonView(ViewUtils.Admin.class)
     private String type;
 

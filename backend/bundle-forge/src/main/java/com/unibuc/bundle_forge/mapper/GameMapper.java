@@ -4,6 +4,7 @@ import com.unibuc.bundle_forge.dto.GameCreateDto;
 import com.unibuc.bundle_forge.dto.GameResponseDto;
 import com.unibuc.bundle_forge.dto.GameUpdateDto;
 import com.unibuc.bundle_forge.model.Game;
+import com.unibuc.bundle_forge.model.Provider;
 import com.unibuc.bundle_forge.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -54,7 +55,13 @@ public final class GameMapper {
                 .languages(entity.getLanguages())
                 .link(entity.getLink())
                 .systemRequirements(entity.getSystemRequirements())
+                .developer(Optional.ofNullable(entity.getDeveloper())
+                        .map(Provider::getDisplayName)
+                        .orElse(null))
+                .publisher(Optional.ofNullable(entity.getPublisher())
+                        .map(Provider::getDisplayName)
+                        .orElse(null))
                 .build();
     }
 
-}
+}   

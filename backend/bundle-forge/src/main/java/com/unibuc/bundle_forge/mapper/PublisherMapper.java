@@ -15,6 +15,7 @@ public final class PublisherMapper extends ProviderMapper<Publisher, PublisherDt
                 .password(JwtService.encryptPassword(dto.getPassword()))
                 .email(dto.getEmail())
                 .website(dto.getWebsite())
+                .displayName(dto.getDisplayName())
                 .status(Provider.Status.PENDING)
                 .build();
     }

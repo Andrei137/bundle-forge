@@ -13,6 +13,7 @@ public abstract class ProviderMapper<U extends Provider, D extends ProviderCreat
     public void updateEntityFromDto(D dto, U entity) {
         super.updateEntityFromDto(dto, entity);
         MapperUtils.setIfPresent(dto.getWebsite(), entity::setWebsite);
+        MapperUtils.setIfPresent(dto.getDisplayName(), entity::setDisplayName);
     }
 
     public ProviderResponseDto toProviderResponseDto(Provider entity, String type) {
@@ -21,6 +22,7 @@ public abstract class ProviderMapper<U extends Provider, D extends ProviderCreat
                 .username(entity.getUsername())
                 .email(entity.getEmail())
                 .website(entity.getWebsite())
+                .displayName(entity.getDisplayName())
                 .status(entity.getStatus())
                 .type(type)
                 .build();

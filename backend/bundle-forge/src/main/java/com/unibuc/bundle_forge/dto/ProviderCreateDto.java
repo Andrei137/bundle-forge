@@ -1,5 +1,6 @@
 package com.unibuc.bundle_forge.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,5 +20,7 @@ public abstract class ProviderCreateDto extends UserDto {
             message = "website must be a valid URL"
     )
     private String website;
+
+    private String displayName;
 
 }
