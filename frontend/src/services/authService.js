@@ -95,6 +95,29 @@ export const authService = {
     localStorage.removeItem(TOKEN_KEY);
   },
 
+  updateCustomerProfile: async (firstName, lastName, phoneNumber) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/customers`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ firstName, lastName, phoneNumber }),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to update profile';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
   isAuthenticated: () => {
     return !!authService.getToken();
   },
