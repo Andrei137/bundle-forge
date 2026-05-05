@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import CartIcon from '../assets/icons/cart.svg?react';
@@ -97,6 +97,59 @@ const StarRating = ({ rating, max = 5 }) => (
   </div>
 );
 
+const TagsDisplay = ({ genres }) => {
+  const containerRef = useRef(null);
+  const [visibleTags, setVisibleTags] = useState([]);
+
+  useEffect(() => {
+    if (!containerRef.current || !genres || genres.length === 0) {
+      setVisibleTags([]);
+      return;
+    }
+
+    const container = containerRef.current;
+    const maxLines = 2;
+    const maxHeight = maxLines * 1.5 * 16; // approximate line height in pixels
+
+    let fitted = [];
+    for (let i = 0; i < genres.length; i++) {
+      fitted.push(genres[i]);
+      const testTags = fitted.map(tag => (
+        <span key={tag} className="gp-tag">{tag}</span>
+      ));
+
+      const testDiv = document.createElement('div');
+      testDiv.className = 'gp-tags';
+      testDiv.style.position = 'absolute';
+      testDiv.style.visibility = 'hidden';
+      testDiv.style.width = container.offsetWidth + 'px';
+
+      const tempContainer = document.createElement('div');
+      testTags.forEach(tag => {
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'gp-tag';
+        tagSpan.textContent = genres[i];
+        tempContainer.appendChild(tagSpan);
+      });
+
+      if (tempContainer.offsetHeight > maxHeight) {
+        fitted.pop();
+        break;
+      }
+    }
+
+    setVisibleTags(fitted);
+  }, [genres]);
+
+  return (
+    <div className="gp-tags" ref={containerRef}>
+      {visibleTags.map(tag => (
+        <span key={tag} className="gp-tag">{tag}</span>
+      ))}
+    </div>
+  );
+};
+
 function AboutTab({ game }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -112,10 +165,6 @@ function AboutTab({ game }) {
     Publisher:      game.about.details.Publisher,
     Link:           game.about.details.Link ?? null,
   };
-
-  const genres     = ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure', 'Story Rich', 'Souls-like'];
-  const themes     = ['Cute', 'Sci-fi', 'Funny', 'Futuristic', 'Robots', 'Hacking', 'Space', 'Realistic', 'Female Protagonist', 'Psychological Horror'];
-  const playStyles = ['Singleplayer', 'Third Person', '3D', 'Artificial Intelligence'];
 
   return (
     <div className="gp-about-grid-new">
@@ -181,19 +230,31 @@ function AboutTab({ game }) {
             <div className="gp-tag-group">
               <span className="gp-tag-group-label">Genres:</span>
               <div className="gp-tag-links">
-                {genres.map(g => <a key={g} href="#" className="gp-tag-link">{g}</a>)}
+                {game.genres && game.genres.length > 0 ? (
+                  game.genres.map(g => <a key={g} href="#" className="gp-tag-link">{g}</a>)
+                ) : (
+                  <span style={{ color: '#999', fontSize: '0.9em' }}>Not defined</span>
+                )}
               </div>
             </div>
             <div className="gp-tag-group">
               <span className="gp-tag-group-label">Themes:</span>
               <div className="gp-tag-links">
-                {themes.map(t => <a key={t} href="#" className="gp-tag-link">{t}</a>)}
+                {game.themes && game.themes.length > 0 ? (
+                  game.themes.map(t => <a key={t} href="#" className="gp-tag-link">{t}</a>)
+                ) : (
+                  <span style={{ color: '#999', fontSize: '0.9em' }}>Not defined</span>
+                )}
               </div>
             </div>
             <div className="gp-tag-group">
               <span className="gp-tag-group-label">Play Styles:</span>
               <div className="gp-tag-links">
-                {playStyles.map(p => <a key={p} href="#" className="gp-tag-link">{p}</a>)}
+                {game.playStyles && game.playStyles.length > 0 ? (
+                  game.playStyles.map(p => <a key={p} href="#" className="gp-tag-link">{p}</a>)
+                ) : (
+                  <span style={{ color: '#999', fontSize: '0.9em' }}>Not defined</span>
+                )}
               </div>
             </div>
           </div>
@@ -284,17 +345,18 @@ const fetchGame = async (gameId) => {
 
   return {
     title: data.title,
+    price: data.price,
+    originalPrice: data.initialPrice,
+    discount: data.discountPercentage,
     rating: 4.6, // TODO
     userRatings: 1, // TODO
     metacritic: 88, // TODO
     steamRating: { score: 97, label: 'Overwhelmingly Positive' }, // TODO
     recommendPercent: 100, // TODO
-    tags: ['Action', 'Third-Person Shooter', 'Adventure', 'Action-Adventure'], // TODO: in db
+    genres: data.tagCategories?.genres ?? [],
+    themes: data.tagCategories?.themes ?? [],
+    playStyles: data.tagCategories?.playStyles ?? [],
     description: data.shortDescription,
-    editions: [
-      { id: 'standard',       label: 'Standard',       price: 250.72, originalPrice: 305.89, discount: 18 },
-      { id: 'digital-deluxe', label: 'Digital Deluxe',  price: 292.53, originalPrice: 356.88, discount: 18 },
-    ], // TODO
     media: [
       ...(data.youtubeIds ?? []).map((id, index) => ({
         type: 'youtube',
@@ -329,7 +391,6 @@ const fetchGame = async (gameId) => {
 export const Game = () => {
   const dispatch = useDispatch();
   const { id: gameId } = useParams();
-  const [selectedEdition, setSelectedEdition] = useState('standard');
   const [wishlist, setWishlist] = useState(false);
   const [activeThumb, setActiveThumb] = useState(0);
   const [activeTab, setActiveTab] = useState('about');
@@ -343,15 +404,13 @@ export const Game = () => {
   if (isLoading) return <div className="gp-page"><div className="gp-container"><p>Loading...</p></div></div>;
   if (error || !game) return <div className="gp-page"><div className="gp-container"><p>Error: {error?.message ?? 'Game not found'}</p></div></div>;
 
-  const edition = game.editions.find(e => e.id === selectedEdition);
-
   const handleAddToCart = () => {
     dispatch(addToCart({
-      id: `${game.title}-${selectedEdition}`,
-      title: `${game.title} (${edition.label})`,
-      price: edition.price,
-      originalPrice: edition.originalPrice,
-      discount: edition.discount,
+      id: game.title,
+      title: game.title,
+      price: game.price,
+      originalPrice: game.originalPrice,
+      discount: game.discount,
       image: game.cover,
       quantity: 1,
     }));
@@ -446,33 +505,21 @@ export const Game = () => {
               </button>
             </div>
 
-            <div className="gp-tags">
-              {game.tags.map(tag => <span key={tag} className="gp-tag">{tag}</span>)}
-            </div>
+            <TagsDisplay genres={game.genres} />
 
             <p className="gp-description">{game.description}</p>
 
-            <div className="gp-editions">
-              {game.editions.map(ed => (
-                <button
-                  key={ed.id}
-                  className={`gp-edition-btn ${selectedEdition === ed.id ? 'gp-edition-btn--active' : ''}`}
-                  onClick={() => setSelectedEdition(ed.id)}
-                >
-                  <span className="gp-edition-label">{ed.label}</span>
-                  <span className="gp-edition-price">
-                    <span className="gp-edition-now">RON {ed.price.toFixed(2)}</span>
-                    <span className="gp-edition-was">RON {ed.originalPrice.toFixed(2)}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            <div className="gp-price-row">
-              <span className="gp-price-now">RON {edition.price.toFixed(2)}</span>
-              <span className="gp-price-was">RON {edition.originalPrice.toFixed(2)}</span>
-              <span className="gp-price-discount">-{edition.discount}%</span>
-            </div>
+            {game.discount ? (
+              <div className="gp-price-row">
+                <span className="gp-price-now">RON {game.price.toFixed(2)}</span>
+                {game.originalPrice && <span className="gp-price-was">RON {game.originalPrice.toFixed(2)}</span>}
+                <span className="gp-price-discount" style={{ fontSize: '1.1em', fontWeight: 'bold' }}>-{game.discount}%</span>
+              </div>
+            ) : (
+              <div className="gp-price-row">
+                <span className="gp-price-now">RON {game.price.toFixed(2)}</span>
+              </div>
+            )}
 
             <button className="gp-cart-btn" onClick={handleAddToCart}>
               <CartIcon /> Add To Cart
@@ -480,7 +527,6 @@ export const Game = () => {
           </div>
         </div>
 
-        {/* ── About Section ── */}
         <div className="gp-about-section">
           <div className="gp-about-header">
             <h2 className="gp-section-title">About {game.title}</h2>
