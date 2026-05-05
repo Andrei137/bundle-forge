@@ -36,10 +36,10 @@ public final class AuthService {
     private final DeveloperMapper developerMapper;
 
     public TokenDto signin(CredentialsDto credentials) {
-        User user = userRepository.findByUsername(credentials.getUsername());
+        User user = userRepository.findByEmail(credentials.getEmail());
 
         if (user == null || !JwtService.isPasswordValid(credentials.getPassword(), user.getPassword())) {
-            throw new ValidationException("Invalid username or password");
+            throw new ValidationException("Invalid email or password");
         }
         if (user instanceof Provider provider) {
             String message = switch (provider.getStatus()) {

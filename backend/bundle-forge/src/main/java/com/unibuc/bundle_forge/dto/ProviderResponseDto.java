@@ -18,9 +18,6 @@ public final class ProviderResponseDto {
     private Integer id;
 
     @JsonView(ViewUtils.Public.class)
-    private String username;
-
-    @JsonView(ViewUtils.Public.class)
     private String email;
 
     @JsonView(ViewUtils.Public.class)

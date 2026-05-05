@@ -32,10 +32,6 @@ public abstract class User {
     @JsonView(ViewUtils.Public.class)
     private Integer id;
 
-    @Column(unique = true, nullable = false)
-    @JsonView(ViewUtils.Public.class)
-    private String username;
-
     @Column(nullable = false)
     @JsonIgnore
     private String password;

@@ -19,7 +19,6 @@ public abstract class ProviderMapper<U extends Provider, D extends ProviderCreat
     public ProviderResponseDto toProviderResponseDto(Provider entity, String type) {
         return ProviderResponseDto.builder()
                 .id(entity.getId())
-                .username(entity.getUsername())
                 .email(entity.getEmail())
                 .website(entity.getWebsite())
                 .displayName(entity.getDisplayName())
