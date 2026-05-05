@@ -11,7 +11,6 @@ public final class PublisherMapper extends ProviderMapper<Publisher, PublisherDt
 
     public Publisher toEntity(PublisherDto dto) {
         return Publisher.builder()
-                .username(dto.getUsername())
                 .password(JwtService.encryptPassword(dto.getPassword()))
                 .email(dto.getEmail())
                 .website(dto.getWebsite())

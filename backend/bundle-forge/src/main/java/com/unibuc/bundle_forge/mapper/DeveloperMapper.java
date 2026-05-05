@@ -11,7 +11,6 @@ public final class DeveloperMapper extends ProviderMapper<Developer, DeveloperDt
 
     public Developer toEntity(DeveloperDto dto) {
         return Developer.builder()
-                .username(dto.getUsername())
                 .password(JwtService.encryptPassword(dto.getPassword()))
                 .email(dto.getEmail())
                 .website(dto.getWebsite())

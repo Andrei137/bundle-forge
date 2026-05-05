@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public final class CredentialsDto {
 
-    @NotBlank(message = "username is required and cannot be blank")
-    private String username;
+    @NotBlank(message = "email is required and cannot be blank")
+    private String email;
 
     @NotBlank(message = "password is required and cannot be blank")
     private String password;

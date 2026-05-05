@@ -22,7 +22,6 @@ public final class CustomerMapper extends UserMapper<Customer, CustomerDto> {
 
     public Customer toEntity(CustomerDto dto) {
         return Customer.builder()
-                .username(dto.getUsername())
                 .password(JwtService.encryptPassword(dto.getPassword()))
                 .email(dto.getEmail())
                 .firstName(dto.getFirstName())

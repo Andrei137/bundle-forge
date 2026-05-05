@@ -11,9 +11,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public abstract class UserDto {
 
-    @NotBlank(message = "username is required and cannot be blank", groups = Create.class)
-    private String username;
-
     @NotBlank(message = "password is required and cannot be blank", groups = Create.class)
     private String password;
 
