@@ -3,7 +3,7 @@ import { authService } from '../../services/authService';
 
 const initialState = {
   token: authService.getToken(),
-  user: null,
+  user: authService.getUser(),
   userType: null,
   isAuthenticated: authService.isAuthenticated(),
   isLoading: false,
@@ -22,6 +22,7 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.error = null;
       authService.setToken(token);
+      authService.setUser(user);
     },
 
     logout: (state) => {
@@ -31,11 +32,13 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       authService.removeToken();
+      authService.removeUser();
     },
 
     setUser: (state, action) => {
       state.user = action.payload.user;
       state.userType = action.payload.userType;
+      authService.setUser(action.payload.user);
     },
 
     setLoading: (state, action) => {
