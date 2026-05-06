@@ -131,7 +131,7 @@ export const authService = {
       let errorMessage = 'Failed to update profile';
       try {
         const error = await response.json();
-        errorMessage = error.message || errorMessage;
+        errorMessage = error.message || error.error || errorMessage;
       } catch (e) {
         errorMessage = `Server error: ${response.status} ${response.statusText}`;
       }
@@ -157,7 +157,7 @@ export const authService = {
       let errorMessage = 'Failed to change password';
       try {
         const error = await response.json();
-        errorMessage = error.message || errorMessage;
+        errorMessage = error.message || error.error || errorMessage;
       } catch (e) {
         errorMessage = `Server error: ${response.status} ${response.statusText}`;
       }
