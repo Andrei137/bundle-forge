@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 const TOKEN_KEY = 'bundleforge_token';
+const USER_KEY = 'bundleforge_user';
 
 export const authService = {
   signIn: async (email, password) => {
@@ -93,6 +94,19 @@ export const authService = {
 
   removeToken: () => {
     localStorage.removeItem(TOKEN_KEY);
+  },
+
+  setUser: (user) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+
+  getUser: () => {
+    const userJson = localStorage.getItem(USER_KEY);
+    return userJson ? JSON.parse(userJson) : null;
+  },
+
+  removeUser: () => {
+    localStorage.removeItem(USER_KEY);
   },
 
   getCustomerProfile: async () => {

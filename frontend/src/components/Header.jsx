@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchQuery } from '../redux/slices/filtersSlice';
 import { toggleCart } from '../redux/slices/uiSlice';
@@ -8,6 +8,7 @@ import AccountIcon from '@/assets/icons/account.svg?react';
 import OrdersIcon from '@/assets/icons/order_history_keys.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
 import SignOutIcon from '@/assets/icons/sign-out.svg?react';
+import DropdownIcon from '@/assets/icons/dropdown.svg?react';
 import logoImg from '@/assets/icons/bundle-forge-logo.svg';
 import './Header.css';
 
@@ -21,9 +22,26 @@ export const Header = () => {
   // Sign-in modal state
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const accountMenuRef = useRef(null);
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    if (showAccountMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAccountMenu]);
 
   return (
     <>
@@ -57,13 +75,19 @@ export const Header = () => {
             <div className="header-actions">
               {/* Sign In / My Account */}
               {isAuthenticated ? (
-                <div className="account-menu" style={{ position: 'relative' }}>
+                <div className="account-menu" style={{ position: 'relative' }} ref={accountMenuRef}>
                   <button
                     className="sign-in-btn"
                     onClick={() => setShowAccountMenu(!showAccountMenu)}
-                    style={{ position: 'relative' }}
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
                   >
                     My Account
+                    <DropdownIcon style={{ width: '16px', height: '16px', fill: 'currentColor' }} />
                   </button>
                   {showAccountMenu && (
                     <div style={{
