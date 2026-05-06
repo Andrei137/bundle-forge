@@ -18,6 +18,7 @@ export const Header = () => {
   const searchQuery = useSelector(state => state.filters.searchQuery);
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
   const userEmail = useSelector(state => state.auth.user?.email);
+  const userType = useSelector(state => state.auth.userType);
 
   // Sign-in modal state
   const [isSignInOpen, setIsSignInOpen] = useState(false);
@@ -131,49 +132,75 @@ export const Header = () => {
                         Account Overview
                       </a>
 
-                      <a
-                        href="/orders"
-                        onClick={() => setShowAccountMenu(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          padding: '10px 12px',
-                          color: '#fff',
-                          textDecoration: 'none',
-                          fontSize: '0.9rem',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #222',
-                          transition: 'background-color 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                      >
-                        <OrdersIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
-                        Order History & Keys
-                      </a>
+                      {userType === 'DEVELOPER' ? (
+                        <a
+                          href="/account"
+                          onClick={() => setShowAccountMenu(false)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '10px 12px',
+                            color: '#fff',
+                            textDecoration: 'none',
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #222',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          <LibraryIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                          My Games
+                        </a>
+                      ) : (
+                        <>
+                          <a
+                            href="/orders"
+                            onClick={() => setShowAccountMenu(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '10px 12px',
+                              color: '#fff',
+                              textDecoration: 'none',
+                              fontSize: '0.9rem',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #222',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          >
+                            <OrdersIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                            Order History & Keys
+                          </a>
 
-                      <a
-                        href="/product-library"
-                        onClick={() => setShowAccountMenu(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          padding: '10px 12px',
-                          color: '#fff',
-                          textDecoration: 'none',
-                          fontSize: '0.9rem',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #222',
-                          transition: 'background-color 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                      >
-                        <LibraryIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
-                        Product Library
-                      </a>
+                          <a
+                            href="/product-library"
+                            onClick={() => setShowAccountMenu(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '10px 12px',
+                              color: '#fff',
+                              textDecoration: 'none',
+                              fontSize: '0.9rem',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #222',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#222'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          >
+                            <LibraryIcon style={{ width: '16px', height: '16px', minWidth: '16px', fill: 'currentColor' }} />
+                            Product Library
+                          </a>
+                        </>
+                      )}
 
                       <button
                         onClick={() => {
