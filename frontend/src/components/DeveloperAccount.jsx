@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { setUser } from '@/redux/slices/authSlice';
 import { authService } from '@/services/authService';
 import AccountIcon from '@/assets/icons/account.svg?react';
 import LoginSecurityIcon from '@/assets/icons/login_security.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
 import SupportIcon from '@/assets/icons/support.svg?react';
+import AddDocumentIcon from '@/assets/icons/add-document-icon.svg?react';
+import EditDocumentIcon from '@/assets/icons/edit-document-icon.svg?react';
+import RemoveDocumentIcon from '@/assets/icons/remove-document-icon.svg?react';
 import './Account.css';
 
 export const DeveloperAccount = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector(state => state.auth.user);
   const userEmail = user?.email;
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
   const [activeSection, setActiveSection] = useState('overview');
   const [games, setGames] = useState([]);
   const [selectedGameId, setSelectedGameId] = useState(null);
@@ -108,12 +113,55 @@ export const DeveloperAccount = () => {
   const menuItems = [
     { id: 'overview', label: 'Account Overview', icon: AccountIcon, action: () => setActiveSection('overview'), isParent: true },
     { id: 'security', label: 'Login & Security', icon: LoginSecurityIcon, action: () => setActiveSection('security'), isChild: true },
-    { id: 'my-games', label: 'My Games', icon: LibraryIcon, action: () => setActiveSection('my-games'), isChild: true },
-    { id: 'add-game', label: 'Add New Game', action: () => setActiveSection('add-game'), isSubChild: true },
-    { id: 'update-game', label: 'Update Game', action: () => setActiveSection('update-game'), isSubChild: true },
-    { id: 'remove-game', label: 'Remove Game', action: () => setActiveSection('remove-game'), isSubChild: true },
+    { id: 'my-games', label: 'My Games', icon: LibraryIcon, action: () => setActiveSection('my-games'), isParent: true },
+    { id: 'add-game', label: 'Add New Game', icon: AddDocumentIcon, action: () => setActiveSection('add-game'), isChild: true },
+    { id: 'update-game', label: 'Update Game', icon: EditDocumentIcon, action: () => setActiveSection('update-game'), isChild: true },
+    { id: 'remove-game', label: 'Remove Game', icon: RemoveDocumentIcon, action: () => setActiveSection('remove-game'), isChild: true },
     { id: 'support', label: 'Support', icon: SupportIcon, action: () => setActiveSection('support') },
   ];
+
+  if (!isAuthenticated) {
+    return (
+      <div className="account-container">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '60vh',
+          gap: '20px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '2rem',
+            color: '#888',
+            marginBottom: '10px'
+          }}>
+            🔐
+          </div>
+          <h1 style={{ color: '#fff', marginBottom: '10px' }}>Sign In Required</h1>
+          <p style={{ color: '#999', fontSize: '1rem', marginBottom: '30px' }}>
+            Please sign in to view your account details
+          </p>
+          <button
+            onClick={() => navigate('/account')}
+            style={{
+              backgroundColor: '#f90',
+              color: '#000',
+              border: 'none',
+              padding: '12px 30px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '1rem'
+            }}
+          >
+            SIGN IN
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="account-container">
