@@ -85,6 +85,21 @@
   min-width: 16px;
 }
 
+.sidebar-item-subchild {
+  padding-left: 66px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.sidebar-item-subchild:hover {
+  color: #f90;
+}
+
+.sidebar-item-subchild.active {
+  color: #f90;
+  border-left-color: #f90;
+}
+
 .account-content {
   padding: 20px;
   background: #2B2B2B;

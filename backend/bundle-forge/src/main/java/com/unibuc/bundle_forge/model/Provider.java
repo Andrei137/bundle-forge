@@ -44,7 +44,7 @@ public abstract class Provider extends User implements EnumUtils.HasStatus<Provi
         }
     }
 
-    @Column(unique = true)
+    @Column
     @JsonView(ViewUtils.Public.class)
     private String website;
 

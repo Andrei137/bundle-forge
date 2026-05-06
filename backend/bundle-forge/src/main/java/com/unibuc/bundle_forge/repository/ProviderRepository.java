@@ -12,5 +12,6 @@ public interface ProviderRepository<T extends Provider> extends JpaRepository<T,
 
     List<T> findByStatus(Provider.Status status);
     Optional<T> findByIdAndStatus(Integer id, Provider.Status status);
+    Optional<T> findByDisplayName(String displayName);
 
 }

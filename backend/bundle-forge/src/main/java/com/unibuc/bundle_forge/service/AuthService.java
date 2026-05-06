@@ -38,23 +38,54 @@ public final class AuthService {
     private final PublisherMapper publisherMapper;
     private final DeveloperMapper developerMapper;
 
-    public TokenDto signin(CredentialsDto credentials) {
+    public Map<String, Object> signin(CredentialsDto credentials) {
         User user = userRepository.findByEmail(credentials.getEmail());
 
         if (user == null || !JwtService.isPasswordValid(credentials.getPassword(), user.getPassword())) {
             throw new ValidationException("Invalid email or password");
         }
-        if (user instanceof Provider provider) {
-            String message = switch (provider.getStatus()) {
+
+        Map<String, Object> response = new HashMap<>();
+        String token = jwtService.getToken(String.valueOf(user.getId()));
+        response.put("token", token);
+
+        // Determine user type
+        if (user instanceof Customer) {
+            response.put("userType", "CUSTOMER");
+            response.put("blocked", false);
+        } else if (user instanceof Developer developer) {
+            response.put("userType", "DEVELOPER");
+            response.put("status", developer.getStatus().toString());
+            String message = switch (developer.getStatus()) {
                 case BANNED -> "Banned account";
                 case PENDING -> "Account awaiting approval";
                 case REJECTED -> "Account rejected";
                 default -> null;
             };
-            if (message != null) throw new ForbiddenException(message);
+            if (message != null) {
+                response.put("statusMessage", message);
+                response.put("blocked", true);
+            } else {
+                response.put("blocked", false);
+            }
+        } else if (user instanceof Publisher publisher) {
+            response.put("userType", "PUBLISHER");
+            response.put("status", publisher.getStatus().toString());
+            String message = switch (publisher.getStatus()) {
+                case BANNED -> "Banned account";
+                case PENDING -> "Account awaiting approval";
+                case REJECTED -> "Account rejected";
+                default -> null;
+            };
+            if (message != null) {
+                response.put("statusMessage", message);
+                response.put("blocked", true);
+            } else {
+                response.put("blocked", false);
+            }
         }
 
-        return new TokenDto(jwtService.getToken(String.valueOf(user.getId())));
+        return response;
     }
 
     public Customer signupCustomer(CustomerDto customer) {
@@ -65,15 +96,29 @@ public final class AuthService {
     }
 
     public Publisher registerPublisher(PublisherDto publisher) {
+        if (publisherRepository.findByDisplayName(publisher.getDisplayName()).isPresent()) {
+            throw new ValidationException("This display name is already registered");
+        }
         return publisherRepository.save(publisherMapper.toEntity(publisher));
     }
 
     public Developer registerDeveloper(DeveloperDto developer) {
+        if (developerRepository.findByDisplayName(developer.getDisplayName()).isPresent()) {
+            throw new ValidationException("This display name is already registered");
+        }
         return developerRepository.save(developerMapper.toEntity(developer));
     }
 
     public Map<String, Boolean> checkEmail(String email) {
         boolean exists = userRepository.findByEmail(email) != null;
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return response;
+    }
+
+    public Map<String, Boolean> checkDisplayName(String displayName) {
+        boolean exists = developerRepository.findByDisplayName(displayName).isPresent() ||
+                         publisherRepository.findByDisplayName(displayName).isPresent();
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
         return response;
