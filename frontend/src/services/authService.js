@@ -33,7 +33,7 @@ export const authService = {
       let errorMessage = 'Sign up failed';
       try {
         const error = await response.json();
-        errorMessage = error.message || errorMessage;
+        errorMessage = error.error || errorMessage;
       } catch (e) {
         errorMessage = `Server error: ${response.status} ${response.statusText}`;
       }
@@ -53,7 +53,7 @@ export const authService = {
       let errorMessage = 'Developer signup failed';
       try {
         const error = await response.json();
-        errorMessage = error.message || errorMessage;
+        errorMessage = error.message || error.error || errorMessage;
       } catch (e) {
         errorMessage = `Server error: ${response.status} ${response.statusText}`;
       }
@@ -73,7 +73,7 @@ export const authService = {
       let errorMessage = 'Publisher signup failed';
       try {
         const error = await response.json();
-        errorMessage = error.message || errorMessage;
+        errorMessage = error.message || error.error || errorMessage;
       } catch (e) {
         errorMessage = `Server error: ${response.status} ${response.statusText}`;
       }
@@ -93,6 +93,28 @@ export const authService = {
 
   removeToken: () => {
     localStorage.removeItem(TOKEN_KEY);
+  },
+
+  getCustomerProfile: async () => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/customers/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch profile';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
   },
 
   updateCustomerProfile: async (firstName, lastName, phoneNumber) => {
@@ -118,7 +140,53 @@ export const authService = {
     return await response.json();
   },
 
+  changePassword: async (currentPassword, newPassword) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/customers`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        currentPassword,
+        password: newPassword
+      }),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to change password';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
   isAuthenticated: () => {
     return !!authService.getToken();
+  },
+
+  checkEmailExists: async (email) => {
+    const response = await fetch(`${API_URL}/auth/check-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to check email';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    const data = await response.json();
+    return data.exists;
   },
 };

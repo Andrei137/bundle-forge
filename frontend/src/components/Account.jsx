@@ -26,22 +26,38 @@ export const Account = () => {
   const [loadingPersonal, setLoadingPersonal] = useState(false);
   const [changeEmailModal, setChangeEmailModal] = useState(false);
   const [changePasswordModal, setChangePasswordModal] = useState(false);
+  const [changeFirstNameModal, setChangeFirstNameModal] = useState(false);
+  const [changeLastNameModal, setChangeLastNameModal] = useState(false);
+  const [changePhoneModal, setChangePhoneModal] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [newFirstName, setNewFirstName] = useState('');
+  const [newLastName, setNewLastName] = useState('');
+  const [newPhoneNumber, setNewPhoneNumber] = useState('');
   const [modalError, setModalError] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setPersonalDetails({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        phoneNumber: user.phoneNumber || '',
-      });
+    const loadCustomerProfile = async () => {
+      try {
+        const profile = await authService.getCustomerProfile();
+        setPersonalDetails({
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          phoneNumber: profile.phoneNumber || '',
+        });
+        dispatch(setUser({ user: profile, userType: 'CUSTOMER' }));
+      } catch (error) {
+        console.error('Failed to load customer profile:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadCustomerProfile();
     }
-  }, [user]);
+  }, [isAuthenticated, dispatch]);
 
   useEffect(() => {
     if (location.pathname === '/account/login') {
@@ -110,10 +126,96 @@ export const Account = () => {
       if (newPassword.length < 8) {
         throw new Error('Password must be at least 8 characters');
       }
-      // API call to change password - endpoint TBD
-      // await authService.changePassword(currentPassword, newPassword);
-      setModalError('Password change feature coming soon');
-      // For now, just show a placeholder message
+      if (currentPassword === newPassword) {
+        throw new Error('New password must be different from current password');
+      }
+
+      await authService.changePassword(currentPassword, newPassword);
+      setChangePasswordModal(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      setModalError(error.message);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleChangeFirstName = async (e) => {
+    e.preventDefault();
+    setModalError('');
+    setModalLoading(true);
+
+    try {
+      if (!newFirstName) {
+        throw new Error('Please enter a first name');
+      }
+      const response = await authService.updateCustomerProfile(
+        newFirstName,
+        personalDetails.lastName,
+        personalDetails.phoneNumber
+      );
+      dispatch(setUser({ user: response, userType: 'CUSTOMER' }));
+      setPersonalDetails(prev => ({
+        ...prev,
+        firstName: response.firstName || '',
+      }));
+      setChangeFirstNameModal(false);
+    } catch (error) {
+      setModalError(error.message);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleChangeLastName = async (e) => {
+    e.preventDefault();
+    setModalError('');
+    setModalLoading(true);
+
+    try {
+      if (!newLastName) {
+        throw new Error('Please enter a last name');
+      }
+      const response = await authService.updateCustomerProfile(
+        personalDetails.firstName,
+        newLastName,
+        personalDetails.phoneNumber
+      );
+      dispatch(setUser({ user: response, userType: 'CUSTOMER' }));
+      setPersonalDetails(prev => ({
+        ...prev,
+        lastName: response.lastName || '',
+      }));
+      setChangeLastNameModal(false);
+    } catch (error) {
+      setModalError(error.message);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleChangePhoneNumber = async (e) => {
+    e.preventDefault();
+    setModalError('');
+    setModalLoading(true);
+
+    try {
+      if (!newPhoneNumber) {
+        throw new Error('Please enter a phone number');
+      }
+      const response = await authService.updateCustomerProfile(
+        personalDetails.firstName,
+        personalDetails.lastName,
+        newPhoneNumber
+      );
+      dispatch(setUser({ user: response, userType: 'CUSTOMER' }));
+      setPersonalDetails(prev => ({
+        ...prev,
+        phoneNumber: response.phoneNumber || '',
+      }));
+      setChangePhoneModal(false);
     } catch (error) {
       setModalError(error.message);
     } finally {
@@ -228,47 +330,59 @@ export const Account = () => {
 
               <div className="personal-details-section">
                 <h3>Personal Details</h3>
-                {personalDetailsError && <div className="form-error">{personalDetailsError}</div>}
-                {personalDetailsSuccess && <div className="form-success">{personalDetailsSuccess}</div>}
-
-                <form onSubmit={handleUpdatePersonalDetails}>
-                  <div className="form-group">
-                    <label>First Name</label>
-                    <input
-                      type="text"
-                      value={personalDetails.firstName}
-                      onChange={(e) => setPersonalDetails({ ...personalDetails, firstName: e.target.value })}
-                      className="form-input"
-                      placeholder="Enter first name"
-                    />
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">FIRST NAME</p>
+                    <p className="detail-value">{personalDetails.firstName || 'Not set'}</p>
                   </div>
-
-                  <div className="form-group">
-                    <label>Last Name</label>
-                    <input
-                      type="text"
-                      value={personalDetails.lastName}
-                      onChange={(e) => setPersonalDetails({ ...personalDetails, lastName: e.target.value })}
-                      className="form-input"
-                      placeholder="Enter last name"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Phone Number</label>
-                    <input
-                      type="tel"
-                      value={personalDetails.phoneNumber}
-                      onChange={(e) => setPersonalDetails({ ...personalDetails, phoneNumber: e.target.value })}
-                      className="form-input"
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-
-                  <button type="submit" className="btn-primary" disabled={loadingPersonal}>
-                    {loadingPersonal ? 'UPDATING...' : 'UPDATE'}
+                  <button
+                    type="button"
+                    className="detail-action"
+                    onClick={() => {
+                      setChangeFirstNameModal(true);
+                      setNewFirstName('');
+                      setModalError('');
+                    }}
+                  >
+                    Change First Name
                   </button>
-                </form>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">LAST NAME</p>
+                    <p className="detail-value">{personalDetails.lastName || 'Not set'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="detail-action"
+                    onClick={() => {
+                      setChangeLastNameModal(true);
+                      setNewLastName('');
+                      setModalError('');
+                    }}
+                  >
+                    Change Last Name
+                  </button>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">PHONE NUMBER</p>
+                    <p className="detail-value">{personalDetails.phoneNumber || 'Not set'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="detail-action"
+                    onClick={() => {
+                      setChangePhoneModal(true);
+                      setNewPhoneNumber('');
+                      setModalError('');
+                    }}
+                  >
+                    Change Phone Number
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -326,7 +440,7 @@ export const Account = () => {
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   className="form-input"
-                  placeholder="Enter new email address"
+                  placeholder="Enter new email address..."
                   required
                   disabled={modalLoading}
                 />
@@ -378,7 +492,7 @@ export const Account = () => {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Enter current password"
+                  placeholder="Enter current password..."
                   required
                   disabled={modalLoading}
                 />
@@ -391,7 +505,7 @@ export const Account = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Enter new password"
+                  placeholder="Enter new password..."
                   required
                   disabled={modalLoading}
                 />
@@ -404,7 +518,7 @@ export const Account = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Confirm new password"
+                  placeholder="Confirm new password..."
                   required
                   disabled={modalLoading}
                 />
@@ -425,6 +539,192 @@ export const Account = () => {
                   disabled={modalLoading}
                 >
                   {modalLoading ? 'UPDATING...' : 'UPDATE PASSWORD'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {changeFirstNameModal && (
+        <>
+          <div className="modal-backdrop" onClick={() => setChangeFirstNameModal(false)} />
+          <div className="account-modal">
+            <div className="modal-header">
+              <h2>Change First Name</h2>
+              <button
+                className="modal-close"
+                onClick={() => setChangeFirstNameModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleChangeFirstName}>
+              {modalError && <div className="form-error">{modalError}</div>}
+
+              <div className="form-group">
+                <label>Current First Name</label>
+                <input
+                  type="text"
+                  value={personalDetails.firstName || 'Not set'}
+                  className="form-input"
+                  disabled
+                />
+              </div>
+
+              <div className="form-group">
+                <label>New First Name</label>
+                <input
+                  type="text"
+                  value={newFirstName}
+                  onChange={(e) => setNewFirstName(e.target.value)}
+                  className="form-input"
+                  placeholder="Enter new first name..."
+                  required
+                  disabled={modalLoading}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setChangeFirstNameModal(false)}
+                  disabled={modalLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={modalLoading}
+                >
+                  {modalLoading ? 'UPDATING...' : 'UPDATE FIRST NAME'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {changeLastNameModal && (
+        <>
+          <div className="modal-backdrop" onClick={() => setChangeLastNameModal(false)} />
+          <div className="account-modal">
+            <div className="modal-header">
+              <h2>Change Last Name</h2>
+              <button
+                className="modal-close"
+                onClick={() => setChangeLastNameModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleChangeLastName}>
+              {modalError && <div className="form-error">{modalError}</div>}
+
+              <div className="form-group">
+                <label>Current Last Name</label>
+                <input
+                  type="text"
+                  value={personalDetails.lastName || 'Not set'}
+                  className="form-input"
+                  disabled
+                />
+              </div>
+
+              <div className="form-group">
+                <label>New Last Name</label>
+                <input
+                  type="text"
+                  value={newLastName}
+                  onChange={(e) => setNewLastName(e.target.value)}
+                  className="form-input"
+                  placeholder="Enter new last name..."
+                  required
+                  disabled={modalLoading}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setChangeLastNameModal(false)}
+                  disabled={modalLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={modalLoading}
+                >
+                  {modalLoading ? 'UPDATING...' : 'UPDATE LAST NAME'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {changePhoneModal && (
+        <>
+          <div className="modal-backdrop" onClick={() => setChangePhoneModal(false)} />
+          <div className="account-modal">
+            <div className="modal-header">
+              <h2>Change Phone Number</h2>
+              <button
+                className="modal-close"
+                onClick={() => setChangePhoneModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePhoneNumber}>
+              {modalError && <div className="form-error">{modalError}</div>}
+
+              <div className="form-group">
+                <label>Current Phone Number</label>
+                <input
+                  type="tel"
+                  value={personalDetails.phoneNumber || 'Not set'}
+                  className="form-input"
+                  disabled
+                />
+              </div>
+
+              <div className="form-group">
+                <label>New Phone Number</label>
+                <input
+                  type="tel"
+                  value={newPhoneNumber}
+                  onChange={(e) => setNewPhoneNumber(e.target.value)}
+                  className="form-input"
+                  placeholder="Enter new phone number..."
+                  required
+                  disabled={modalLoading}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setChangePhoneModal(false)}
+                  disabled={modalLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={modalLoading}
+                >
+                  {modalLoading ? 'UPDATING...' : 'UPDATE PHONE NUMBER'}
                 </button>
               </div>
             </form>

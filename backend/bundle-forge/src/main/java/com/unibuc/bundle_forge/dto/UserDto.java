@@ -18,4 +18,6 @@ public abstract class UserDto {
     @Email(message = "email must be valid")
     private String email;
 
+    private String currentPassword;
+
 }
