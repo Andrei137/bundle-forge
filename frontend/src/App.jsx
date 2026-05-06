@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Header,
   FeaturedDeals,
@@ -12,6 +13,7 @@ import {
   SearchPage,
   Bundle,
   Account,
+  DeveloperAccount,
   Orders,
   ProductLibrary,
   Wishlist,
@@ -35,6 +37,11 @@ function App() {
       <Footer />
     </div>
   );
+
+  const AccountWrapper = () => {
+    const userType = useSelector(state => state.auth.userType);
+    return userType === 'DEVELOPER' ? <DeveloperAccount /> : <Account />;
+  };
 
   return (
     <BrowserRouter>
@@ -85,7 +92,7 @@ function App() {
           path="/account"
           element={
             <Layout>
-              <Account />
+              <AccountWrapper />
             </Layout>
           }
         />
@@ -94,7 +101,7 @@ function App() {
           path="/account/login"
           element={
             <Layout>
-              <Account />
+              <AccountWrapper />
             </Layout>
           }
         />
@@ -103,7 +110,7 @@ function App() {
           path="/account/payment"
           element={
             <Layout>
-              <Account />
+              <AccountWrapper />
             </Layout>
           }
         />

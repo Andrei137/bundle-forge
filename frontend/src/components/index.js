@@ -15,6 +15,7 @@ export { SearchPage } from './SearchPage';
 export { Game } from './Game';
 export { Bundle } from './Bundle';
 export { Account } from './Account';
+export { DeveloperAccount } from './DeveloperAccount';
 export { Orders } from './Orders';
 export { ProductLibrary } from './ProductLibrary';
 export { Wishlist } from './Wishlist';

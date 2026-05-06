@@ -1,6 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 const TOKEN_KEY = 'bundleforge_token';
 const USER_KEY = 'bundleforge_user';
+const USER_TYPE_KEY = 'bundleforge_usertype';
 
 export const authService = {
   signIn: async (email, password) => {
@@ -20,7 +21,19 @@ export const authService = {
       throw new Error(errorMessage);
     }
     const data = await response.json();
+
+    // Check if account is blocked due to status
+    if (data.blocked && data.statusMessage) {
+      const error = new Error(data.statusMessage);
+      error.blocked = true;
+      error.status = data.status;
+      throw error;
+    }
+
     authService.setToken(data.token);
+    if (data.userType) {
+      authService.setUserType(data.userType);
+    }
     return data;
   },
 
@@ -53,10 +66,16 @@ export const authService = {
     if (!response.ok) {
       let errorMessage = 'Developer signup failed';
       try {
-        const error = await response.json();
-        errorMessage = error.message || error.error || errorMessage;
+        const errorData = await response.json();
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData.error) {
+          errorMessage = typeof errorData.error === 'string' ? errorData.error : errorData.error[0];
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
       } catch (e) {
-        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        errorMessage = `Server error: ${response.status}`;
       }
       throw new Error(errorMessage);
     }
@@ -73,10 +92,16 @@ export const authService = {
     if (!response.ok) {
       let errorMessage = 'Publisher signup failed';
       try {
-        const error = await response.json();
-        errorMessage = error.message || error.error || errorMessage;
+        const errorData = await response.json();
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData.error) {
+          errorMessage = typeof errorData.error === 'string' ? errorData.error : errorData.error[0];
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
       } catch (e) {
-        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        errorMessage = `Server error: ${response.status}`;
       }
       throw new Error(errorMessage);
     }
@@ -107,6 +132,51 @@ export const authService = {
 
   removeUser: () => {
     localStorage.removeItem(USER_KEY);
+  },
+
+  setUserType: (userType) => {
+    if (userType) {
+      localStorage.setItem(USER_TYPE_KEY, userType);
+    }
+  },
+
+  getUserType: () => {
+    return localStorage.getItem(USER_TYPE_KEY);
+  },
+
+  removeUserType: () => {
+    localStorage.removeItem(USER_TYPE_KEY);
+  },
+
+  getUserProfile: async (userType) => {
+    const token = authService.getToken();
+    let endpoint = '';
+    if (userType === 'CUSTOMER') {
+      endpoint = '/customers/me';
+    } else if (userType === 'DEVELOPER') {
+      endpoint = '/developers/me';
+    } else if (userType === 'PUBLISHER') {
+      endpoint = '/publishers/me';
+    }
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch profile';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
   },
 
   getCustomerProfile: async () => {
@@ -202,5 +272,98 @@ export const authService = {
     }
     const data = await response.json();
     return data.exists;
+  },
+
+  checkDisplayNameExists: async (displayName) => {
+    const response = await fetch(`${API_URL}/auth/check-displayname`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ displayName }),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to check display name';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    const data = await response.json();
+    return data.exists;
+  },
+
+  getDeveloperGames: async (status = null, title = null) => {
+    const token = authService.getToken();
+    let url = `${API_URL}/games`;
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (title) params.append('title', title);
+    if (params.toString()) url += '?' + params.toString();
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch games';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
+  announceGame: async (formData) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/games`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to announce game';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
+  updateGame: async (gameId, data) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/games/${gameId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to update game';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
   },
 };

@@ -61,7 +61,7 @@ const Checkbox = ({ id, checked, onChange, label }) => (
 );
 
 /* ── Sign-In form ── */
-const SignInContent = ({ onForgot, onClose }) => {
+const SignInContent = ({ onForgot, onClose, onShowPendingAccount }) => {
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,11 +75,16 @@ const SignInContent = ({ onForgot, onClose }) => {
     setError('');
     setIsLoading(true);
     try {
-      const result = await authService.signIn(email, password);
-      dispatch(login({ token: result.token, user: { email }, userType: 'Customer' }));
+      const signInResult = await authService.signIn(email, password);
+      const userProfile = await authService.getUserProfile(signInResult.userType);
+      dispatch(login({ token: signInResult.token, user: userProfile, userType: signInResult.userType }));
       onClose();
     } catch (err) {
-      setError(err.message);
+      if (err.blocked) {
+        onShowPendingAccount(err.message);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -224,22 +229,35 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
           throw new Error('Please fill in all required fields');
         }
         result = await authService.signUpCustomer(email, password, formData.firstName, formData.lastName, formData.phoneNumber);
+        // Auto sign-in for customers
+        const signInResult = await authService.signIn(email, password);
+        dispatch(login({ token: signInResult.token, user: result, userType: 'CUSTOMER' }));
+        onClose();
       } else if (userType === 'developer') {
         if (!formData.website || !formData.displayName) {
           throw new Error('Please fill in all required fields');
         }
+        const displayNameExists = await authService.checkDisplayNameExists(formData.displayName);
+        if (displayNameExists) {
+          throw new Error('This display name is already registered');
+        }
         result = await authService.signUpDeveloper(email, password, formData.website, formData.displayName);
+        // Show validation message for developers
+        window.dispatchEvent(new CustomEvent('developer-signup-success'));
       } else if (userType === 'publisher') {
         if (!formData.website || !formData.displayName) {
           throw new Error('Please fill in all required fields');
         }
+        const displayNameExists = await authService.checkDisplayNameExists(formData.displayName);
+        if (displayNameExists) {
+          throw new Error('This display name is already registered');
+        }
         result = await authService.signUpPublisher(email, password, formData.website, formData.displayName);
+        // Auto sign-in for publishers
+        const signInResult = await authService.signIn(email, password);
+        dispatch(login({ token: signInResult.token, user: result, userType: 'PUBLISHER' }));
+        onClose();
       }
-
-      // Auto sign-in after successful signup
-      const signInResult = await authService.signIn(email, password);
-      dispatch(login({ token: signInResult.token, user: result, userType: userType.charAt(0).toUpperCase() + userType.slice(1) }));
-      onClose();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -397,11 +415,105 @@ const RIGHT_PANEL = {
   },
 };
 
+/* ── Developer Validation Pending ── */
+const DeveloperValidationPending = ({ onClose }) => (
+  <div className="sim-backdrop" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="sim-modal" style={{ maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
+      <div className="sim-left">
+        <button className="sim-close" onClick={onClose} aria-label="Close">✕</button>
+        <div className="sim-left-inner" style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <div style={{ marginBottom: '30px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f90" strokeWidth="2" width="60" height="60" style={{ margin: '0 auto', display: 'block' }}>
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h2 className="sim-title" style={{ marginBottom: '15px' }}>Account Created</h2>
+          <p style={{ fontSize: '0.95rem', color: '#666', lineHeight: '1.6', marginBottom: '20px' }}>
+            Thank you for registering as a developer! Your account is pending admin validation. You'll receive an email notification once it's approved.
+          </p>
+          <button type="button" className="sim-submit" onClick={onClose} style={{ marginTop: '20px' }}>
+            CLOSE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ── Account Status Warning ── */
+const AccountStatusModal = ({ message, onClose }) => {
+  const getIcon = () => {
+    if (message.includes('awaiting approval')) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f90" strokeWidth="2" width="60" height="60" style={{ margin: '0 auto', display: 'block' }}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    } else if (message.includes('Banned')) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ff4444" strokeWidth="2" width="60" height="60" style={{ margin: '0 auto', display: 'block' }}>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" strokeLinecap="round" />
+        </svg>
+      );
+    } else {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ff6666" strokeWidth="2" width="60" height="60" style={{ margin: '0 auto', display: 'block' }}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v4M12 16h.01" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    }
+  };
+
+  const getTitle = () => {
+    if (message.includes('awaiting approval')) return 'Account Pending';
+    if (message.includes('Banned')) return 'Account Banned';
+    return 'Account Rejected';
+  };
+
+  const getDescription = () => {
+    if (message.includes('awaiting approval')) {
+      return 'Your account is currently pending admin validation. You will be notified via email once your account has been approved.';
+    } else if (message.includes('Banned')) {
+      return 'Your account has been banned. If you believe this is a mistake, please contact our support team.';
+    } else {
+      return 'Your account registration has been rejected. Please contact our support team for more information.';
+    }
+  };
+
+  return (
+    <div className="sim-backdrop" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="sim-modal" style={{ maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
+        <div className="sim-left">
+          <button className="sim-close" onClick={onClose} aria-label="Close">✕</button>
+          <div className="sim-left-inner" style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ marginBottom: '30px' }}>
+              {getIcon()}
+            </div>
+            <h2 className="sim-title" style={{ marginBottom: '15px' }}>{getTitle()}</h2>
+            <p style={{ fontSize: '0.95rem', color: '#666', lineHeight: '1.6', marginBottom: '20px' }}>
+              {getDescription()}
+            </p>
+            <button type="button" className="sim-submit" onClick={onClose} style={{ marginTop: '20px' }}>
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ── Modal shell ── */
 export const SignInModal = ({ isOpen, onClose }) => {
   const [mode, setMode] = useState('signin');
   const [registrationData, setRegistrationData] = useState(null);
   const [selectedUserType, setSelectedUserType] = useState('customer');
+  const [showValidationPending, setShowValidationPending] = useState(false);
+  const [accountStatusMessage, setAccountStatusMessage] = useState(null);
 
   useEffect(() => { if (isOpen) setMode('signin'); }, [isOpen]);
 
@@ -416,6 +528,14 @@ export const SignInModal = ({ isOpen, onClose }) => {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleDeveloperSignup = () => {
+      setShowValidationPending(true);
+    };
+    window.addEventListener('developer-signup-success', handleDeveloperSignup);
+    return () => window.removeEventListener('developer-signup-success', handleDeveloperSignup);
+  }, []);
+
   const handleRegistrationEmailNext = (data) => {
     setRegistrationData(data);
     setMode(`register-profile-${selectedUserType}`);
@@ -425,7 +545,23 @@ export const SignInModal = ({ isOpen, onClose }) => {
     setMode('register-email');
   };
 
-  if (!isOpen) return null;
+  const handleShowPendingAccount = (message) => {
+    setAccountStatusMessage(message);
+  };
+
+  const handleClosePendingAccount = () => {
+    setAccountStatusMessage(null);
+  };
+
+  if (!isOpen && !showValidationPending && !accountStatusMessage) return null;
+
+  if (showValidationPending) {
+    return <DeveloperValidationPending onClose={() => { setShowValidationPending(false); onClose(); }} />;
+  }
+
+  if (accountStatusMessage) {
+    return <AccountStatusModal message={accountStatusMessage} onClose={handleClosePendingAccount} />;
+  }
 
   const panel = RIGHT_PANEL[mode];
 
@@ -437,7 +573,7 @@ export const SignInModal = ({ isOpen, onClose }) => {
         <div className="sim-left">
           <button className="sim-close" onClick={onClose} aria-label="Close">✕</button>
           <div className="sim-left-inner">
-            {mode === 'signin' && <SignInContent onForgot={() => setMode('reset')} onClose={onClose} />}
+            {mode === 'signin' && <SignInContent onForgot={() => setMode('reset')} onClose={onClose} onShowPendingAccount={handleShowPendingAccount} />}
             {mode === 'register-email' && (
               <>
                 <RegisterEmailContent onNext={handleRegistrationEmailNext} />
