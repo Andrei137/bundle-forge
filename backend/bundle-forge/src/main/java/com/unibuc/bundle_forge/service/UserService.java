@@ -42,7 +42,7 @@ public abstract class UserService<U extends User, D extends UserDto> {
         return (U) jwtService.getCurrentUser();
     }
 
-    public final U updateLoggedUser(D userDto) {
+    public U updateLoggedUser(D userDto) {
         U currentUser = getCurrentUser();
 
         if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
