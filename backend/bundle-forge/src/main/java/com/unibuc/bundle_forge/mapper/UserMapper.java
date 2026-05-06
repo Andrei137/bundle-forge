@@ -12,8 +12,6 @@ public abstract class UserMapper<U extends User, D extends UserDto> {
 
     public void updateEntityFromDto(D dto, U entity) {
         Optional.ofNullable(dto.getPassword()).ifPresent(entity::setPassword);
-        Optional.ofNullable(dto.getPassword())
-                .ifPresent(raw -> entity.setPassword(JwtService.encryptPassword(raw)));
         Optional.ofNullable(dto.getEmail()).ifPresent(entity::setEmail);
     }
 

@@ -37,7 +37,7 @@ public final class AdminService {
                 .findAll()
                 .stream()
                 .filter(p -> statusObj == null || p.getStatus().equals(statusObj))
-                .filter(p -> normalizedName.isEmpty() || p.getUsername().toLowerCase().contains(normalizedName))
+                .filter(p -> normalizedName.isEmpty() || p.getEmail().toLowerCase().contains(normalizedName))
                 .toList();
     }
 
