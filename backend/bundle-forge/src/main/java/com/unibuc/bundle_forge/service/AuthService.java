@@ -22,6 +22,9 @@ import com.unibuc.bundle_forge.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public final class AuthService {
@@ -55,6 +58,9 @@ public final class AuthService {
     }
 
     public Customer signupCustomer(CustomerDto customer) {
+        if (customerRepository.findByPhoneNumber(customer.getPhoneNumber()).isPresent()) {
+            throw new ValidationException("This phone number is already registered");
+        }
         return customerRepository.save(customerMapper.toEntity(customer));
     }
 
@@ -64,6 +70,13 @@ public final class AuthService {
 
     public Developer registerDeveloper(DeveloperDto developer) {
         return developerRepository.save(developerMapper.toEntity(developer));
+    }
+
+    public Map<String, Boolean> checkEmail(String email) {
+        boolean exists = userRepository.findByEmail(email) != null;
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return response;
     }
 
 }

@@ -139,11 +139,23 @@ const RegisterEmailContent = ({ onNext }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
+    setIsLoading(true);
+    try {
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      const emailExists = await authService.checkEmailExists(email);
+      if (emailExists) {
+        throw new Error('This email is already registered. Please sign in or use a different email.');
+      }
+
+      onNext({ email, password });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    onNext({ email, password });
   };
 
   return (
@@ -212,20 +224,21 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
           throw new Error('Please fill in all required fields');
         }
         result = await authService.signUpCustomer(email, password, formData.firstName, formData.lastName, formData.phoneNumber);
-        dispatch(login({ token: null, user: result, userType: 'Customer' }));
       } else if (userType === 'developer') {
         if (!formData.website || !formData.displayName) {
           throw new Error('Please fill in all required fields');
         }
         result = await authService.signUpDeveloper(email, password, formData.website, formData.displayName);
-        dispatch(login({ token: null, user: result, userType: 'Developer' }));
       } else if (userType === 'publisher') {
         if (!formData.website || !formData.displayName) {
           throw new Error('Please fill in all required fields');
         }
         result = await authService.signUpPublisher(email, password, formData.website, formData.displayName);
-        dispatch(login({ token: null, user: result, userType: 'Publisher' }));
       }
+
+      // Auto sign-in after successful signup
+      const signInResult = await authService.signIn(email, password);
+      dispatch(login({ token: signInResult.token, user: result, userType: userType.charAt(0).toUpperCase() + userType.slice(1) }));
       onClose();
     } catch (err) {
       setError(err.message);

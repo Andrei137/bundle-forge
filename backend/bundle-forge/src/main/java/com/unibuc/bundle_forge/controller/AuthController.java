@@ -3,6 +3,7 @@ package com.unibuc.bundle_forge.controller;
 import com.unibuc.bundle_forge.dto.CredentialsDto;
 import com.unibuc.bundle_forge.dto.CustomerDto;
 import com.unibuc.bundle_forge.dto.DeveloperDto;
+import com.unibuc.bundle_forge.dto.EmailCheckDto;
 import com.unibuc.bundle_forge.dto.PublisherDto;
 import com.unibuc.bundle_forge.dto.TokenDto;
 import com.unibuc.bundle_forge.model.Customer;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -51,6 +54,11 @@ public class AuthController {
             @RequestBody @Valid @Validated(ValidationUtils.Create.class) PublisherDto publisherDto
     ) {
         return ResponseUtils.created(authService.registerPublisher(publisherDto));
+    }
+
+    @PostMapping("/check-email")
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestBody EmailCheckDto emailCheckDto) {
+        return ResponseUtils.ok(authService.checkEmail(emailCheckDto.getEmail()));
     }
 
 }
