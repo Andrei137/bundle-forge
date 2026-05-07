@@ -200,12 +200,6 @@ export const DeveloperAccount = () => {
                     <p className="detail-value">{user?.website || 'Not set'}</p>
                   </div>
                 </div>
-                <div className="detail-row">
-                  <div className="detail-label">
-                    <p className="detail-title">STATUS</p>
-                    <p className="detail-value">{user?.status || 'N/A'}</p>
-                  </div>
-                </div>
               </div>
             </div>
           )}

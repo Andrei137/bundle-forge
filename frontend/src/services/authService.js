@@ -226,7 +226,16 @@ export const authService = {
 
   changePassword: async (currentPassword, newPassword) => {
     const token = authService.getToken();
-    const response = await fetch(`${API_URL}/customers`, {
+    const userType = authService.getUserType();
+
+    let endpoint = '/customers';
+    if (userType === 'DEVELOPER') {
+      endpoint = '/developers';
+    } else if (userType === 'PUBLISHER') {
+      endpoint = '/publishers';
+    }
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
