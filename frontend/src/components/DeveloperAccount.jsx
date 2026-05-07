@@ -546,26 +546,45 @@ export const DeveloperAccount = () => {
               {!isLoading && games.length === 0 && <p>No games announced yet.</p>}
               {!isLoading && games.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                  {games.map(game => (
-                    <div key={game.id} style={{
-                      backgroundColor: '#1a1a1a',
-                      padding: '1rem',
-                      borderRadius: '8px',
-                      border: '1px solid #333',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      textAlign: 'center'
-                    }} onClick={() => {
-                      setGameDetails(game);
-                      setActiveSection('game-detail');
-                    }}>
-                      {game.cover && <img src={`${API_URL}${game.cover}`} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
-                      <h4 style={{ margin: '0.5rem 0' }}>{game.title}</h4>
-                      <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#888' }}>Status: {getStatusLabel(game.status)}</p>
-                      <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#f90', fontWeight: 'bold' }}>RON {game.price.toFixed(2)}</p>
-                      <button style={{ backgroundColor: '#f90', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '0.5rem' }}>View Details</button>
-                    </div>
-                  ))}
+                  {games.map(game => {
+                    const originalPrice = game.discountPercentage > 0
+                      ? game.price / (1 - game.discountPercentage / 100)
+                      : game.price;
+                    return (
+                      <div key={game.id} style={{
+                        backgroundColor: '#1a1a1a',
+                        padding: '1rem',
+                        borderRadius: '8px',
+                        border: '1px solid #333',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        textAlign: 'center'
+                      }} onClick={() => {
+                        setGameDetails(game);
+                        setActiveSection('game-detail');
+                      }}>
+                        {game.cover && <img src={`${API_URL}${game.cover}`} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
+                        <h4 style={{ margin: '0.5rem 0' }}>{game.title}</h4>
+                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#888' }}>Status: {getStatusLabel(game.status)}</p>
+                        <div style={{ margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center', fontSize: '0.9rem', flexWrap: 'wrap' }}>
+                          {game.discountPercentage > 0 && (
+                            <span style={{ textDecoration: 'line-through', color: '#888', fontSize: '0.8rem' }}>
+                              RON {originalPrice.toFixed(2)}
+                            </span>
+                          )}
+                          <span style={{ color: '#f90', fontWeight: 'bold' }}>
+                            RON {game.price.toFixed(2)}
+                          </span>
+                          {game.discountPercentage > 0 && (
+                            <span style={{ color: '#4CAF50', fontSize: '0.85rem' }}>
+                              (-{game.discountPercentage}%)
+                            </span>
+                          )}
+                        </div>
+                        <button style={{ backgroundColor: '#f90', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '0.5rem' }}>View Details</button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
