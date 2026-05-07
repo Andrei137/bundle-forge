@@ -30,7 +30,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/customers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/developers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/publishers/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/games/**").permitAll() // TODO: change endpoints for developers/publishers
+                        .requestMatchers(HttpMethod.GET, "/games/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

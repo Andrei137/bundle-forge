@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { setUser } from '@/redux/slices/authSlice';
 import { authService } from '@/services/authService';
+
+const API_URL = import.meta.env.VITE_API_URL;
 import AccountIcon from '@/assets/icons/account.svg?react';
 import LoginSecurityIcon from '@/assets/icons/login_security.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
@@ -11,6 +13,26 @@ import AddDocumentIcon from '@/assets/icons/add-document-icon.svg?react';
 import EditDocumentIcon from '@/assets/icons/edit-document-icon.svg?react';
 import RemoveDocumentIcon from '@/assets/icons/remove-document-icon.svg?react';
 import './Account.css';
+
+const STATUS_TRANSITIONS = {
+  ANNOUNCED: ['PUBLISHED', 'DELISTED'],
+  PUBLISHED: ['DELISTED'],
+  DELISTED: ['PUBLISHED']
+};
+
+const getValidStatuses = (currentStatus) => {
+  if (!currentStatus) return [];
+  return STATUS_TRANSITIONS[currentStatus] || [];
+};
+
+const getStatusLabel = (status) => {
+  const labels = {
+    ANNOUNCED: 'Announced',
+    PUBLISHED: 'Published',
+    DELISTED: 'Delisted'
+  };
+  return labels[status] || status;
+};
 
 export const DeveloperAccount = () => {
   const navigate = useNavigate();
@@ -36,9 +58,49 @@ export const DeveloperAccount = () => {
   const [modalError, setModalError] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
 
-  // Load games on component mount
+  // Add game form state
+  const [addGameForm, setAddGameForm] = useState({
+    title: '',
+    price: '',
+    shortDescription: '',
+    longDescription: '',
+    languages: [],
+    link: '',
+    youtubeIds: [],
+    systemRequirements: {}
+  });
+  const [coverFile, setCoverFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [currentLanguage, setCurrentLanguage] = useState('');
+  const [currentYoutubeId, setCurrentYoutubeId] = useState('');
+  const [currentPlatform, setCurrentPlatform] = useState('Windows');
+  const [draggedLanguageIndex, setDraggedLanguageIndex] = useState(null);
+  const [draggedYoutubeIndex, setDraggedYoutubeIndex] = useState(null);
+  const [platformRequirements, setPlatformRequirements] = useState({
+    minimum: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' },
+    recommended: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' }
+  });
+  const [addGameLoading, setAddGameLoading] = useState(false);
+  const [addGameError, setAddGameError] = useState('');
+
+  // Update game form state
+  const [selectedUpdateGameId, setSelectedUpdateGameId] = useState(null);
+  const [currentGameStatus, setCurrentGameStatus] = useState(null);
+  const [updateGameForm, setUpdateGameForm] = useState({
+    discountPercentage: 0,
+    status: 'PUBLISHED'
+  });
+  const [updateGameLoading, setUpdateGameLoading] = useState(false);
+  const [updateGameError, setUpdateGameError] = useState('');
+
+  // Remove game state
+  const [selectedRemoveGameId, setSelectedRemoveGameId] = useState(null);
+  const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
+  const [removeGameLoading, setRemoveGameLoading] = useState(false);
+
+  // Load games when navigating to My Games, Update Game, or Remove Game sections
   useEffect(() => {
-    if (activeSection === 'my-games') {
+    if (['my-games', 'update-game', 'remove-game'].includes(activeSection)) {
       loadDeveloperGames();
     }
   }, [activeSection]);
@@ -107,6 +169,172 @@ export const DeveloperAccount = () => {
       setModalError(err.message);
     } finally {
       setModalLoading(false);
+    }
+  };
+
+  const handleAddLanguage = () => {
+    if (currentLanguage.trim()) {
+      setAddGameForm({
+        ...addGameForm,
+        languages: [...addGameForm.languages, currentLanguage.trim()]
+      });
+      setCurrentLanguage('');
+    }
+  };
+
+  const handleRemoveLanguage = (index) => {
+    setAddGameForm({
+      ...addGameForm,
+      languages: addGameForm.languages.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleDragStartLanguage = (index) => {
+    setDraggedLanguageIndex(index);
+  };
+
+  const handleDropLanguage = (dropIndex) => {
+    if (draggedLanguageIndex === null || draggedLanguageIndex === dropIndex) return;
+    const newLanguages = [...addGameForm.languages];
+    [newLanguages[draggedLanguageIndex], newLanguages[dropIndex]] = [newLanguages[dropIndex], newLanguages[draggedLanguageIndex]];
+    setAddGameForm({
+      ...addGameForm,
+      languages: newLanguages
+    });
+    setDraggedLanguageIndex(null);
+  };
+
+  const handleAddYoutubeId = () => {
+    if (currentYoutubeId.trim()) {
+      setAddGameForm({
+        ...addGameForm,
+        youtubeIds: [...addGameForm.youtubeIds, currentYoutubeId.trim()]
+      });
+      setCurrentYoutubeId('');
+    }
+  };
+
+  const handleRemoveYoutubeId = (index) => {
+    setAddGameForm({
+      ...addGameForm,
+      youtubeIds: addGameForm.youtubeIds.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleDragStartYoutube = (index) => {
+    setDraggedYoutubeIndex(index);
+  };
+
+  const handleDropYoutube = (dropIndex) => {
+    if (draggedYoutubeIndex === null || draggedYoutubeIndex === dropIndex) return;
+    const newYoutubeIds = [...addGameForm.youtubeIds];
+    [newYoutubeIds[draggedYoutubeIndex], newYoutubeIds[dropIndex]] = [newYoutubeIds[dropIndex], newYoutubeIds[draggedYoutubeIndex]];
+    setAddGameForm({
+      ...addGameForm,
+      youtubeIds: newYoutubeIds
+    });
+    setDraggedYoutubeIndex(null);
+  };
+
+  const handleAddPlatform = () => {
+    if (currentPlatform && !addGameForm.systemRequirements[currentPlatform]) {
+      setAddGameForm({
+        ...addGameForm,
+        systemRequirements: {
+          ...addGameForm.systemRequirements,
+          [currentPlatform]: platformRequirements
+        }
+      });
+      setPlatformRequirements({
+        minimum: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' },
+        recommended: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' }
+      });
+    }
+  };
+
+  const handleRemovePlatform = (platform) => {
+    const newRequirements = { ...addGameForm.systemRequirements };
+    delete newRequirements[platform];
+    setAddGameForm({
+      ...addGameForm,
+      systemRequirements: newRequirements
+    });
+  };
+
+  const handleCreateGame = async (e) => {
+    e.preventDefault();
+    setAddGameError('');
+    setAddGameLoading(true);
+
+    try {
+      if (!addGameForm.title.trim()) throw new Error('Title is required');
+      if (!addGameForm.price || addGameForm.price < 0) throw new Error('Valid price is required');
+      if (!addGameForm.shortDescription.trim()) throw new Error('Short description is required');
+      if (addGameForm.shortDescription.length > 400) throw new Error('Short description must be max 400 characters');
+      if (!addGameForm.longDescription.trim()) throw new Error('Long description is required');
+      if (addGameForm.languages.length === 0) throw new Error('At least one language is required');
+      if (addGameForm.youtubeIds.length === 0) throw new Error('At least one YouTube ID is required');
+      if (Object.keys(addGameForm.systemRequirements).length === 0) throw new Error('At least one platform is required');
+      if (!coverFile) throw new Error('Cover image is required');
+      if (imageFiles.length === 0) throw new Error('At least one game image is required');
+
+      const formData = new FormData();
+      formData.append('game', new Blob([JSON.stringify(addGameForm)], { type: 'application/json' }), 'game.json');
+      formData.append('cover', coverFile);
+      imageFiles.forEach(file => {
+        formData.append('images', file);
+      });
+
+      await authService.announceGame(formData);
+      setAddGameForm({
+        title: '', price: '', shortDescription: '', longDescription: '', languages: [],
+        link: '', youtubeIds: [], systemRequirements: {}
+      });
+      setCoverFile(null);
+      setImageFiles([]);
+      setAddGameError('');
+      await loadDeveloperGames();
+      setActiveSection('my-games');
+    } catch (err) {
+      setAddGameError(err.message);
+    } finally {
+      setAddGameLoading(false);
+    }
+  };
+
+  const handleUpdateGame = async (e) => {
+    e.preventDefault();
+    setUpdateGameError('');
+    setUpdateGameLoading(true);
+
+    try {
+      if (!selectedUpdateGameId) throw new Error('No game selected');
+      await authService.updateGame(selectedUpdateGameId, updateGameForm);
+      setSelectedUpdateGameId(null);
+      setUpdateGameForm({ discountPercentage: 0, status: 'DEVELOPED' });
+      await loadDeveloperGames();
+      setActiveSection('my-games');
+    } catch (err) {
+      setUpdateGameError(err.message);
+    } finally {
+      setUpdateGameLoading(false);
+    }
+  };
+
+  const handleDeleteGame = async () => {
+    setRemoveGameLoading(true);
+
+    try {
+      if (!selectedRemoveGameId) throw new Error('No game selected');
+      await authService.deleteGame(selectedRemoveGameId);
+      setSelectedRemoveGameId(null);
+      setShowRemoveConfirmation(false);
+      await loadDeveloperGames();
+      setActiveSection('my-games');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRemoveGameLoading(false);
     }
   };
 
@@ -260,28 +488,23 @@ export const DeveloperAccount = () => {
               {!isLoading && games.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
                   {games.map(game => (
-                    <div
-                      key={game.id}
-                      onClick={() => {
-                        setGameDetails(game);
-                        setActiveSection('game-detail');
-                      }}
-                      style={{
-                        cursor: 'pointer',
-                        border: '1px solid #333',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        transition: 'transform 0.2s',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                    >
-                      {game.cover && <img src={game.cover} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />}
-                      <div style={{ padding: '12px', color: '#ccc' }}>
-                        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{game.title}</p>
-                        <p style={{ margin: '0 0 4px 0', fontSize: '0.85rem', color: '#888' }}>{game.status}</p>
-                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#f90', fontWeight: 'bold' }}>${game.price.toFixed(2)}</p>
-                      </div>
+                    <div key={game.id} style={{
+                      backgroundColor: '#1a1a1a',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      border: '1px solid #333',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      textAlign: 'center'
+                    }} onClick={() => {
+                      setGameDetails(game);
+                      setActiveSection('game-detail');
+                    }}>
+                      {game.cover && <img src={`${API_URL}${game.cover}`} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
+                      <h4 style={{ margin: '0.5rem 0' }}>{game.title}</h4>
+                      <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#888' }}>Status: {getStatusLabel(game.status)}</p>
+                      <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#f90', fontWeight: 'bold' }}>RON {game.price.toFixed(2)}</p>
+                      <button style={{ backgroundColor: '#f90', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '0.5rem' }}>View Details</button>
                     </div>
                   ))}
                 </div>
@@ -295,7 +518,7 @@ export const DeveloperAccount = () => {
                 ← Back to My Games
               </button>
               <h1>{gameDetails.title}</h1>
-              {gameDetails.cover && <img src={gameDetails.cover} alt={gameDetails.title} style={{ maxWidth: '300px', borderRadius: '4px', marginBottom: '1rem' }} />}
+              {gameDetails.cover && <img src={`${API_URL}${gameDetails.cover}`} alt={gameDetails.title} style={{ maxWidth: '300px', borderRadius: '4px', marginBottom: '1rem' }} />}
 
               <div className="account-section">
                 <h3>Game Details</h3>
@@ -308,7 +531,7 @@ export const DeveloperAccount = () => {
                 <div className="detail-row">
                   <div className="detail-label">
                     <p className="detail-title">PRICE</p>
-                    <p className="detail-value">${gameDetails.price.toFixed(2)}</p>
+                    <p className="detail-value">RON {gameDetails.price.toFixed(2)}</p>
                   </div>
                 </div>
                 <div className="detail-row">
@@ -330,21 +553,285 @@ export const DeveloperAccount = () => {
           {activeSection === 'add-game' && (
             <div className="account-section-view">
               <h1>Add New Game</h1>
-              <p style={{ color: '#888' }}>Game creation form coming soon...</p>
+              <form onSubmit={handleCreateGame} style={{ maxWidth: '800px' }}>
+                {addGameError && <div className="form-error">{addGameError}</div>}
+
+                <div className="form-group">
+                  <label>Game Title *</label>
+                  <input type="text" className="form-input" value={addGameForm.title} onChange={(e) => setAddGameForm({...addGameForm, title: e.target.value})} placeholder="Enter game title..." required disabled={addGameLoading} />
+                </div>
+
+                <div className="form-group">
+                  <label>Price *</label>
+                  <input type="number" step="0.01" min="0" className="form-input" value={addGameForm.price} onChange={(e) => setAddGameForm({...addGameForm, price: parseFloat(e.target.value) || ''})} placeholder="0.00" required disabled={addGameLoading} />
+                </div>
+
+                <div className="form-group">
+                  <label>Short Description (max 400 chars) *</label>
+                  <textarea className="form-input" value={addGameForm.shortDescription} onChange={(e) => setAddGameForm({...addGameForm, shortDescription: e.target.value})} placeholder="Brief description..." maxLength="400" required disabled={addGameLoading} style={{ minHeight: '80px' }} />
+                  <small style={{ color: '#888' }}>{addGameForm.shortDescription.length}/400</small>
+                </div>
+
+                <div className="form-group">
+                  <label>Long Description *</label>
+                  <textarea className="form-input" value={addGameForm.longDescription} onChange={(e) => setAddGameForm({...addGameForm, longDescription: e.target.value})} placeholder="Detailed game description..." required disabled={addGameLoading} style={{ minHeight: '120px' }} />
+                </div>
+
+                <div className="form-group">
+                  <label>Languages *</label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input type="text" className="form-input" value={currentLanguage} onChange={(e) => setCurrentLanguage(e.target.value)} placeholder="e.g., English" disabled={addGameLoading} style={{ flex: 1 }} />
+                    <button type="button" className="btn-primary" onClick={handleAddLanguage} disabled={addGameLoading}>Add</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {addGameForm.languages.map((lang, idx) => (
+                      <div
+                        key={idx}
+                        draggable
+                        onDragStart={() => handleDragStartLanguage(idx)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropLanguage(idx)}
+                        style={{
+                          backgroundColor: draggedLanguageIndex === idx ? '#ff6b00' : '#f90',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          gap: '4px',
+                          alignItems: 'center',
+                          cursor: 'move',
+                          opacity: draggedLanguageIndex === idx ? 0.7 : 1,
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>⋮⋮</span>
+                        <span>{lang}</span>
+                        <button type="button" onClick={() => handleRemoveLanguage(idx)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Link (optional)</label>
+                  <input type="url" className="form-input" value={addGameForm.link} onChange={(e) => setAddGameForm({...addGameForm, link: e.target.value})} placeholder="https://..." disabled={addGameLoading} />
+                </div>
+
+                <div className="form-group">
+                  <label>YouTube Video IDs *</label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input type="text" className="form-input" value={currentYoutubeId} onChange={(e) => setCurrentYoutubeId(e.target.value)} placeholder="YouTube video ID" disabled={addGameLoading} style={{ flex: 1 }} />
+                    <button type="button" className="btn-primary" onClick={handleAddYoutubeId} disabled={addGameLoading}>Add</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {addGameForm.youtubeIds.map((id, idx) => (
+                      <div
+                        key={idx}
+                        draggable
+                        onDragStart={() => handleDragStartYoutube(idx)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropYoutube(idx)}
+                        style={{
+                          backgroundColor: draggedYoutubeIndex === idx ? '#ff6b00' : '#f90',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          gap: '4px',
+                          alignItems: 'center',
+                          cursor: 'move',
+                          opacity: draggedYoutubeIndex === idx ? 0.7 : 1,
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>⋮⋮</span>
+                        <span>{id}</span>
+                        <button type="button" onClick={() => handleRemoveYoutubeId(idx)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>System Requirements *</label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <select className="form-input" value={currentPlatform} onChange={(e) => setCurrentPlatform(e.target.value)} disabled={addGameLoading} style={{ flex: 1 }}>
+                      <option value="Windows">Windows</option>
+                      <option value="macOS">macOS</option>
+                      <option value="Linux">Linux</option>
+                    </select>
+                    <button type="button" className="btn-primary" onClick={handleAddPlatform} disabled={addGameLoading || Object.keys(addGameForm.systemRequirements).includes(currentPlatform)}>Add Platform</button>
+                  </div>
+
+                  {Object.keys(addGameForm.systemRequirements).map(platform => (
+                    <div key={platform} style={{ marginBottom: '20px', padding: '16px', backgroundColor: '#1a1a1a', borderRadius: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <h4 style={{ margin: 0 }}>{platform}</h4>
+                        <button type="button" onClick={() => handleRemovePlatform(platform)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#f90', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                      </div>
+
+                      {['minimum', 'recommended'].map(type => (
+                        <div key={type} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #333' }}>
+                          <h5 style={{ margin: '0 0 12px 0', color: '#f90' }}>{type.charAt(0).toUpperCase() + type.slice(1)} Requirements</h5>
+                          {['os', 'processor', 'memory', 'graphics', 'graphicsAPI', 'storage', 'note'].map(field => (
+                            <div key={field} style={{ marginBottom: '8px' }}>
+                              <label style={{ fontSize: '0.9rem' }}>{field.charAt(0).toUpperCase() + field.slice(1)}{field !== 'note' ? ' *' : ''}</label>
+                              <input type="text" className="form-input" placeholder={`Enter ${field}...`} disabled={addGameLoading} value={addGameForm.systemRequirements[platform][type][field] || ''} onChange={(e) => setAddGameForm({
+                                ...addGameForm,
+                                systemRequirements: {
+                                  ...addGameForm.systemRequirements,
+                                  [platform]: {
+                                    ...addGameForm.systemRequirements[platform],
+                                    [type]: {
+                                      ...addGameForm.systemRequirements[platform][type],
+                                      [field]: e.target.value
+                                    }
+                                  }
+                                }
+                              })} style={{ fontSize: '0.9rem' }} required={field !== 'note'} />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="form-group">
+                  <label>Cover Image *</label>
+                  <input type="file" className="form-input" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} disabled={addGameLoading} required />
+                </div>
+
+                <div className="form-group">
+                  <label>Game Images *</label>
+                  <input type="file" className="form-input" accept="image/*" multiple onChange={(e) => setImageFiles(Array.from(e.target.files || []))} disabled={addGameLoading} required />
+                  <small style={{ color: '#888' }}>{imageFiles.length} file(s) selected</small>
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="btn-secondary" onClick={() => {
+                    setAddGameForm({
+                      title: '', price: '', shortDescription: '', longDescription: '', languages: [],
+                      link: '', youtubeIds: [], systemRequirements: {}
+                    });
+                    setCoverFile(null);
+                    setImageFiles([]);
+                    setAddGameError('');
+                  }} disabled={addGameLoading}>Reset</button>
+                  <button type="submit" className="btn-primary" disabled={addGameLoading}>{addGameLoading ? 'CREATING...' : 'CREATE GAME'}</button>
+                </div>
+              </form>
             </div>
           )}
 
           {activeSection === 'update-game' && (
             <div className="account-section-view">
               <h1>Update Game</h1>
-              <p style={{ color: '#888' }}>Game update form coming soon...</p>
+              {!selectedUpdateGameId ? (
+                <>
+                  {error && <div style={{ color: '#ff0000', marginBottom: '1rem' }}>{error}</div>}
+                  {isLoading && <p>Loading games...</p>}
+                  {!isLoading && games.length === 0 && <p>No games available to update.</p>}
+                  {!isLoading && games.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                      {games.map(game => (
+                        <div key={game.id} style={{
+                          backgroundColor: '#1a1a1a',
+                          padding: '1rem',
+                          borderRadius: '8px',
+                          border: '1px solid #333',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s',
+                          textAlign: 'center'
+                        }} onClick={() => {
+                          const gameStatus = game.status || 'ANNOUNCED';
+                          setSelectedUpdateGameId(game.id);
+                          setCurrentGameStatus(gameStatus);
+                          const validTransitions = getValidStatuses(gameStatus);
+                          setUpdateGameForm({
+                            discountPercentage: game.discountPercentage || 0,
+                            status: validTransitions.length > 0 ? validTransitions[0] : gameStatus
+                          });
+                        }}>
+                          {game.cover && <img src={`${API_URL}${game.cover}`} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
+                          <h4 style={{ margin: '0.5rem 0' }}>{game.title}</h4>
+                          <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#888' }}>Status: {getStatusLabel(game.status)}</p>
+                          <button style={{ backgroundColor: '#f90', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Edit</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <form onSubmit={handleUpdateGame} style={{ maxWidth: '600px' }}>
+                  {updateGameError && <div className="form-error">{updateGameError}</div>}
+
+                  <button type="button" className="btn-secondary" onClick={() => {
+                    setSelectedUpdateGameId(null);
+                    setCurrentGameStatus(null);
+                  }} disabled={updateGameLoading} style={{ marginBottom: '1rem' }}>← Back to Game List</button>
+
+                  <div className="form-group">
+                    <label>Discount Percentage (0-100) *</label>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <input type="range" min="0" max="100" className="form-input" value={updateGameForm.discountPercentage} onChange={(e) => setUpdateGameForm({...updateGameForm, discountPercentage: parseInt(e.target.value)})} disabled={updateGameLoading} style={{ flex: 1, height: '40px' }} />
+                      <input type="number" min="0" max="100" className="form-input" value={updateGameForm.discountPercentage} onChange={(e) => setUpdateGameForm({...updateGameForm, discountPercentage: Math.min(100, Math.max(0, parseInt(e.target.value) || 0))})} disabled={updateGameLoading} style={{ width: '80px' }} />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Game Status * (Current: {getStatusLabel(currentGameStatus)})</label>
+                    {getValidStatuses(currentGameStatus).length === 0 ? (
+                      <p style={{ color: '#888', fontSize: '0.9rem' }}>No valid transitions available for this status</p>
+                    ) : (
+                      <select className="form-input" value={updateGameForm.status} onChange={(e) => setUpdateGameForm({...updateGameForm, status: e.target.value})} disabled={updateGameLoading} required>
+                        <option value="">Select a status...</option>
+                        {getValidStatuses(currentGameStatus).map(status => (
+                          <option key={status} value={status}>
+                            {getStatusLabel(status)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="modal-actions">
+                    <button type="button" className="btn-secondary" onClick={() => {
+                      setSelectedUpdateGameId(null);
+                      setCurrentGameStatus(null);
+                    }} disabled={updateGameLoading}>Cancel</button>
+                    <button type="submit" className="btn-primary" disabled={updateGameLoading}>{updateGameLoading ? 'UPDATING...' : 'UPDATE GAME'}</button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
 
           {activeSection === 'remove-game' && (
             <div className="account-section-view">
               <h1>Remove Game</h1>
-              <p style={{ color: '#888' }}>Game removal form coming soon...</p>
+              {error && <div style={{ color: '#ff0000', marginBottom: '1rem' }}>{error}</div>}
+              {isLoading && <p>Loading games...</p>}
+              {!isLoading && games.length === 0 && <p>No games available to remove.</p>}
+              {!isLoading && games.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                  {games.map(game => (
+                    <div key={game.id} style={{
+                      backgroundColor: '#1a1a1a',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      border: '1px solid #333',
+                      textAlign: 'center'
+                    }}>
+                      {game.cover && <img src={`${API_URL}${game.cover}`} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
+                      <h4 style={{ margin: '0.5rem 0' }}>{game.title}</h4>
+                      <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#888' }}>Status: {game.status}</p>
+                      <button onClick={() => {
+                        setSelectedRemoveGameId(game.id);
+                        setShowRemoveConfirmation(true);
+                      }} style={{ backgroundColor: '#ff4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Delete</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -422,6 +909,34 @@ export const DeveloperAccount = () => {
             </form>
           </div>
         </>
+      )}
+
+      {showRemoveConfirmation && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => !removeGameLoading && setShowRemoveConfirmation(false)}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '8px', maxWidth: '450px', width: '90%', boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ marginBottom: '30px' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ff4444" strokeWidth="2" width="60" height="60" style={{ margin: '0 auto', display: 'block' }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" strokeLinecap="round" />
+                  <line x1="9" y1="9" x2="15" y2="15" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h2 style={{ margin: '0 0 15px 0', fontSize: '1.3rem', color: '#000' }}>Delete Game</h2>
+              <p style={{ fontSize: '0.95rem', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                Are you sure you want to delete this game? This action will delist the game and it will no longer be visible to customers.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                <button type="button" onClick={() => setShowRemoveConfirmation(false)} disabled={removeGameLoading} style={{ padding: '12px 24px', borderRadius: '4px', border: '1px solid #ddd', backgroundColor: '#f5f5f5', color: '#333', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  CANCEL
+                </button>
+                <button type="button" onClick={handleDeleteGame} disabled={removeGameLoading} style={{ padding: '12px 24px', borderRadius: '4px', border: 'none', backgroundColor: '#ff4444', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  {removeGameLoading ? 'DELETING...' : 'DELETE'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
