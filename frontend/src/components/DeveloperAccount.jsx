@@ -112,9 +112,24 @@ export const DeveloperAccount = () => {
     }
   }, [activeSection]);
 
+  // Redirect developers from /account to /dev/games
+  useEffect(() => {
+    if (location.pathname === '/account' || location.pathname === '/account/payment') {
+      navigate('/dev/games', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   // Update active section based on URL
   useEffect(() => {
-    if (location.pathname === '/account/login') {
+    if (location.pathname === '/dev/games') {
+      setActiveSection('my-games');
+    } else if (location.pathname === '/dev/add') {
+      setActiveSection('add-game');
+    } else if (location.pathname === '/dev/update') {
+      setActiveSection('update-game');
+    } else if (location.pathname === '/dev/remove') {
+      setActiveSection('remove-game');
+    } else if (location.pathname === '/account/login') {
       setActiveSection('security');
     } else {
       setActiveSection('overview');
@@ -398,12 +413,12 @@ export const DeveloperAccount = () => {
   };
 
   const menuItems = [
-    { id: 'overview', label: 'Account Overview', icon: AccountIcon, action: () => setActiveSection('overview'), isParent: true },
-    { id: 'security', label: 'Login & Security', icon: LoginSecurityIcon, action: () => setActiveSection('security'), isChild: true },
-    { id: 'my-games', label: 'My Games', icon: LibraryIcon, action: () => setActiveSection('my-games'), isParent: true },
-    { id: 'add-game', label: 'Add New Game', icon: AddDocumentIcon, action: () => setActiveSection('add-game'), isChild: true },
-    { id: 'update-game', label: 'Update Game', icon: EditDocumentIcon, action: () => setActiveSection('update-game'), isChild: true },
-    { id: 'remove-game', label: 'Remove Game', icon: RemoveDocumentIcon, action: () => setActiveSection('remove-game'), isChild: true },
+    { id: 'overview', label: 'Account Overview', icon: AccountIcon, action: () => navigate('/dev/games'), isParent: true },
+    { id: 'security', label: 'Login & Security', icon: LoginSecurityIcon, action: () => navigate('/account/login'), isChild: true },
+    { id: 'my-games', label: 'My Games', icon: LibraryIcon, action: () => navigate('/dev/games'), isParent: true },
+    { id: 'add-game', label: 'Add New Game', icon: AddDocumentIcon, action: () => navigate('/dev/add'), isChild: true },
+    { id: 'update-game', label: 'Update Game', icon: EditDocumentIcon, action: () => navigate('/dev/update'), isChild: true },
+    { id: 'remove-game', label: 'Remove Game', icon: RemoveDocumentIcon, action: () => navigate('/dev/remove'), isChild: true },
     { id: 'support', label: 'Support', icon: SupportIcon, action: () => setActiveSection('support') },
   ];
 

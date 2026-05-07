@@ -159,6 +159,42 @@ function App() {
             </Layout>
           }
         />
+
+        <Route
+          path="/dev/games"
+          element={
+            <Layout>
+              <DeveloperAccount />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/dev/add"
+          element={
+            <Layout>
+              <DeveloperAccount />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/dev/update"
+          element={
+            <Layout>
+              <DeveloperAccount />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/dev/remove"
+          element={
+            <Layout>
+              <DeveloperAccount />
+            </Layout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
