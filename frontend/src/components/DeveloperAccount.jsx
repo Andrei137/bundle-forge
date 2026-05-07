@@ -87,6 +87,7 @@ export const DeveloperAccount = () => {
   });
   const coverFileInputRef = useRef(null);
   const imageFilesInputRef = useRef(null);
+  const imageObjectUrlsRef = useRef({});
   const [addGameLoading, setAddGameLoading] = useState(false);
   const [addGameError, setAddGameError] = useState('');
 
@@ -104,6 +105,24 @@ export const DeveloperAccount = () => {
   const [selectedRemoveGameId, setSelectedRemoveGameId] = useState(null);
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
   const [removeGameLoading, setRemoveGameLoading] = useState(false);
+
+  // Create and cache object URLs for image files
+  useEffect(() => {
+    imageFiles.forEach((file, idx) => {
+      if (file instanceof File && !imageObjectUrlsRef.current[idx]) {
+        imageObjectUrlsRef.current[idx] = URL.createObjectURL(file);
+      }
+    });
+
+    return () => {
+      Object.values(imageObjectUrlsRef.current).forEach(url => {
+        if (typeof url === 'string' && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+      imageObjectUrlsRef.current = {};
+    };
+  }, [imageFiles]);
 
   // Load games when navigating to My Games, Update Game, or Remove Game sections
   useEffect(() => {
@@ -660,53 +679,89 @@ export const DeveloperAccount = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Short Description (max 400 chars) *</label>
-                  <textarea className="form-input" value={addGameForm.shortDescription} onChange={(e) => setAddGameForm({...addGameForm, shortDescription: e.target.value})} placeholder="Brief description..." maxLength="400" required disabled={addGameLoading} style={{ minHeight: '80px' }} />
-                  <small style={{ color: '#888' }}>{addGameForm.shortDescription.length}/400</small>
-                </div>
-
-                <div className="form-group">
-                  <label>Long Description *</label>
-                  <textarea className="form-input" value={addGameForm.longDescription} onChange={(e) => setAddGameForm({...addGameForm, longDescription: e.target.value})} placeholder="Detailed game description..." required disabled={addGameLoading} style={{ minHeight: '120px' }} />
-                </div>
-
-                <div className="form-group">
-                  <label>Languages *</label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                    <input type="text" className="form-input" value={currentLanguage} onChange={(e) => setCurrentLanguage(e.target.value)} placeholder="e.g., English" disabled={addGameLoading} style={{ flex: 1 }} />
-                    <button type="button" className="btn-primary" onClick={handleAddLanguage} disabled={addGameLoading}>Add</button>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {addGameForm.languages.map((lang, idx) => (
-                      <div
-                        key={idx}
-                        draggable
-                        onDragStart={() => handleDragStartLanguage(idx)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => handleDropLanguage(idx)}
-                        style={{
-                          backgroundColor: draggedLanguageIndex === idx ? '#ff6b00' : '#f90',
-                          padding: '6px 12px',
-                          borderRadius: '4px',
+                  <label>Cover Image *</label>
+                  <input
+                    ref={coverFileInputRef}
+                    type="file"
+                    className="form-input"
+                    accept="image/*"
+                    onChange={(e) => {
+                      setCoverFile(e.target.files?.[0] || null);
+                      if (e.target.files?.length) {
+                        e.target.value = '';
+                      }
+                    }}
+                    disabled={addGameLoading}
+                    style={{ display: 'none' }}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                    {coverFile && (
+                      <div style={{
+                        position: 'relative',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '8px',
+                        overflow: 'hidden'
+                      }}>
+                        <img src={URL.createObjectURL(coverFile)} alt="Cover" style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
                           display: 'flex',
-                          gap: '4px',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
                           alignItems: 'center',
-                          cursor: 'move',
-                          opacity: draggedLanguageIndex === idx ? 0.7 : 1,
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>⋮⋮</span>
-                        <span>{lang}</span>
-                        <button type="button" onClick={() => handleRemoveLanguage(idx)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+                          opacity: 0,
+                          transition: 'opacity 0.2s'
+                        }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCoverFile(null);
+                            }}
+                            disabled={addGameLoading}
+                            style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => coverFileInputRef.current?.click()}
+                      disabled={addGameLoading}
+                      style={{
+                        backgroundColor: '#1a1a1a',
+                        border: '2px dashed #666',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        minHeight: '150px',
+                        transition: 'all 0.2s',
+                        ':hover': { borderColor: '#f90', backgroundColor: '#262626' }
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#f90';
+                        e.currentTarget.style.backgroundColor = '#262626';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#666';
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>+</span>
+                      <span style={{ fontSize: '0.9rem', color: '#888' }}>Upload Cover</span>
+                    </button>
                   </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Link (optional)</label>
-                  <input type="url" className="form-input" value={addGameForm.link} onChange={(e) => setAddGameForm({...addGameForm, link: e.target.value})} placeholder="https://..." disabled={addGameLoading} />
                 </div>
 
                 <div className="form-group">
@@ -818,137 +873,6 @@ export const DeveloperAccount = () => {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>System Requirements *</label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <select className="form-input" value={currentPlatform} onChange={(e) => setCurrentPlatform(e.target.value)} disabled={addGameLoading} style={{ flex: 1 }}>
-                      <option value="Windows">Windows</option>
-                      <option value="macOS">macOS</option>
-                      <option value="Linux">Linux</option>
-                    </select>
-                    <button type="button" className="btn-primary" onClick={handleAddPlatform} disabled={addGameLoading || Object.keys(addGameForm.systemRequirements).includes(currentPlatform)}>Add Platform</button>
-                  </div>
-
-                  {Object.keys(addGameForm.systemRequirements).map(platform => (
-                    <div key={platform} style={{ marginBottom: '20px', padding: '16px', backgroundColor: '#1a1a1a', borderRadius: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <h4 style={{ margin: 0 }}>{platform}</h4>
-                        <button type="button" onClick={() => handleRemovePlatform(platform)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#f90', cursor: 'pointer', fontSize: '18px' }}>✕</button>
-                      </div>
-
-                      {['minimum', 'recommended'].map(type => (
-                        <div key={type} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #333' }}>
-                          <h5 style={{ margin: '0 0 12px 0', color: '#f90' }}>{type.charAt(0).toUpperCase() + type.slice(1)} Requirements</h5>
-                          {['os', 'processor', 'memory', 'graphics', 'graphicsAPI', 'storage', 'note'].map(field => (
-                            <div key={field} style={{ marginBottom: '8px' }}>
-                              <label style={{ fontSize: '0.9rem' }}>{field.charAt(0).toUpperCase() + field.slice(1)}{field !== 'note' ? ' *' : ''}</label>
-                              <input type="text" className="form-input" placeholder={`Enter ${field}...`} disabled={addGameLoading} value={addGameForm.systemRequirements[platform][type][field] || ''} onChange={(e) => setAddGameForm({
-                                ...addGameForm,
-                                systemRequirements: {
-                                  ...addGameForm.systemRequirements,
-                                  [platform]: {
-                                    ...addGameForm.systemRequirements[platform],
-                                    [type]: {
-                                      ...addGameForm.systemRequirements[platform][type],
-                                      [field]: e.target.value
-                                    }
-                                  }
-                                }
-                              })} style={{ fontSize: '0.9rem' }} required={field !== 'note'} />
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="form-group">
-                  <label>Cover Image *</label>
-                  <input
-                    ref={coverFileInputRef}
-                    type="file"
-                    className="form-input"
-                    accept="image/*"
-                    onChange={(e) => {
-                      setCoverFile(e.target.files?.[0] || null);
-                      if (e.target.files?.length) {
-                        e.target.value = '';
-                      }
-                    }}
-                    disabled={addGameLoading}
-                    required
-                    style={{ display: 'none' }}
-                  />
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
-                    {coverFile && (
-                      <div style={{
-                        position: 'relative',
-                        backgroundColor: '#1a1a1a',
-                        borderRadius: '8px',
-                        overflow: 'hidden'
-                      }}>
-                        <img src={URL.createObjectURL(coverFile)} alt="Cover" style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
-                        <div style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          opacity: 0,
-                          transition: 'opacity 0.2s'
-                        }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCoverFile(null);
-                            }}
-                            disabled={addGameLoading}
-                            style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px' }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => coverFileInputRef.current?.click()}
-                      disabled={addGameLoading}
-                      style={{
-                        backgroundColor: '#1a1a1a',
-                        border: '2px dashed #666',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        minHeight: '150px',
-                        transition: 'all 0.2s',
-                        ':hover': { borderColor: '#f90', backgroundColor: '#262626' }
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = '#f90';
-                        e.currentTarget.style.backgroundColor = '#262626';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = '#666';
-                        e.currentTarget.style.backgroundColor = '#1a1a1a';
-                      }}
-                    >
-                      <span style={{ fontSize: '24px' }}>+</span>
-                      <span style={{ fontSize: '0.9rem', color: '#888' }}>Upload Cover</span>
-                    </button>
-                  </div>
-                </div>
 
                 <div className="form-group">
                   <label>Game Images *</label>
@@ -969,6 +893,7 @@ export const DeveloperAccount = () => {
                   />
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
                     {getReorderedImages().map((file, displayIdx) => {
+                      if (!file) return null;
                       let actualIdx = -1;
                       for (let i = 0; i < imageFiles.length; i++) {
                         if (imageFiles[i] === file) {
@@ -976,7 +901,8 @@ export const DeveloperAccount = () => {
                           break;
                         }
                       }
-                      const imageUrl = URL.createObjectURL(file);
+                      if (actualIdx === -1) return null;
+                      const imageUrl = imageObjectUrlsRef.current[actualIdx] || '';
                       return (
                         <div
                           key={actualIdx}
@@ -1061,6 +987,101 @@ export const DeveloperAccount = () => {
                       <span style={{ fontSize: '0.9rem', color: '#888' }}>Add Images</span>
                     </button>
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Short Description (max 400 chars) *</label>
+                  <textarea className="form-input" value={addGameForm.shortDescription} onChange={(e) => setAddGameForm({...addGameForm, shortDescription: e.target.value})} placeholder="Brief description..." maxLength="400" required disabled={addGameLoading} style={{ minHeight: '80px' }} />
+                  <small style={{ color: '#888' }}>{addGameForm.shortDescription.length}/400</small>
+                </div>
+
+                <div className="form-group">
+                  <label>Long Description *</label>
+                  <textarea className="form-input" value={addGameForm.longDescription} onChange={(e) => setAddGameForm({...addGameForm, longDescription: e.target.value})} placeholder="Detailed game description..." required disabled={addGameLoading} style={{ minHeight: '120px' }} />
+                </div>
+
+                <div className="form-group">
+                  <label>Languages *</label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input type="text" className="form-input" value={currentLanguage} onChange={(e) => setCurrentLanguage(e.target.value)} placeholder="e.g., English" disabled={addGameLoading} style={{ flex: 1 }} />
+                    <button type="button" className="btn-primary" onClick={handleAddLanguage} disabled={addGameLoading}>Add</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {addGameForm.languages.map((lang, idx) => (
+                      <div
+                        key={idx}
+                        draggable
+                        onDragStart={() => handleDragStartLanguage(idx)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropLanguage(idx)}
+                        style={{
+                          backgroundColor: draggedLanguageIndex === idx ? '#ff6b00' : '#f90',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          gap: '4px',
+                          alignItems: 'center',
+                          cursor: 'move',
+                          opacity: draggedLanguageIndex === idx ? 0.7 : 1,
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>⋮⋮</span>
+                        <span>{lang}</span>
+                        <button type="button" onClick={() => handleRemoveLanguage(idx)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Link (optional)</label>
+                  <input type="url" className="form-input" value={addGameForm.link} onChange={(e) => setAddGameForm({...addGameForm, link: e.target.value})} placeholder="https://..." disabled={addGameLoading} />
+                </div>
+
+                <div className="form-group">
+                  <label>System Requirements *</label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <select className="form-input" value={currentPlatform} onChange={(e) => setCurrentPlatform(e.target.value)} disabled={addGameLoading} style={{ flex: 1 }}>
+                      <option value="Windows">Windows</option>
+                      <option value="macOS">macOS</option>
+                      <option value="Linux">Linux</option>
+                    </select>
+                    <button type="button" className="btn-primary" onClick={handleAddPlatform} disabled={addGameLoading || Object.keys(addGameForm.systemRequirements).includes(currentPlatform)}>Add Platform</button>
+                  </div>
+
+                  {Object.keys(addGameForm.systemRequirements).map(platform => (
+                    <div key={platform} style={{ marginBottom: '20px', padding: '16px', backgroundColor: '#1a1a1a', borderRadius: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <h4 style={{ margin: 0 }}>{platform}</h4>
+                        <button type="button" onClick={() => handleRemovePlatform(platform)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#f90', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                      </div>
+
+                      {['minimum', 'recommended'].map(type => (
+                        <div key={type} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #333' }}>
+                          <h5 style={{ margin: '0 0 12px 0', color: '#f90' }}>{type.charAt(0).toUpperCase() + type.slice(1)} Requirements</h5>
+                          {['os', 'processor', 'memory', 'graphics', 'graphicsAPI', 'storage', 'note'].map(field => (
+                            <div key={field} style={{ marginBottom: '8px' }}>
+                              <label style={{ fontSize: '0.9rem' }}>{field.charAt(0).toUpperCase() + field.slice(1)}{field !== 'note' ? ' *' : ''}</label>
+                              <input type="text" className="form-input" placeholder={`Enter ${field}...`} disabled={addGameLoading} value={addGameForm.systemRequirements[platform][type][field] || ''} onChange={(e) => setAddGameForm({
+                                ...addGameForm,
+                                systemRequirements: {
+                                  ...addGameForm.systemRequirements,
+                                  [platform]: {
+                                    ...addGameForm.systemRequirements[platform],
+                                    [type]: {
+                                      ...addGameForm.systemRequirements[platform][type],
+                                      [field]: e.target.value
+                                    }
+                                  }
+                                }
+                              })} style={{ fontSize: '0.9rem' }} required={field !== 'note'} />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
 
                 <div className="modal-actions">
