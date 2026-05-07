@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { setUser } from '@/redux/slices/authSlice';
@@ -12,6 +12,7 @@ import SupportIcon from '@/assets/icons/support.svg?react';
 import AddDocumentIcon from '@/assets/icons/add-document-icon.svg?react';
 import EditDocumentIcon from '@/assets/icons/edit-document-icon.svg?react';
 import RemoveDocumentIcon from '@/assets/icons/remove-document-icon.svg?react';
+import RedYoutubeIcon from '@/assets/icons/red-youtube.svg?react';
 import './Account.css';
 
 const STATUS_TRANSITIONS = {
@@ -75,11 +76,17 @@ export const DeveloperAccount = () => {
   const [currentYoutubeId, setCurrentYoutubeId] = useState('');
   const [currentPlatform, setCurrentPlatform] = useState('Windows');
   const [draggedLanguageIndex, setDraggedLanguageIndex] = useState(null);
+  const [dragoverLanguageIndex, setDragoverLanguageIndex] = useState(null);
   const [draggedYoutubeIndex, setDraggedYoutubeIndex] = useState(null);
+  const [dragoverYoutubeIndex, setDragoverYoutubeIndex] = useState(null);
+  const [draggedImageIndex, setDraggedImageIndex] = useState(null);
+  const [dragoverImageIndex, setDragoverImageIndex] = useState(null);
   const [platformRequirements, setPlatformRequirements] = useState({
     minimum: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' },
     recommended: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' }
   });
+  const coverFileInputRef = useRef(null);
+  const imageFilesInputRef = useRef(null);
   const [addGameLoading, setAddGameLoading] = useState(false);
   const [addGameError, setAddGameError] = useState('');
 
@@ -225,6 +232,14 @@ export const DeveloperAccount = () => {
     setDraggedYoutubeIndex(index);
   };
 
+  const handleDragOverYoutube = (index) => {
+    setDragoverYoutubeIndex(index);
+  };
+
+  const handleDragLeaveYoutube = () => {
+    setDragoverYoutubeIndex(null);
+  };
+
   const handleDropYoutube = (dropIndex) => {
     if (draggedYoutubeIndex === null || draggedYoutubeIndex === dropIndex) return;
     const newYoutubeIds = [...addGameForm.youtubeIds];
@@ -234,6 +249,50 @@ export const DeveloperAccount = () => {
       youtubeIds: newYoutubeIds
     });
     setDraggedYoutubeIndex(null);
+    setDragoverYoutubeIndex(null);
+  };
+
+  const getReorderedYoutubeIds = () => {
+    if (draggedYoutubeIndex === null || dragoverYoutubeIndex === null) {
+      return addGameForm.youtubeIds;
+    }
+    const reordered = [...addGameForm.youtubeIds];
+    [reordered[draggedYoutubeIndex], reordered[dragoverYoutubeIndex]] = [reordered[dragoverYoutubeIndex], reordered[draggedYoutubeIndex]];
+    return reordered;
+  };
+
+  const handleDragStartImage = (index) => {
+    setDraggedImageIndex(index);
+  };
+
+  const handleDragOverImage = (index) => {
+    setDragoverImageIndex(index);
+  };
+
+  const handleDragLeaveImage = () => {
+    setDragoverImageIndex(null);
+  };
+
+  const handleDropImage = (dropIndex) => {
+    if (draggedImageIndex === null || draggedImageIndex === dropIndex) return;
+    const newImageFiles = [...imageFiles];
+    [newImageFiles[draggedImageIndex], newImageFiles[dropIndex]] = [newImageFiles[dropIndex], newImageFiles[draggedImageIndex]];
+    setImageFiles(newImageFiles);
+    setDraggedImageIndex(null);
+    setDragoverImageIndex(null);
+  };
+
+  const handleRemoveImage = (index) => {
+    setImageFiles(imageFiles.filter((_, i) => i !== index));
+  };
+
+  const getReorderedImages = () => {
+    if (draggedImageIndex === null || dragoverImageIndex === null) {
+      return imageFiles;
+    }
+    const reordered = [...imageFiles];
+    [reordered[draggedImageIndex], reordered[dragoverImageIndex]] = [reordered[dragoverImageIndex], reordered[draggedImageIndex]];
+    return reordered;
   };
 
   const handleAddPlatform = () => {
@@ -618,35 +677,110 @@ export const DeveloperAccount = () => {
 
                 <div className="form-group">
                   <label>YouTube Video IDs *</label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                    <input type="text" className="form-input" value={currentYoutubeId} onChange={(e) => setCurrentYoutubeId(e.target.value)} placeholder="YouTube video ID" disabled={addGameLoading} style={{ flex: 1 }} />
-                    <button type="button" className="btn-primary" onClick={handleAddYoutubeId} disabled={addGameLoading}>Add</button>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {addGameForm.youtubeIds.map((id, idx) => (
-                      <div
-                        key={idx}
-                        draggable
-                        onDragStart={() => handleDragStartYoutube(idx)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => handleDropYoutube(idx)}
-                        style={{
-                          backgroundColor: draggedYoutubeIndex === idx ? '#ff6b00' : '#f90',
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          display: 'flex',
-                          gap: '4px',
-                          alignItems: 'center',
-                          cursor: 'move',
-                          opacity: draggedYoutubeIndex === idx ? 0.7 : 1,
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>⋮⋮</span>
-                        <span>{id}</span>
-                        <button type="button" onClick={() => handleRemoveYoutubeId(idx)} disabled={addGameLoading} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', fontSize: '16px' }}>✕</button>
-                      </div>
-                    ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                    {getReorderedYoutubeIds().map((id, idx) => {
+                      const originalIdx = addGameForm.youtubeIds.indexOf(id);
+                      const thumbnailUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+                      return (
+                        <div
+                          key={originalIdx}
+                          draggable
+                          onDragStart={() => handleDragStartYoutube(originalIdx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDragEnter={() => handleDragOverYoutube(originalIdx)}
+                          onDragLeave={handleDragLeaveYoutube}
+                          onDrop={() => handleDropYoutube(originalIdx)}
+                          style={{
+                            position: 'relative',
+                            backgroundColor: '#1a1a1a',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            cursor: 'move',
+                            border: dragoverYoutubeIndex === originalIdx ? '2px solid #f90' : 'none',
+                            opacity: draggedYoutubeIndex === originalIdx ? 0.6 : 1,
+                            transform: dragoverYoutubeIndex === originalIdx && draggedYoutubeIndex !== null ? 'scale(1.05)' : 'scale(1)',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <img src={thumbnailUrl} alt={`YouTube ${id}`} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                          <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            opacity: 0,
+                            transition: 'opacity 0.2s'
+                          }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                            <div style={{ textAlign: 'center' }}>
+                              <p style={{ color: '#888', fontSize: '0.8rem', margin: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', padding: '0 8px' }}>{id}</p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveYoutubeId(originalIdx);
+                                }}
+                                disabled={addGameLoading}
+                                style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px', marginTop: '4px' }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            left: '8px',
+                            pointerEvents: 'none'
+                          }}>
+                            <RedYoutubeIcon width="32" height="32" style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const id = prompt('Enter YouTube Video ID:');
+                        if (id && id.trim()) {
+                          setAddGameForm({
+                            ...addGameForm,
+                            youtubeIds: [...addGameForm.youtubeIds, id.trim()]
+                          });
+                        }
+                      }}
+                      disabled={addGameLoading}
+                      style={{
+                        backgroundColor: '#1a1a1a',
+                        border: '2px dashed #666',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        minHeight: '150px',
+                        transition: 'all 0.2s',
+                        color: 'inherit'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#f90';
+                        e.currentTarget.style.backgroundColor = '#262626';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#666';
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>+</span>
+                      <span style={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>Add YouTube<br />Video ID</span>
+                    </button>
                   </div>
                 </div>
 
@@ -697,13 +831,202 @@ export const DeveloperAccount = () => {
 
                 <div className="form-group">
                   <label>Cover Image *</label>
-                  <input type="file" className="form-input" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} disabled={addGameLoading} required />
+                  <input
+                    ref={coverFileInputRef}
+                    type="file"
+                    className="form-input"
+                    accept="image/*"
+                    onChange={(e) => {
+                      setCoverFile(e.target.files?.[0] || null);
+                      if (e.target.files?.length) {
+                        e.target.value = '';
+                      }
+                    }}
+                    disabled={addGameLoading}
+                    required
+                    style={{ display: 'none' }}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                    {coverFile && (
+                      <div style={{
+                        position: 'relative',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '8px',
+                        overflow: 'hidden'
+                      }}>
+                        <img src={URL.createObjectURL(coverFile)} alt="Cover" style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          opacity: 0,
+                          transition: 'opacity 0.2s'
+                        }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCoverFile(null);
+                            }}
+                            disabled={addGameLoading}
+                            style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => coverFileInputRef.current?.click()}
+                      disabled={addGameLoading}
+                      style={{
+                        backgroundColor: '#1a1a1a',
+                        border: '2px dashed #666',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        minHeight: '150px',
+                        transition: 'all 0.2s',
+                        ':hover': { borderColor: '#f90', backgroundColor: '#262626' }
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#f90';
+                        e.currentTarget.style.backgroundColor = '#262626';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#666';
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>+</span>
+                      <span style={{ fontSize: '0.9rem', color: '#888' }}>Upload Cover</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label>Game Images *</label>
-                  <input type="file" className="form-input" accept="image/*" multiple onChange={(e) => setImageFiles(Array.from(e.target.files || []))} disabled={addGameLoading} required />
-                  <small style={{ color: '#888' }}>{imageFiles.length} file(s) selected</small>
+                  <input
+                    ref={imageFilesInputRef}
+                    type="file"
+                    className="form-input"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      setImageFiles([...imageFiles, ...Array.from(e.target.files || [])]);
+                      if (e.target.files?.length) {
+                        e.target.value = '';
+                      }
+                    }}
+                    disabled={addGameLoading}
+                    style={{ display: 'none' }}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                    {getReorderedImages().map((file, displayIdx) => {
+                      let actualIdx = -1;
+                      for (let i = 0; i < imageFiles.length; i++) {
+                        if (imageFiles[i] === file) {
+                          actualIdx = i;
+                          break;
+                        }
+                      }
+                      const imageUrl = URL.createObjectURL(file);
+                      return (
+                        <div
+                          key={actualIdx}
+                          draggable
+                          onDragStart={() => handleDragStartImage(actualIdx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDragEnter={() => handleDragOverImage(actualIdx)}
+                          onDragLeave={handleDragLeaveImage}
+                          onDrop={() => handleDropImage(actualIdx)}
+                          style={{
+                            position: 'relative',
+                            backgroundColor: '#1a1a1a',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            cursor: 'move',
+                            border: dragoverImageIndex === actualIdx ? '2px solid #f90' : 'none',
+                            opacity: draggedImageIndex === actualIdx ? 0.6 : 1,
+                            transform: dragoverImageIndex === actualIdx && draggedImageIndex !== null ? 'scale(1.05)' : 'scale(1)',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <img src={imageUrl} alt={file.name} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                          <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            opacity: 0,
+                            transition: 'opacity 0.2s'
+                          }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                            <div style={{ textAlign: 'center' }}>
+                              <p style={{ color: '#888', fontSize: '0.8rem', margin: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', padding: '0 8px' }}>{file.name}</p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveImage(actualIdx);
+                                }}
+                                disabled={addGameLoading}
+                                style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px', marginTop: '4px' }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => imageFilesInputRef.current?.click()}
+                      disabled={addGameLoading}
+                      style={{
+                        backgroundColor: '#1a1a1a',
+                        border: '2px dashed #666',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        minHeight: '150px',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#f90';
+                        e.currentTarget.style.backgroundColor = '#262626';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#666';
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>+</span>
+                      <span style={{ fontSize: '0.9rem', color: '#888' }}>Add Images</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="modal-actions">
