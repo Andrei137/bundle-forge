@@ -6,6 +6,7 @@ import com.unibuc.bundle_forge.dto.GameResponseDto;
 import com.unibuc.bundle_forge.dto.GameUpdateDto;
 import com.unibuc.bundle_forge.exception.ForbiddenException;
 import com.unibuc.bundle_forge.exception.NotFoundException;
+import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.mapper.GameMapper;
 import com.unibuc.bundle_forge.model.*;
 import com.unibuc.bundle_forge.repository.ContractRepository;
@@ -65,6 +66,10 @@ public final class GameService {
     }
 
     public GameResponseDto announceGame(GameCreateDto gameCreateDto, MultipartFile coverFile, List<MultipartFile> imagesFiles) {
+        if (gameRepository.findByTitle(gameCreateDto.getTitle()).isPresent()) {
+            throw new ValidationException("A game with this title already exists");
+        }
+
         Game game = gameMapper.toEntity(gameCreateDto);
         String cover = imageService.uploadImage(coverFile);
         List<String> images = imageService.uploadImages(imagesFiles);
