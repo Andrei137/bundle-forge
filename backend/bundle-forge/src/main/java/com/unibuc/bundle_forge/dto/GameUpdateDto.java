@@ -19,9 +19,9 @@ public final class GameUpdateDto {
     private Integer discountPercentage;
 
     @Pattern(
-            regexp = "DEVELOPED|PUBLISHED|DELISTED",
+            regexp = "ANNOUNCED|PUBLISHED|DELISTED",
             flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "status must be one of DEVELOPED, PUBLISHED, DELISTED"
+            message = "status must be one of ANNOUNCED, PUBLISHED, DELISTED"
     )
     private String status;
 

@@ -27,15 +27,13 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
 
     public enum Status implements EnumUtils.TransitionAware<Status> {
         ANNOUNCED,
-        DEVELOPED,
         PUBLISHED,
         DELISTED;
 
         @Override
         public boolean canTransitionFrom(Status from) {
             return switch (from) {
-                case ANNOUNCED -> this == DEVELOPED;
-                case DEVELOPED -> this == PUBLISHED || this == DELISTED;
+                case ANNOUNCED -> this == PUBLISHED || this == DELISTED;
                 case PUBLISHED -> this == DELISTED;
                 case DELISTED -> this == PUBLISHED;
             };

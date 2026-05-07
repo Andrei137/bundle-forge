@@ -134,4 +134,14 @@ public final class GameService {
         return contractRepository.save(contract);
     }
 
+    public void deleteGame(Integer gameId) {
+        Game game = getGame(gameId);
+        Provider owner = getGameOwner(game);
+        if (!owner.equals(jwtService.getCurrentProvider())) {
+            throw new ForbiddenException("Not enough permissions");
+        }
+
+        gameRepository.delete(game);
+    }
+
 }

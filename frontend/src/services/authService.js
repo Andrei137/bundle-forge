@@ -305,7 +305,7 @@ export const authService = {
 
   getDeveloperGames: async (status = null, title = null) => {
     const token = authService.getToken();
-    let url = `${API_URL}/games`;
+    let url = `${API_URL}/developers/games`;
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     if (title) params.append('title', title);
@@ -333,7 +333,7 @@ export const authService = {
 
   announceGame: async (formData) => {
     const token = authService.getToken();
-    const response = await fetch(`${API_URL}/games`, {
+    const response = await fetch(`${API_URL}/developers/games`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -355,7 +355,7 @@ export const authService = {
 
   updateGame: async (gameId, data) => {
     const token = authService.getToken();
-    const response = await fetch(`${API_URL}/games/${gameId}`, {
+    const response = await fetch(`${API_URL}/developers/games/${gameId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -374,5 +374,27 @@ export const authService = {
       throw new Error(errorMessage);
     }
     return await response.json();
+  },
+
+  deleteGame: async (gameId) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/developers/games/${gameId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to delete game';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return { success: true };
   },
 };
