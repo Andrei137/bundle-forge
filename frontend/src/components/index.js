@@ -21,3 +21,4 @@ export { ProductLibrary } from './ProductLibrary';
 export { Wishlist } from './Wishlist';
 export { CouponsRewards } from './CouponsRewards';
 export { Support } from './Support';
+export { TagPickerModal } from './TagPickerModal';
