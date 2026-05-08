@@ -1,5 +1,8 @@
 package com.unibuc.bundle_forge.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.unibuc.bundle_forge.utils.ViewUtils;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,9 +25,12 @@ public class Tag {
     private Integer id;
 
     @Column(unique = true, nullable = false)
+    @JsonView(ViewUtils.Public.class)
     private String name;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "tags")
+    @JsonView(ViewUtils.Public.class)
     private Set<Game> games = new HashSet<>();
 
 }

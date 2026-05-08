@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/developers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/publishers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/games/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/tags/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -28,6 +28,7 @@ public final class GameService {
     private final JwtService jwtService;
     private final GameMapper gameMapper;
     private final ImageService imageService;
+    private final TagService tagService;
 
     public Game getGame(Integer gameId) {
         return gameRepository.findById(gameId).orElseThrow(
@@ -77,6 +78,7 @@ public final class GameService {
         game.setCover(cover);
         game.setImages(images);
         game.setDeveloper((Developer) jwtService.getCurrentProvider());
+        game.setTags(tagService.getTagsByIds(gameCreateDto.getTagIds()));
         return gameMapper.toResponseDto(gameRepository.save(game));
     }
 

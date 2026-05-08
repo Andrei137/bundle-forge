@@ -1,0 +1,423 @@
+.tag-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: oklch(8% 0.008 55 / 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  padding: 16px;
+}
+
+.tag-picker-modal {
+  background: oklch(98.5% 0.006 55);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px oklch(5% 0.01 55 / 0.5);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.tag-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid oklch(90% 0.006 55);
+  flex-shrink: 0;
+}
+
+.tag-picker-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: oklch(14% 0.006 55);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.tag-picker-close {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: oklch(50% 0.006 55);
+  font-size: 1.25rem;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+
+.tag-picker-close:hover {
+  background: oklch(93% 0.006 55);
+  color: oklch(18% 0.006 55);
+}
+
+.tag-picker-close:focus-visible {
+  outline: 2px solid oklch(62% 0.17 50);
+  outline-offset: 2px;
+}
+
+/* ── Scrollable body ── */
+.tag-picker-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tag-picker-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tag-picker-body::-webkit-scrollbar-thumb {
+  background: oklch(82% 0.008 55);
+  border-radius: 3px;
+}
+
+/* ── Section ── */
+.tag-picker-section-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: oklch(18% 0.006 55);
+  margin: 0 0 12px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+/* ── Chosen tags ── */
+.tag-chosen-empty {
+  font-style: italic;
+  color: oklch(58% 0.006 55);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tag-chosen-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 130px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.tag-chosen-list::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.tag-chosen-list::-webkit-scrollbar-thumb {
+  background: oklch(82% 0.008 55);
+  border-radius: 2px;
+}
+
+.tag-chosen-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: oklch(71% 0.17 50);
+  color: oklch(14% 0.01 55);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: move;
+  user-select: none;
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+  border: none;
+}
+
+.tag-chosen-pill:hover {
+  box-shadow: 0 2px 8px oklch(62% 0.17 50 / 0.4);
+}
+
+.tag-chosen-pill.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.96);
+}
+
+.tag-chosen-pill.is-dragover {
+  transform: scale(1.06);
+  box-shadow: 0 3px 12px oklch(62% 0.17 50 / 0.5);
+}
+
+.tag-chosen-drag-handle {
+  color: oklch(22% 0.01 55 / 0.55);
+  font-size: 0.75rem;
+  letter-spacing: -1px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.tag-chosen-name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-chosen-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: oklch(18% 0.01 55 / 0.6);
+  font-size: 0.8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+
+.tag-chosen-remove:hover {
+  color: oklch(35% 0.15 25);
+  background: oklch(60% 0.17 50 / 0.3);
+}
+
+.tag-chosen-remove:focus-visible {
+  outline: 2px solid oklch(35% 0.15 25);
+  outline-offset: 1px;
+}
+
+/* ── Suggested tags ── */
+.tag-suggested-wrap {
+  position: relative;
+}
+
+.tag-suggested-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 116px; /* 3 rows: (32px pill + 8px gap) × 3 = 108, + 8 buffer */
+  overflow: hidden;
+}
+
+.tag-suggested-list.is-loading {
+  min-height: 80px;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.tag-suggested-list.is-filtering {
+  max-height: none;
+  overflow: visible;
+}
+
+.tag-suggested-empty {
+  font-size: 0.875rem;
+  color: oklch(58% 0.006 55);
+  font-style: italic;
+}
+
+.tag-suggested-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid oklch(88% 0.006 55);
+  background: oklch(95% 0.005 55);
+  color: oklch(20% 0.006 55);
+  transition: background 0.13s, border-color 0.13s, color 0.13s, transform 0.1s;
+  user-select: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tag-suggested-pill:hover:not(.is-selected) {
+  background: oklch(91% 0.008 55);
+  border-color: oklch(80% 0.008 55);
+  transform: translateY(-1px);
+}
+
+.tag-suggested-pill.is-selected {
+  background: oklch(71% 0.17 50);
+  border-color: oklch(65% 0.17 50);
+  color: oklch(14% 0.01 55);
+  font-weight: 600;
+}
+
+.tag-suggested-pill.is-selected:hover {
+  background: oklch(67% 0.18 50);
+}
+
+.tag-suggested-pill:focus-visible {
+  outline: 2px solid oklch(62% 0.17 50);
+  outline-offset: 2px;
+}
+
+.tag-suggested-skeleton {
+  display: inline-flex;
+  height: 32px;
+  border-radius: 4px;
+  background: oklch(92% 0.005 55);
+  animation: tag-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tag-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* ── Search ── */
+.tag-search-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag-search-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid oklch(85% 0.006 55);
+  border-radius: 4px;
+  background: oklch(99% 0.005 55);
+  color: oklch(14% 0.006 55);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.tag-search-input::placeholder {
+  color: oklch(65% 0.006 55);
+}
+
+.tag-search-input:focus {
+  outline: none;
+  border-color: oklch(62% 0.17 50);
+  box-shadow: 0 0 0 3px oklch(62% 0.17 50 / 0.15);
+}
+
+.tag-search-results {
+  margin-top: 4px;
+  background: oklch(99.5% 0.004 55);
+  border: 1px solid oklch(88% 0.006 55);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px oklch(5% 0.01 55 / 0.1);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.tag-search-result-item {
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: oklch(18% 0.006 55);
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.tag-search-result-item:hover,
+.tag-search-result-item:focus-visible {
+  background: oklch(96% 0.008 55);
+  outline: none;
+}
+
+.tag-search-result-item.is-create {
+  color: oklch(42% 0.17 50);
+  font-weight: 600;
+  border-top: 1px solid oklch(91% 0.005 55);
+}
+
+.tag-search-result-item.is-create:hover {
+  background: oklch(97% 0.012 55);
+}
+
+.tag-search-result-item.is-selected-indicator {
+  color: oklch(55% 0.006 55);
+  pointer-events: none;
+  cursor: default;
+}
+
+.tag-search-no-results {
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: oklch(58% 0.006 55);
+  font-style: italic;
+}
+
+.tag-search-random {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 116px;
+  overflow: hidden;
+  padding: 2px 0;
+}
+
+.tag-search-error {
+  font-size: 0.8rem;
+  color: oklch(45% 0.18 25);
+  margin-top: 6px;
+  padding-left: 2px;
+}
+
+.tag-search-creating {
+  font-size: 0.8rem;
+  color: oklch(42% 0.17 50);
+  margin-top: 6px;
+  padding-left: 2px;
+}
+
+/* ── Footer ── */
+.tag-picker-footer {
+  padding: 16px 28px 24px;
+  border-top: 1px solid oklch(90% 0.006 55);
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.tag-picker-done {
+  background: oklch(71% 0.17 50);
+  color: oklch(14% 0.01 55);
+  border: none;
+  padding: 10px 32px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.tag-picker-done:hover {
+  background: oklch(67% 0.18 50);
+  box-shadow: 0 2px 8px oklch(62% 0.17 50 / 0.4);
+}
+
+.tag-picker-done:focus-visible {
+  outline: 2px solid oklch(62% 0.17 50);
+  outline-offset: 2px;
+}
+
+.tag-picker-done:active {
+  background: oklch(63% 0.19 50);
+}

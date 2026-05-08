@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { setUser } from '@/redux/slices/authSlice';
 import { authService } from '@/services/authService';
+import { TagPickerModal } from './TagPickerModal';
 
 const API_URL = import.meta.env.VITE_API_URL;
 import AccountIcon from '@/assets/icons/account.svg?react';
@@ -67,9 +68,11 @@ export const DeveloperAccount = () => {
     longDescription: '',
     languages: [],
     link: '',
+    tags: [],
     youtubeIds: [],
     systemRequirements: {}
   });
+  const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [coverFile, setCoverFile] = useState(null);
   const [imageFiles, setImageFiles] = useState([]);
   const [currentLanguage, setCurrentLanguage] = useState('');
@@ -371,8 +374,14 @@ export const DeveloperAccount = () => {
       if (!coverFile) throw new Error('Cover image is required');
       if (imageFiles.length === 0) throw new Error('At least one game image is required');
 
+      const gamePayload = {
+        ...addGameForm,
+        tagIds: addGameForm.tags.map(t => t.id)
+      };
+      delete gamePayload.tags;
+
       const formData = new FormData();
-      formData.append('game', new Blob([JSON.stringify(addGameForm)], { type: 'application/json' }), 'game.json');
+      formData.append('game', new Blob([JSON.stringify(gamePayload)], { type: 'application/json' }), 'game.json');
       formData.append('cover', coverFile);
       imageFiles.forEach(file => {
         formData.append('images', file);
@@ -381,7 +390,7 @@ export const DeveloperAccount = () => {
       await authService.announceGame(formData);
       setAddGameForm({
         title: '', price: '', shortDescription: '', longDescription: '', languages: [],
-        link: '', youtubeIds: [], systemRequirements: {}
+        link: '', tags: [], youtubeIds: [], systemRequirements: {}
       });
       setCoverFile(null);
       setImageFiles([]);
@@ -1040,6 +1049,62 @@ export const DeveloperAccount = () => {
                 </div>
 
                 <div className="form-group">
+                  <label>Tags</label>
+                  <button
+                    type="button"
+                    onClick={() => setTagPickerOpen(true)}
+                    disabled={addGameLoading}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '9px 16px',
+                      background: 'transparent',
+                      border: '1px solid #555',
+                      borderRadius: '4px',
+                      color: '#ccc',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      transition: 'border-color 0.15s, color 0.15s',
+                      fontFamily: 'inherit'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f90'; e.currentTarget.style.color = '#f90'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc'; }}
+                  >
+                    {addGameForm.tags.length === 0
+                      ? '+ Add Tags'
+                      : `Tags (${addGameForm.tags.length})`}
+                  </button>
+                  {addGameForm.tags.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                      {addGameForm.tags.map(tag => (
+                        <span
+                          key={tag.id}
+                          style={{
+                            background: 'rgba(255, 153, 0, 0.15)',
+                            border: '1px solid rgba(255, 153, 0, 0.35)',
+                            color: '#f90',
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            fontSize: '0.82rem',
+                            fontWeight: '500'
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <TagPickerModal
+                  isOpen={tagPickerOpen}
+                  onClose={() => setTagPickerOpen(false)}
+                  selectedTags={addGameForm.tags}
+                  onTagsChange={(tags) => setAddGameForm({ ...addGameForm, tags })}
+                />
+
+                <div className="form-group">
                   <label>System Requirements *</label>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                     <select className="form-input" value={currentPlatform} onChange={(e) => setCurrentPlatform(e.target.value)} disabled={addGameLoading} style={{ flex: 1 }}>
@@ -1088,7 +1153,7 @@ export const DeveloperAccount = () => {
                   <button type="button" className="btn-secondary" onClick={() => {
                     setAddGameForm({
                       title: '', price: '', shortDescription: '', longDescription: '', languages: [],
-                      link: '', youtubeIds: [], systemRequirements: {}
+                      link: '', tags: [], youtubeIds: [], systemRequirements: {}
                     });
                     setCoverFile(null);
                     setImageFiles([]);

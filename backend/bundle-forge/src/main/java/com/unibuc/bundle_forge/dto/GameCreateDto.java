@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 @Data
 @Builder
@@ -39,6 +40,8 @@ public final class GameCreateDto {
     private List<String> languages;
 
     private String link;
+
+    private List<Integer> tagIds = new ArrayList<>();
 
     @NotNull(message = "youtubeIds is required")
     @Size(min = 1, message = "At least one youtube video id is required")

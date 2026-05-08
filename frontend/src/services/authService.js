@@ -376,6 +376,37 @@ export const authService = {
     return await response.json();
   },
 
+  getTags: async () => {
+    const response = await fetch(`${API_URL}/tags`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch tags');
+    }
+    return await response.json();
+  },
+
+  createTag: async (name) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/tags`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to create tag';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
   deleteGame: async (gameId) => {
     const token = authService.getToken();
     const response = await fetch(`${API_URL}/developers/games/${gameId}`, {
