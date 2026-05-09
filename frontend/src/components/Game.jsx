@@ -48,9 +48,9 @@ const CheckCircleIcon = () => (
 
 // All 3 slots always render — missing ones are invisible placeholders that preserve equal width
 const ALL_PLATFORM_SLOTS = [
-  { id: 'windows', label: 'Windows', icon: <WindowsIcon className="os-icon" /> },
-  { id: 'linux',   label: 'Linux',   icon: <LinuxIcon className="os-icon" /> },
-  { id: 'mac',     label: 'Mac',     icon: <AppleIcon className="os-icon" /> },
+  { id: 'Windows', label: 'Windows', icon: <WindowsIcon className="os-icon" /> },
+  { id: 'Linux',   label: 'Linux',   icon: <LinuxIcon className="os-icon" /> },
+  { id: 'macOS',   label: 'macOS',   icon: <AppleIcon className="os-icon" /> },
 ];
 
 export default function SliderVideo({ image, youtubeId, title }) {
