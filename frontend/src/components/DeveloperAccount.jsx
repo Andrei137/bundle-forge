@@ -129,6 +129,12 @@ export const DeveloperAccount = () => {
   const [updateDragoverImageIndex, setUpdateDragoverImageIndex] = useState(null);
   const updateCoverFileInputRef = useRef(null);
   const updateImageFilesInputRef = useRef(null);
+  const keyFileInputRef = useRef(null);
+  const [keyFile, setKeyFile] = useState(null);
+  const [keyValidKeys, setKeyValidKeys] = useState([]);
+  const [keyValidationError, setKeyValidationError] = useState('');
+  const [keyLoading, setKeyLoading] = useState(false);
+  const [keyResultModal, setKeyResultModal] = useState(null);
 
   // Remove game state
   const [selectedRemoveGameId, setSelectedRemoveGameId] = useState(null);
@@ -586,6 +592,80 @@ export const DeveloperAccount = () => {
     setUpdateGameForm({ ...updateGameForm, systemRequirements: newRequirements });
   };
 
+  const KEY_PATTERN = /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/i;
+
+  const handleKeyFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (e.target.files?.length) e.target.value = '';
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      setKeyFile(null);
+      setKeyValidKeys([]);
+      setKeyValidationError('File must have a .json extension.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      let parsed;
+      try {
+        parsed = JSON.parse(evt.target.result);
+      } catch {
+        setKeyFile(null);
+        setKeyValidKeys([]);
+        setKeyValidationError('File does not contain valid JSON.');
+        return;
+      }
+      if (!Array.isArray(parsed)) {
+        setKeyFile(null);
+        setKeyValidKeys([]);
+        setKeyValidationError('JSON must be an array of key strings.');
+        return;
+      }
+      const invalid = parsed.filter(k => typeof k !== 'string' || !KEY_PATTERN.test(k));
+      if (invalid.length > 0) {
+        setKeyFile(null);
+        setKeyValidKeys([]);
+        setKeyValidationError(`${invalid.length} key(s) have invalid format. Expected XXXXX-XXXXX-XXXXX (alphanumeric only).`);
+        return;
+      }
+      const upper = parsed.map(k => k.toUpperCase());
+      const unique = [...new Set(upper)];
+      if (unique.length < upper.length) {
+        setKeyFile(null);
+        setKeyValidKeys([]);
+        setKeyValidationError(`File contains ${upper.length - unique.length} duplicate key(s). All keys must be unique.`);
+        return;
+      }
+      setKeyFile(file);
+      setKeyValidKeys(unique);
+      setKeyValidationError('');
+    };
+    reader.onerror = () => {
+      setKeyFile(null);
+      setKeyValidKeys([]);
+      setKeyValidationError('Failed to read the file.');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleSubmitKeys = async () => {
+    if (!keyValidKeys.length || !selectedUpdateGameId) return;
+    setKeyLoading(true);
+    try {
+      const result = await authService.uploadGameKeys(selectedUpdateGameId, keyValidKeys);
+      setKeyResultModal(result);
+      setKeyFile(null);
+      setKeyValidKeys([]);
+      await loadDeveloperGames();
+    } catch (err) {
+      setKeyValidationError(err.message);
+    } finally {
+      setKeyLoading(false);
+    }
+  };
+
   const resetUpdateForm = () => {
     updateImages.forEach(img => { if (img.type === 'new' && img.objectUrl) URL.revokeObjectURL(img.objectUrl); });
     setUpdateImages([]);
@@ -597,6 +677,9 @@ export const DeveloperAccount = () => {
       title: '', price: '', shortDescription: '', longDescription: '', languages: [],
       link: '', tags: [], youtubeIds: [], systemRequirements: {}, discountPercentage: 0, status: 'PUBLISHED'
     });
+    setKeyFile(null);
+    setKeyValidKeys([]);
+    setKeyValidationError('');
   };
 
   const menuItems = [
@@ -783,6 +866,9 @@ export const DeveloperAccount = () => {
                             </span>
                           )}
                         </div>
+                        <p style={{ margin: '0.25rem 0 0.5rem', fontSize: '0.8rem', color: '#888' }}>
+                          Active keys: <strong style={{ color: '#ccc' }}>{game.activeKeyCount ?? 0}</strong>
+                        </p>
                         <button style={{ backgroundColor: '#f90', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '0.5rem' }}>View Details</button>
                       </div>
                     );
@@ -820,6 +906,13 @@ export const DeveloperAccount = () => {
                         </span>
                       )}
                     </p>
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">ACTIVE KEYS</p>
+                    <p className="detail-value">{gameDetails.activeKeyCount ?? 0}</p>
                   </div>
                 </div>
 
@@ -1554,6 +1647,64 @@ export const DeveloperAccount = () => {
                   </div>
 
                   <div className="form-group">
+                    <label>Game Keys (.json)</label>
+                    <input
+                      ref={keyFileInputRef}
+                      type="file"
+                      accept=".json"
+                      onChange={handleKeyFileChange}
+                      disabled={keyLoading}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => keyFileInputRef.current?.click()}
+                        disabled={keyLoading}
+                        style={{
+                          backgroundColor: '#1a1a1a', border: '1px solid #555', borderRadius: '4px',
+                          color: '#ccc', cursor: 'pointer', padding: '9px 14px', fontSize: '0.875rem',
+                          transition: 'border-color 0.15s', fontFamily: 'inherit'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#f90'}
+                        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#555'}
+                      >
+                        Choose File
+                      </button>
+                      <span style={{ color: keyFile ? '#ccc' : '#555', fontSize: '0.875rem' }}>
+                        {keyFile ? `${keyFile.name} (${keyValidKeys.length} valid keys)` : 'No file selected'}
+                      </span>
+                      {keyFile && keyValidKeys.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleSubmitKeys}
+                          disabled={keyLoading}
+                          style={{
+                            backgroundColor: '#f90', color: '#000', border: 'none', borderRadius: '4px',
+                            cursor: 'pointer', padding: '9px 16px', fontWeight: 'bold', fontSize: '0.875rem',
+                            fontFamily: 'inherit', opacity: keyLoading ? 0.6 : 1
+                          }}
+                        >
+                          {keyLoading ? 'Submitting...' : 'Submit Keys'}
+                        </button>
+                      )}
+                    </div>
+                    {keyValidationError && (
+                      <p style={{ color: '#ff4444', fontSize: '0.85rem', margin: '6px 0 0 0' }}>{keyValidationError}</p>
+                    )}
+                    {keyFile && keyValidKeys.length > 0 && !keyValidationError && (
+                      <p style={{ color: '#4CAF50', fontSize: '0.85rem', margin: '6px 0 0 0' }}>
+                        {keyValidKeys.length} keys validated and ready to submit.
+                      </p>
+                    )}
+                    <p style={{ color: '#888', fontSize: '0.85rem', margin: '8px 0 0 0' }}>
+                      Active keys in database: <strong style={{ color: '#ccc' }}>
+                        {games.find(g => g.id === selectedUpdateGameId)?.activeKeyCount ?? 0}
+                      </strong>
+                    </p>
+                  </div>
+
+                  <div className="form-group">
                     <label>Cover Image</label>
                     <input
                       ref={updateCoverFileInputRef}
@@ -1993,6 +2144,43 @@ export const DeveloperAccount = () => {
             </form>
           </div>
         </>
+      )}
+
+      {keyResultModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setKeyResultModal(null)}>
+          <div style={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', maxWidth: '480px', width: '90%', padding: '32px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ margin: '0 0 20px 0', fontSize: '1.2rem' }}>Key Upload Result</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: '#111', borderRadius: '4px' }}>
+                <span style={{ color: '#888' }}>Added to database</span>
+                <strong style={{ color: '#4CAF50' }}>{keyResultModal.added}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: '#111', borderRadius: '4px' }}>
+                <span style={{ color: '#888' }}>Already registered (skipped)</span>
+                <strong style={{ color: '#f90' }}>{keyResultModal.alreadyExisting}</strong>
+              </div>
+              {keyResultModal.duplicatesInFile?.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: '#111', borderRadius: '4px' }}>
+                  <span style={{ color: '#888' }}>Duplicates in file (skipped)</span>
+                  <strong style={{ color: '#ff9800' }}>{keyResultModal.duplicatesInFile.length}</strong>
+                </div>
+              )}
+              {keyResultModal.invalidFormat?.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: '#111', borderRadius: '4px' }}>
+                  <span style={{ color: '#888' }}>Invalid format (skipped)</span>
+                  <strong style={{ color: '#ff4444' }}>{keyResultModal.invalidFormat.length}</strong>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: '#111', borderRadius: '4px', borderTop: '1px solid #333', marginTop: '4px' }}>
+                <span style={{ color: '#888' }}>Total active keys</span>
+                <strong style={{ color: '#fff' }}>{keyResultModal.totalActiveKeys}</strong>
+              </div>
+            </div>
+            <button onClick={() => setKeyResultModal(null)} style={{ width: '100%', backgroundColor: '#f90', color: '#000', border: 'none', borderRadius: '4px', padding: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit' }}>
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       {showRemoveConfirmation && (
