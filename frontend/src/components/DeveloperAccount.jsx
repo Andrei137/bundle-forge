@@ -437,6 +437,17 @@ export const DeveloperAccount = () => {
 
     try {
       if (!selectedUpdateGameId) throw new Error('No game selected');
+      if (!updateGameForm.title.trim()) throw new Error('Title is required');
+      if (updateGameForm.price === '' || updateGameForm.price < 0) throw new Error('Valid price is required');
+      if (!updateGameForm.shortDescription.trim()) throw new Error('Short description is required');
+      if (updateGameForm.shortDescription.length > 400) throw new Error('Short description must be max 400 characters');
+      if (!updateGameForm.longDescription.trim()) throw new Error('Long description is required');
+      if (updateGameForm.languages.length === 0) throw new Error('At least one language is required');
+      if (updateGameForm.tags.length === 0) throw new Error('At least one tag is required');
+      if (updateGameForm.youtubeIds.length === 0) throw new Error('At least one YouTube ID is required');
+      if (Object.keys(updateGameForm.systemRequirements).length === 0) throw new Error('At least one platform is required');
+      if (!updateExistingCover && !updateCoverFile) throw new Error('Cover image is required');
+      if (updateImages.length === 0) throw new Error('At least one game image is required');
 
       const newImageFiles = updateImages.filter(img => img.type === 'new').map(img => img.file);
       const existingImageUrls = updateImages.filter(img => img.type === 'existing').map(img => img.url);

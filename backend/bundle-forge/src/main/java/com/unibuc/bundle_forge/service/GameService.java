@@ -100,6 +100,12 @@ public class GameService {
             throw new ForbiddenException("Game is not developed yet");
         }
 
+        if (gameUpdateDto.getTitle() != null && !gameUpdateDto.getTitle().isBlank()) {
+            gameRepository.findByTitle(gameUpdateDto.getTitle())
+                    .filter(g -> !g.getId().equals(gameId))
+                    .ifPresent(g -> { throw new ValidationException("A game with this title already exists"); });
+        }
+
         if (coverFile != null && !coverFile.isEmpty()) {
             imageService.deleteImage(game.getCover());
             game.setCover(imageService.uploadImage(coverFile));
