@@ -355,13 +355,14 @@ export const authService = {
 
   updateGame: async (gameId, data) => {
     const token = authService.getToken();
+    const isFormData = data instanceof FormData;
     const response = await fetch(`${API_URL}/developers/games/${gameId}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
     });
     if (!response.ok) {
       let errorMessage = 'Failed to update game';

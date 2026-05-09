@@ -45,13 +45,16 @@ public class DeveloperController extends ProviderController<Developer, Developer
         return ResponseUtils.created(gameService.announceGame(gameCreateDto, coverFile, imagesFiles));
     }
 
-    @PutMapping("/games/{gameId}")
+    @PutMapping(value = "/games/{gameId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @JsonView(ViewUtils.Provider.class)
+    @RequireProvider({Developer.class})
     public ResponseEntity<GameResponseDto> updateGame(
             @PathVariable Integer gameId,
-            @RequestBody @Valid GameUpdateDto gameUpdateDto
+            @RequestPart("game") @Valid GameUpdateDto gameUpdateDto,
+            @RequestPart(value = "cover", required = false) MultipartFile coverFile,
+            @RequestPart(value = "images", required = false) List<MultipartFile> imagesFiles
     ) {
-        return ResponseUtils.created(gameService.updateGame(gameId, gameUpdateDto));
+        return ResponseUtils.created(gameService.updateGame(gameId, gameUpdateDto, coverFile, imagesFiles));
     }
 
     @GetMapping("/games")

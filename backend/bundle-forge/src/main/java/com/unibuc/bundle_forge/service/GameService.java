@@ -14,14 +14,16 @@ import com.unibuc.bundle_forge.repository.GameRepository;
 import com.unibuc.bundle_forge.utils.EnumUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public final class GameService {
+public class GameService {
 
     private final GameRepository gameRepository;
     private final ContractRepository contractRepository;
@@ -82,7 +84,8 @@ public final class GameService {
         return gameMapper.toResponseDto(gameRepository.save(game));
     }
 
-    public GameResponseDto updateGame(Integer gameId, GameUpdateDto gameUpdateDto) {
+    @Transactional
+    public GameResponseDto updateGame(Integer gameId, GameUpdateDto gameUpdateDto, MultipartFile coverFile, List<MultipartFile> imagesFiles) {
         Game game = getGame(gameId);
         Provider owner = getGameOwner(game);
         if (!owner.equals(jwtService.getCurrentProvider())) {
@@ -95,6 +98,29 @@ public final class GameService {
             }
         } else if (game.getStatus().equals(Game.Status.ANNOUNCED)) {
             throw new ForbiddenException("Game is not developed yet");
+        }
+
+        if (coverFile != null && !coverFile.isEmpty()) {
+            imageService.deleteImage(game.getCover());
+            game.setCover(imageService.uploadImage(coverFile));
+        }
+
+        List<String> existingToKeep = gameUpdateDto.getExistingImages() != null
+                ? new ArrayList<>(gameUpdateDto.getExistingImages())
+                : new ArrayList<>();
+        if (game.getImages() != null) {
+            game.getImages().stream()
+                    .filter(img -> !existingToKeep.contains(img))
+                    .forEach(imageService::deleteImage);
+        }
+        List<String> updatedImages = new ArrayList<>(existingToKeep);
+        if (imagesFiles != null && !imagesFiles.isEmpty()) {
+            updatedImages.addAll(imageService.uploadImages(imagesFiles));
+        }
+        game.setImages(updatedImages);
+
+        if (gameUpdateDto.getTagIds() != null) {
+            game.setTags(tagService.getTagsByIds(gameUpdateDto.getTagIds()));
         }
 
         EnumUtils.updateStatus(

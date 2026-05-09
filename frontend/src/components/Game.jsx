@@ -115,7 +115,7 @@ const TagsDisplay = ({ genres }) => {
     for (let i = 0; i < genres.length; i++) {
       fitted.push(genres[i]);
       const testTags = fitted.map(tag => (
-        <span key={tag} className="gp-tag">{tag}</span>
+        <span key={tag.id} className="gp-tag">{tag.name}</span>
       ));
 
       const testDiv = document.createElement('div');
@@ -128,7 +128,7 @@ const TagsDisplay = ({ genres }) => {
       testTags.forEach(tag => {
         const tagSpan = document.createElement('span');
         tagSpan.className = 'gp-tag';
-        tagSpan.textContent = genres[i];
+        tagSpan.textContent = genres[i].name;
         tempContainer.appendChild(tagSpan);
       });
 
@@ -144,7 +144,7 @@ const TagsDisplay = ({ genres }) => {
   return (
     <div className="gp-tags" ref={containerRef}>
       {visibleTags.map(tag => (
-        <span key={tag} className="gp-tag">{tag}</span>
+        <span key={tag.id} className="gp-tag">{tag.name}</span>
       ))}
     </div>
   );
@@ -208,50 +208,17 @@ function AboutTab({ game }) {
             <div className="gp-detail-row-new">
               <span className="gp-detail-key-new">Languages:</span>
               <span className="gp-detail-val-new">
-                {game.about.details.Languages
-                  ? (() => {
-                      const langs = game.about.details.Languages.split(', ');
-                      const SHOW = 1;
-                      return (
-                        <>
-                          {langs.slice(0, SHOW).join(', ')}
-                          {langs.length > SHOW && (
-                            <span className="gp-langs-more"> +{langs.length - SHOW} more</span>
-                          )}
-                        </>
-                      );
-                    })()
-                  : 'English'}
+                {game.about.details.Languages ?? 'English'}
               </span>
             </div>
           </div>
 
           <div className="gp-details-sub-col">
             <div className="gp-tag-group">
-              <span className="gp-tag-group-label">Genres:</span>
+              <span className="gp-tag-group-label">Tags:</span>
               <div className="gp-tag-links">
-                {game.genres && game.genres.length > 0 ? (
-                  game.genres.map(g => <a key={g} href="#" className="gp-tag-link">{g}</a>)
-                ) : (
-                  <span style={{ color: '#999', fontSize: '0.9em' }}>Not defined</span>
-                )}
-              </div>
-            </div>
-            <div className="gp-tag-group">
-              <span className="gp-tag-group-label">Themes:</span>
-              <div className="gp-tag-links">
-                {game.themes && game.themes.length > 0 ? (
-                  game.themes.map(t => <a key={t} href="#" className="gp-tag-link">{t}</a>)
-                ) : (
-                  <span style={{ color: '#999', fontSize: '0.9em' }}>Not defined</span>
-                )}
-              </div>
-            </div>
-            <div className="gp-tag-group">
-              <span className="gp-tag-group-label">Play Styles:</span>
-              <div className="gp-tag-links">
-                {game.playStyles && game.playStyles.length > 0 ? (
-                  game.playStyles.map(p => <a key={p} href="#" className="gp-tag-link">{p}</a>)
+                {game.tags && game.tags.length > 0 ? (
+                  game.tags.map(t => <a key={t.id} href="#" className="gp-tag-link">{t.name}</a>)
                 ) : (
                   <span style={{ color: '#999', fontSize: '0.9em' }}>Not defined</span>
                 )}
@@ -353,9 +320,7 @@ const fetchGame = async (gameId) => {
     metacritic: 88, // TODO
     steamRating: { score: 97, label: 'Overwhelmingly Positive' }, // TODO
     recommendPercent: 100, // TODO
-    genres: data.tagCategories?.genres ?? [],
-    themes: data.tagCategories?.themes ?? [],
-    playStyles: data.tagCategories?.playStyles ?? [],
+    tags: data.tags ?? [],
     description: data.shortDescription,
     media: [
       ...(data.youtubeIds ?? []).map((id, index) => ({
@@ -505,7 +470,7 @@ export const Game = () => {
               </button>
             </div>
 
-            <TagsDisplay genres={game.genres} />
+            <TagsDisplay genres={game.tags} />
 
             <p className="gp-description">{game.description}</p>
 
