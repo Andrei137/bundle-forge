@@ -98,11 +98,37 @@ export const DeveloperAccount = () => {
   const [selectedUpdateGameId, setSelectedUpdateGameId] = useState(null);
   const [currentGameStatus, setCurrentGameStatus] = useState(null);
   const [updateGameForm, setUpdateGameForm] = useState({
+    title: '',
+    price: '',
+    shortDescription: '',
+    longDescription: '',
+    languages: [],
+    link: '',
+    tags: [],
+    youtubeIds: [],
+    systemRequirements: {},
     discountPercentage: 0,
     status: 'PUBLISHED'
   });
   const [updateGameLoading, setUpdateGameLoading] = useState(false);
   const [updateGameError, setUpdateGameError] = useState('');
+  const [updateExistingCover, setUpdateExistingCover] = useState(null);
+  const [updateCoverFile, setUpdateCoverFile] = useState(null);
+  const [updateImages, setUpdateImages] = useState([]);
+  const [updateCurrentLanguage, setUpdateCurrentLanguage] = useState('');
+  const [updateCurrentPlatform, setUpdateCurrentPlatform] = useState('Windows');
+  const [updatePlatformRequirements, setUpdatePlatformRequirements] = useState({
+    minimum: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' },
+    recommended: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' }
+  });
+  const [updateTagPickerOpen, setUpdateTagPickerOpen] = useState(false);
+  const [updateDraggedLanguageIndex, setUpdateDraggedLanguageIndex] = useState(null);
+  const [updateDraggedYoutubeIndex, setUpdateDraggedYoutubeIndex] = useState(null);
+  const [updateDragoverYoutubeIndex, setUpdateDragoverYoutubeIndex] = useState(null);
+  const [updateDraggedImageIndex, setUpdateDraggedImageIndex] = useState(null);
+  const [updateDragoverImageIndex, setUpdateDragoverImageIndex] = useState(null);
+  const updateCoverFileInputRef = useRef(null);
+  const updateImageFilesInputRef = useRef(null);
 
   // Remove game state
   const [selectedRemoveGameId, setSelectedRemoveGameId] = useState(null);
@@ -411,9 +437,32 @@ export const DeveloperAccount = () => {
 
     try {
       if (!selectedUpdateGameId) throw new Error('No game selected');
-      await authService.updateGame(selectedUpdateGameId, updateGameForm);
-      setSelectedUpdateGameId(null);
-      setUpdateGameForm({ discountPercentage: 0, status: 'DEVELOPED' });
+
+      const newImageFiles = updateImages.filter(img => img.type === 'new').map(img => img.file);
+      const existingImageUrls = updateImages.filter(img => img.type === 'existing').map(img => img.url);
+
+      const gamePayload = {
+        title: updateGameForm.title,
+        price: updateGameForm.price,
+        shortDescription: updateGameForm.shortDescription,
+        longDescription: updateGameForm.longDescription,
+        languages: updateGameForm.languages,
+        link: updateGameForm.link,
+        tagIds: updateGameForm.tags.map(t => t.id),
+        youtubeIds: updateGameForm.youtubeIds,
+        systemRequirements: updateGameForm.systemRequirements,
+        discountPercentage: updateGameForm.discountPercentage,
+        status: updateGameForm.status,
+        existingImages: existingImageUrls
+      };
+
+      const formData = new FormData();
+      formData.append('game', new Blob([JSON.stringify(gamePayload)], { type: 'application/json' }), 'game.json');
+      if (updateCoverFile) formData.append('cover', updateCoverFile);
+      newImageFiles.forEach(file => formData.append('images', file));
+
+      await authService.updateGame(selectedUpdateGameId, formData);
+      resetUpdateForm();
       await loadDeveloperGames();
       setActiveSection('my-games');
     } catch (err) {
@@ -438,6 +487,105 @@ export const DeveloperAccount = () => {
     } finally {
       setRemoveGameLoading(false);
     }
+  };
+
+  const handleUpdateAddLanguage = () => {
+    if (updateCurrentLanguage.trim()) {
+      setUpdateGameForm({ ...updateGameForm, languages: [...updateGameForm.languages, updateCurrentLanguage.trim()] });
+      setUpdateCurrentLanguage('');
+    }
+  };
+
+  const handleUpdateRemoveLanguage = (index) => {
+    setUpdateGameForm({ ...updateGameForm, languages: updateGameForm.languages.filter((_, i) => i !== index) });
+  };
+
+  const handleUpdateDragStartLanguage = (index) => setUpdateDraggedLanguageIndex(index);
+
+  const handleUpdateDropLanguage = (dropIndex) => {
+    if (updateDraggedLanguageIndex === null || updateDraggedLanguageIndex === dropIndex) return;
+    const newLanguages = [...updateGameForm.languages];
+    [newLanguages[updateDraggedLanguageIndex], newLanguages[dropIndex]] = [newLanguages[dropIndex], newLanguages[updateDraggedLanguageIndex]];
+    setUpdateGameForm({ ...updateGameForm, languages: newLanguages });
+    setUpdateDraggedLanguageIndex(null);
+  };
+
+  const handleUpdateDragStartYoutube = (index) => setUpdateDraggedYoutubeIndex(index);
+  const handleUpdateDragOverYoutube = (index) => setUpdateDragoverYoutubeIndex(index);
+  const handleUpdateDragLeaveYoutube = () => setUpdateDragoverYoutubeIndex(null);
+
+  const handleUpdateDropYoutube = (dropIndex) => {
+    if (updateDraggedYoutubeIndex === null || updateDraggedYoutubeIndex === dropIndex) return;
+    const newYoutubeIds = [...updateGameForm.youtubeIds];
+    [newYoutubeIds[updateDraggedYoutubeIndex], newYoutubeIds[dropIndex]] = [newYoutubeIds[dropIndex], newYoutubeIds[updateDraggedYoutubeIndex]];
+    setUpdateGameForm({ ...updateGameForm, youtubeIds: newYoutubeIds });
+    setUpdateDraggedYoutubeIndex(null);
+    setUpdateDragoverYoutubeIndex(null);
+  };
+
+  const getUpdateReorderedYoutubeIds = () => {
+    if (updateDraggedYoutubeIndex === null || updateDragoverYoutubeIndex === null) return updateGameForm.youtubeIds;
+    const reordered = [...updateGameForm.youtubeIds];
+    [reordered[updateDraggedYoutubeIndex], reordered[updateDragoverYoutubeIndex]] = [reordered[updateDragoverYoutubeIndex], reordered[updateDraggedYoutubeIndex]];
+    return reordered;
+  };
+
+  const handleUpdateDragStartImage = (index) => setUpdateDraggedImageIndex(index);
+  const handleUpdateDragOverImage = (index) => setUpdateDragoverImageIndex(index);
+  const handleUpdateDragLeaveImage = () => setUpdateDragoverImageIndex(null);
+
+  const handleUpdateDropImage = (dropIndex) => {
+    if (updateDraggedImageIndex === null || updateDraggedImageIndex === dropIndex) return;
+    const newImages = [...updateImages];
+    [newImages[updateDraggedImageIndex], newImages[dropIndex]] = [newImages[dropIndex], newImages[updateDraggedImageIndex]];
+    setUpdateImages(newImages);
+    setUpdateDraggedImageIndex(null);
+    setUpdateDragoverImageIndex(null);
+  };
+
+  const getUpdateReorderedImages = () => {
+    if (updateDraggedImageIndex === null || updateDragoverImageIndex === null) return updateImages;
+    const reordered = [...updateImages];
+    [reordered[updateDraggedImageIndex], reordered[updateDragoverImageIndex]] = [reordered[updateDragoverImageIndex], reordered[updateDraggedImageIndex]];
+    return reordered;
+  };
+
+  const handleUpdateRemoveImage = (index) => {
+    const img = updateImages[index];
+    if (img.type === 'new' && img.objectUrl) URL.revokeObjectURL(img.objectUrl);
+    setUpdateImages(updateImages.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateAddPlatform = () => {
+    if (updateCurrentPlatform && !updateGameForm.systemRequirements[updateCurrentPlatform]) {
+      setUpdateGameForm({
+        ...updateGameForm,
+        systemRequirements: { ...updateGameForm.systemRequirements, [updateCurrentPlatform]: updatePlatformRequirements }
+      });
+      setUpdatePlatformRequirements({
+        minimum: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' },
+        recommended: { os: '', processor: '', memory: '', graphics: '', graphicsAPI: '', storage: '', note: '' }
+      });
+    }
+  };
+
+  const handleUpdateRemovePlatform = (platform) => {
+    const newRequirements = { ...updateGameForm.systemRequirements };
+    delete newRequirements[platform];
+    setUpdateGameForm({ ...updateGameForm, systemRequirements: newRequirements });
+  };
+
+  const resetUpdateForm = () => {
+    updateImages.forEach(img => { if (img.type === 'new' && img.objectUrl) URL.revokeObjectURL(img.objectUrl); });
+    setUpdateImages([]);
+    setUpdateCoverFile(null);
+    setUpdateExistingCover(null);
+    setSelectedUpdateGameId(null);
+    setCurrentGameStatus(null);
+    setUpdateGameForm({
+      title: '', price: '', shortDescription: '', longDescription: '', languages: [],
+      link: '', tags: [], youtubeIds: [], systemRequirements: {}, discountPercentage: 0, status: 'PUBLISHED'
+    });
   };
 
   const menuItems = [
@@ -1190,9 +1338,21 @@ export const DeveloperAccount = () => {
                           setCurrentGameStatus(gameStatus);
                           const validTransitions = getValidStatuses(gameStatus);
                           setUpdateGameForm({
+                            title: game.title || '',
+                            price: game.initialPrice || game.price || '',
+                            shortDescription: game.shortDescription || '',
+                            longDescription: game.longDescription || '',
+                            languages: game.languages || [],
+                            link: game.link || '',
+                            tags: game.tags || [],
+                            youtubeIds: game.youtubeIds || [],
+                            systemRequirements: game.systemRequirements || {},
                             discountPercentage: game.discountPercentage || 0,
                             status: validTransitions.length > 0 ? validTransitions[0] : gameStatus
                           });
+                          setUpdateExistingCover(game.cover || null);
+                          setUpdateCoverFile(null);
+                          setUpdateImages((game.images || []).map(url => ({ type: 'existing', url })));
                         }}>
                           {game.cover && <img src={`${API_URL}${game.cover}`} alt={game.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
                           <h4 style={{ margin: '0.5rem 0' }}>{game.title}</h4>
@@ -1204,20 +1364,344 @@ export const DeveloperAccount = () => {
                   )}
                 </>
               ) : (
-                <form onSubmit={handleUpdateGame} style={{ maxWidth: '600px' }}>
+                <form onSubmit={handleUpdateGame} style={{ maxWidth: '800px' }}>
                   {updateGameError && <div className="form-error">{updateGameError}</div>}
 
-                  <button type="button" className="btn-secondary" onClick={() => {
-                    setSelectedUpdateGameId(null);
-                    setCurrentGameStatus(null);
-                  }} disabled={updateGameLoading} style={{ marginBottom: '1rem' }}>← Back to Game List</button>
+                  <button type="button" className="btn-secondary" onClick={resetUpdateForm} disabled={updateGameLoading} style={{ marginBottom: '1rem' }}>← Back to Game List</button>
 
                   <div className="form-group">
-                    <label>Discount Percentage (0-100) *</label>
+                    <label>Game Title *</label>
+                    <input type="text" className="form-input" value={updateGameForm.title} onChange={(e) => setUpdateGameForm({...updateGameForm, title: e.target.value})} placeholder="Enter game title..." required disabled={updateGameLoading} />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Price *</label>
+                    <input type="number" step="0.01" min="0" className="form-input" value={updateGameForm.price} onChange={(e) => setUpdateGameForm({...updateGameForm, price: parseFloat(e.target.value) || ''})} placeholder="0.00" required disabled={updateGameLoading} />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Discount Percentage (0-100)</label>
                     <div style={{ display: 'flex', gap: '12px' }}>
-                      <input type="range" min="0" max="100" className="form-input" value={updateGameForm.discountPercentage} onChange={(e) => setUpdateGameForm({...updateGameForm, discountPercentage: parseInt(e.target.value)})} disabled={updateGameLoading} style={{ flex: 1, height: '40px' }} />
+                      <input type="range" min="0" max="100" className="form-input" value={updateGameForm.discountPercentage} onChange={(e) => setUpdateGameForm({...updateGameForm, discountPercentage: parseInt(e.target.value)})} disabled={updateGameLoading} style={{ flex: 1, height: '40px', accentColor: '#FF9800' }} />
                       <input type="number" min="0" max="100" className="form-input" value={updateGameForm.discountPercentage} onChange={(e) => setUpdateGameForm({...updateGameForm, discountPercentage: Math.min(100, Math.max(0, parseInt(e.target.value) || 0))})} disabled={updateGameLoading} style={{ width: '80px' }} />
                     </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Cover Image</label>
+                    <input
+                      ref={updateCoverFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        setUpdateCoverFile(e.target.files?.[0] || null);
+                        if (e.target.files?.length) e.target.value = '';
+                      }}
+                      disabled={updateGameLoading}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                      {(updateCoverFile || updateExistingCover) && (
+                        <div style={{ position: 'relative', backgroundColor: '#1a1a1a', borderRadius: '8px', overflow: 'hidden' }}>
+                          <img
+                            src={updateCoverFile ? URL.createObjectURL(updateCoverFile) : `${API_URL}${updateExistingCover}`}
+                            alt="Cover"
+                            style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }}
+                          />
+                          <div style={{
+                            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column',
+                            justifyContent: 'center', alignItems: 'center', opacity: 0, transition: 'opacity 0.2s'
+                          }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                            <button type="button" onClick={() => { setUpdateCoverFile(null); setUpdateExistingCover(null); }} disabled={updateGameLoading} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px' }}>✕</button>
+                          </div>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => updateCoverFileInputRef.current?.click()}
+                        disabled={updateGameLoading}
+                        style={{
+                          backgroundColor: '#1a1a1a', border: '2px dashed #666', borderRadius: '8px',
+                          cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', gap: '8px',
+                          minHeight: '150px', transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f90'; e.currentTarget.style.backgroundColor = '#262626'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#666'; e.currentTarget.style.backgroundColor = '#1a1a1a'; }}
+                      >
+                        <span style={{ fontSize: '24px' }}>+</span>
+                        <span style={{ fontSize: '0.9rem', color: '#888' }}>{(updateCoverFile || updateExistingCover) ? 'Replace Cover' : 'Upload Cover'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>YouTube Video IDs *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                      {getUpdateReorderedYoutubeIds().map((id, idx) => {
+                        const originalIdx = updateGameForm.youtubeIds.indexOf(id);
+                        const thumbnailUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+                        return (
+                          <div
+                            key={originalIdx}
+                            draggable
+                            onDragStart={() => handleUpdateDragStartYoutube(originalIdx)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDragEnter={() => handleUpdateDragOverYoutube(originalIdx)}
+                            onDragLeave={handleUpdateDragLeaveYoutube}
+                            onDrop={() => handleUpdateDropYoutube(originalIdx)}
+                            style={{
+                              position: 'relative', backgroundColor: '#1a1a1a', borderRadius: '8px',
+                              overflow: 'hidden', cursor: 'move',
+                              border: updateDragoverYoutubeIndex === originalIdx ? '2px solid #f90' : 'none',
+                              opacity: updateDraggedYoutubeIndex === originalIdx ? 0.6 : 1,
+                              transform: updateDragoverYoutubeIndex === originalIdx && updateDraggedYoutubeIndex !== null ? 'scale(1.05)' : 'scale(1)',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <img src={thumbnailUrl} alt={`YouTube ${id}`} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                            <div style={{
+                              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                              backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column',
+                              justifyContent: 'center', alignItems: 'center', opacity: 0, transition: 'opacity 0.2s'
+                            }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                              <div style={{ textAlign: 'center' }}>
+                                <p style={{ color: '#888', fontSize: '0.8rem', margin: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', padding: '0 8px' }}>{id}</p>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setUpdateGameForm({ ...updateGameForm, youtubeIds: updateGameForm.youtubeIds.filter((_, i) => i !== originalIdx) }); }}
+                                  disabled={updateGameLoading}
+                                  style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px', marginTop: '4px' }}
+                                >✕</button>
+                              </div>
+                            </div>
+                            <div style={{ position: 'absolute', top: '8px', left: '8px', pointerEvents: 'none' }}>
+                              <RedYoutubeIcon width="32" height="32" style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const id = prompt('Enter YouTube Video ID:');
+                          if (id && id.trim()) {
+                            setUpdateGameForm({ ...updateGameForm, youtubeIds: [...updateGameForm.youtubeIds, id.trim()] });
+                          }
+                        }}
+                        disabled={updateGameLoading}
+                        style={{
+                          backgroundColor: '#1a1a1a', border: '2px dashed #666', borderRadius: '8px',
+                          cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', gap: '8px', minHeight: '150px',
+                          transition: 'all 0.2s', color: 'inherit'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f90'; e.currentTarget.style.backgroundColor = '#262626'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#666'; e.currentTarget.style.backgroundColor = '#1a1a1a'; }}
+                      >
+                        <span style={{ fontSize: '24px' }}>+</span>
+                        <span style={{ fontSize: '0.9rem', color: '#888', textAlign: 'center' }}>Add YouTube<br />Video ID</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Game Images</label>
+                    <input
+                      ref={updateImageFilesInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        const newFiles = Array.from(e.target.files || []).map(file => ({
+                          type: 'new', file, objectUrl: URL.createObjectURL(file)
+                        }));
+                        setUpdateImages([...updateImages, ...newFiles]);
+                        if (e.target.files?.length) e.target.value = '';
+                      }}
+                      disabled={updateGameLoading}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                      {getUpdateReorderedImages().map((img, displayIdx) => {
+                        const actualIdx = updateImages.indexOf(img);
+                        if (actualIdx === -1) return null;
+                        const imgSrc = img.type === 'existing' ? `${API_URL}${img.url}` : img.objectUrl;
+                        const imgLabel = img.type === 'existing' ? img.url.split('/').pop() : img.file.name;
+                        return (
+                          <div
+                            key={actualIdx}
+                            draggable
+                            onDragStart={() => handleUpdateDragStartImage(actualIdx)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDragEnter={() => handleUpdateDragOverImage(actualIdx)}
+                            onDragLeave={handleUpdateDragLeaveImage}
+                            onDrop={() => handleUpdateDropImage(actualIdx)}
+                            style={{
+                              position: 'relative', backgroundColor: '#1a1a1a', borderRadius: '8px',
+                              overflow: 'hidden', cursor: 'move',
+                              border: updateDragoverImageIndex === actualIdx ? '2px solid #f90' : 'none',
+                              opacity: updateDraggedImageIndex === actualIdx ? 0.6 : 1,
+                              transform: updateDragoverImageIndex === actualIdx && updateDraggedImageIndex !== null ? 'scale(1.05)' : 'scale(1)',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <img src={imgSrc} alt={imgLabel} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                            <div style={{
+                              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                              backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column',
+                              justifyContent: 'center', alignItems: 'center', opacity: 0, transition: 'opacity 0.2s'
+                            }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
+                              <div style={{ textAlign: 'center' }}>
+                                <p style={{ color: '#888', fontSize: '0.8rem', margin: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', padding: '0 8px' }}>{imgLabel}</p>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); handleUpdateRemoveImage(actualIdx); }} disabled={updateGameLoading} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '20px', marginTop: '4px' }}>✕</button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => updateImageFilesInputRef.current?.click()}
+                        disabled={updateGameLoading}
+                        style={{
+                          backgroundColor: '#1a1a1a', border: '2px dashed #666', borderRadius: '8px',
+                          cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', gap: '8px', minHeight: '150px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f90'; e.currentTarget.style.backgroundColor = '#262626'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#666'; e.currentTarget.style.backgroundColor = '#1a1a1a'; }}
+                      >
+                        <span style={{ fontSize: '24px' }}>+</span>
+                        <span style={{ fontSize: '0.9rem', color: '#888' }}>Add Images</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Short Description (max 400 chars) *</label>
+                    <textarea className="form-input" value={updateGameForm.shortDescription} onChange={(e) => setUpdateGameForm({...updateGameForm, shortDescription: e.target.value})} placeholder="Brief description..." maxLength="400" required disabled={updateGameLoading} style={{ minHeight: '80px' }} />
+                    <small style={{ color: '#888' }}>{updateGameForm.shortDescription.length}/400</small>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Long Description *</label>
+                    <textarea className="form-input" value={updateGameForm.longDescription} onChange={(e) => setUpdateGameForm({...updateGameForm, longDescription: e.target.value})} placeholder="Detailed game description..." required disabled={updateGameLoading} style={{ minHeight: '120px' }} />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Languages *</label>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                      <input type="text" className="form-input" value={updateCurrentLanguage} onChange={(e) => setUpdateCurrentLanguage(e.target.value)} placeholder="e.g., English" disabled={updateGameLoading} style={{ flex: 1 }} />
+                      <button type="button" className="btn-primary" onClick={handleUpdateAddLanguage} disabled={updateGameLoading}>Add</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {updateGameForm.languages.map((lang, idx) => (
+                        <div
+                          key={idx}
+                          draggable
+                          onDragStart={() => handleUpdateDragStartLanguage(idx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={() => handleUpdateDropLanguage(idx)}
+                          style={{
+                            backgroundColor: updateDraggedLanguageIndex === idx ? '#ff6b00' : '#f90',
+                            padding: '6px 12px', borderRadius: '4px', display: 'flex', gap: '4px',
+                            alignItems: 'center', cursor: 'move',
+                            opacity: updateDraggedLanguageIndex === idx ? 0.7 : 1, transition: 'all 0.2s'
+                          }}
+                        >
+                          <span>⋮⋮</span>
+                          <span>{lang}</span>
+                          <button type="button" onClick={() => handleUpdateRemoveLanguage(idx)} disabled={updateGameLoading} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Link (optional)</label>
+                    <input type="url" className="form-input" value={updateGameForm.link} onChange={(e) => setUpdateGameForm({...updateGameForm, link: e.target.value})} placeholder="https://..." disabled={updateGameLoading} />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Tags</label>
+                    <button
+                      type="button"
+                      onClick={() => setUpdateTagPickerOpen(true)}
+                      disabled={updateGameLoading}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px',
+                        background: 'transparent', border: '1px solid #555', borderRadius: '4px',
+                        color: '#ccc', cursor: 'pointer', fontSize: '0.9rem',
+                        transition: 'border-color 0.15s, color 0.15s', fontFamily: 'inherit'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f90'; e.currentTarget.style.color = '#f90'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc'; }}
+                    >
+                      {updateGameForm.tags.length === 0 ? '+ Add Tags' : `Tags (${updateGameForm.tags.length})`}
+                    </button>
+                    {updateGameForm.tags.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                        {updateGameForm.tags.map(tag => (
+                          <span key={tag.id} style={{
+                            background: 'rgba(255, 153, 0, 0.15)', border: '1px solid rgba(255, 153, 0, 0.35)',
+                            color: '#f90', padding: '4px 10px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: '500'
+                          }}>
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <TagPickerModal
+                    isOpen={updateTagPickerOpen}
+                    onClose={() => setUpdateTagPickerOpen(false)}
+                    selectedTags={updateGameForm.tags}
+                    onTagsChange={(tags) => setUpdateGameForm({ ...updateGameForm, tags })}
+                  />
+
+                  <div className="form-group">
+                    <label>System Requirements *</label>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                      <select className="form-input" value={updateCurrentPlatform} onChange={(e) => setUpdateCurrentPlatform(e.target.value)} disabled={updateGameLoading} style={{ flex: 1 }}>
+                        <option value="Windows">Windows</option>
+                        <option value="macOS">macOS</option>
+                        <option value="Linux">Linux</option>
+                      </select>
+                      <button type="button" className="btn-primary" onClick={handleUpdateAddPlatform} disabled={updateGameLoading || Object.keys(updateGameForm.systemRequirements).includes(updateCurrentPlatform)}>Add Platform</button>
+                    </div>
+
+                    {Object.keys(updateGameForm.systemRequirements).map(platform => (
+                      <div key={platform} style={{ marginBottom: '20px', padding: '16px', backgroundColor: '#1a1a1a', borderRadius: '4px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <h4 style={{ margin: 0 }}>{platform}</h4>
+                          <button type="button" onClick={() => handleUpdateRemovePlatform(platform)} disabled={updateGameLoading} style={{ background: 'none', border: 'none', color: '#f90', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                        </div>
+                        {['minimum', 'recommended'].map(type => (
+                          <div key={type} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #333' }}>
+                            <h5 style={{ margin: '0 0 12px 0', color: '#f90' }}>{type.charAt(0).toUpperCase() + type.slice(1)} Requirements</h5>
+                            {['os', 'processor', 'memory', 'graphics', 'graphicsAPI', 'storage', 'note'].map(field => (
+                              <div key={field} style={{ marginBottom: '8px' }}>
+                                <label style={{ fontSize: '0.9rem' }}>{field.charAt(0).toUpperCase() + field.slice(1)}{field !== 'note' ? ' *' : ''}</label>
+                                <input type="text" className="form-input" placeholder={`Enter ${field}...`} disabled={updateGameLoading} value={updateGameForm.systemRequirements[platform]?.[type]?.[field] || ''} onChange={(e) => setUpdateGameForm({
+                                  ...updateGameForm,
+                                  systemRequirements: {
+                                    ...updateGameForm.systemRequirements,
+                                    [platform]: {
+                                      ...updateGameForm.systemRequirements[platform],
+                                      [type]: { ...updateGameForm.systemRequirements[platform]?.[type], [field]: e.target.value }
+                                    }
+                                  }
+                                })} style={{ fontSize: '0.9rem' }} required={field !== 'note'} />
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
                   </div>
 
                   <div className="form-group">
@@ -1228,19 +1712,14 @@ export const DeveloperAccount = () => {
                       <select className="form-input" value={updateGameForm.status} onChange={(e) => setUpdateGameForm({...updateGameForm, status: e.target.value})} disabled={updateGameLoading} required>
                         <option value="">Select a status...</option>
                         {getValidStatuses(currentGameStatus).map(status => (
-                          <option key={status} value={status}>
-                            {getStatusLabel(status)}
-                          </option>
+                          <option key={status} value={status}>{getStatusLabel(status)}</option>
                         ))}
                       </select>
                     )}
                   </div>
 
                   <div className="modal-actions">
-                    <button type="button" className="btn-secondary" onClick={() => {
-                      setSelectedUpdateGameId(null);
-                      setCurrentGameStatus(null);
-                    }} disabled={updateGameLoading}>Cancel</button>
+                    <button type="button" className="btn-secondary" onClick={resetUpdateForm} disabled={updateGameLoading}>Cancel</button>
                     <button type="submit" className="btn-primary" disabled={updateGameLoading}>{updateGameLoading ? 'UPDATING...' : 'UPDATE GAME'}</button>
                   </div>
                 </form>

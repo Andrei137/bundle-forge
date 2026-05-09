@@ -68,4 +68,15 @@ public class ImageService {
         return images;
     }
 
+    public void deleteImage(String path) {
+        if (path == null) return;
+        try {
+            String filename = path.substring(path.lastIndexOf('/') + 1);
+            Path filePath = storagePath.resolve(filename).normalize();
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            // best-effort deletion; don't fail the request
+        }
+    }
+
 }

@@ -64,6 +64,9 @@ public final class GameResponseDto {
     private Map<String, PlatformRequirements> systemRequirements;
 
     @JsonView(ViewUtils.Public.class)
+    private List<TagDto> tags;
+
+    @JsonView(ViewUtils.Public.class)
     private String developer;
 
     @JsonView(ViewUtils.Public.class)

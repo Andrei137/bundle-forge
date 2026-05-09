@@ -31,15 +31,6 @@ public class GameController {
 
     private final GameService gameService;
 
-    @GetMapping("")
-    @RequireProvider({Developer.class, Publisher.class})
-    public ResponseEntity<List<GameResponseDto>> getAllGames(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String title
-    ) {
-        return ResponseUtils.ok(gameService.getAllGamesOfCurrentProvider(status, title));
-    }
-
     // TODO: change requestmapping for the rest
     @GetMapping("/{gameId}")
     public ResponseEntity<GameResponseDto> getGame(
@@ -48,27 +39,7 @@ public class GameController {
         return ResponseUtils.ok(gameService.getGameDetails(gameId));
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @JsonView(ViewUtils.Provider.class)
-    @RequireProvider({Developer.class})
-    public ResponseEntity<GameResponseDto> announceGame(
-            @RequestPart("game") @Valid GameCreateDto gameCreateDto,
-            @RequestPart("cover") MultipartFile coverFile,
-            @RequestPart("images") List<MultipartFile> imagesFiles
-    ) {
-        return ResponseUtils.created(gameService.announceGame(gameCreateDto, coverFile, imagesFiles));
-    }
-
-    @PutMapping("/{gameId}")
-    @JsonView(ViewUtils.Provider.class)
-    @RequireProvider({Developer.class, Provider.class})
-    public ResponseEntity<GameResponseDto> updateGame(
-            @PathVariable Integer gameId,
-            @RequestBody @Valid GameUpdateDto gameUpdateDto
-    ) {
-        return ResponseUtils.created(gameService.updateGame(gameId, gameUpdateDto));
-    }
-
+    // TODO: remove
     @GetMapping({"/{gameId}/contracts"})
     @JsonView(ViewUtils.Provider.class)
     @RequireProvider({Developer.class})
@@ -78,6 +49,7 @@ public class GameController {
         return ResponseUtils.ok(gameService.getGameContracts(gameId));
     }
 
+    // TODO: remove
     @PutMapping({"/{gameId}/contracts/{publisherId}"})
     @JsonView(ViewUtils.Provider.class)
     @RequireProvider({Developer.class})
