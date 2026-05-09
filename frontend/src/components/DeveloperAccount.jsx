@@ -1359,7 +1359,7 @@ export const DeveloperAccount = () => {
                             youtubeIds: game.youtubeIds || [],
                             systemRequirements: game.systemRequirements || {},
                             discountPercentage: game.discountPercentage || 0,
-                            status: validTransitions.length > 0 ? validTransitions[0] : gameStatus
+                            status: gameStatus
                           });
                           setUpdateExistingCover(game.cover || null);
                           setUpdateCoverFile(null);
@@ -1716,17 +1716,13 @@ export const DeveloperAccount = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Game Status * (Current: {getStatusLabel(currentGameStatus)})</label>
-                    {getValidStatuses(currentGameStatus).length === 0 ? (
-                      <p style={{ color: '#888', fontSize: '0.9rem' }}>No valid transitions available for this status</p>
-                    ) : (
-                      <select className="form-input" value={updateGameForm.status} onChange={(e) => setUpdateGameForm({...updateGameForm, status: e.target.value})} disabled={updateGameLoading} required>
-                        <option value="">Select a status...</option>
-                        {getValidStatuses(currentGameStatus).map(status => (
-                          <option key={status} value={status}>{getStatusLabel(status)}</option>
-                        ))}
-                      </select>
-                    )}
+                    <label>Game Status *</label>
+                    <select className="form-input" value={updateGameForm.status} onChange={(e) => setUpdateGameForm({...updateGameForm, status: e.target.value})} disabled={updateGameLoading} required>
+                      <option value={currentGameStatus}>{getStatusLabel(currentGameStatus)} (current)</option>
+                      {getValidStatuses(currentGameStatus).map(status => (
+                        <option key={status} value={status}>{getStatusLabel(status)}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="modal-actions">
