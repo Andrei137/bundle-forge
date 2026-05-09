@@ -10,6 +10,7 @@ import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.mapper.GameMapper;
 import com.unibuc.bundle_forge.model.*;
 import com.unibuc.bundle_forge.repository.ContractRepository;
+import com.unibuc.bundle_forge.repository.GameKeyRepository;
 import com.unibuc.bundle_forge.repository.GameRepository;
 import com.unibuc.bundle_forge.utils.EnumUtils;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class GameService {
 
     private final GameRepository gameRepository;
     private final ContractRepository contractRepository;
+    private final GameKeyRepository gameKeyRepository;
     private final JwtService jwtService;
     private final GameMapper gameMapper;
     private final ImageService imageService;
@@ -38,8 +40,14 @@ public class GameService {
         );
     }
 
+    private GameResponseDto toResponseDtoWithKeyCount(Game game) {
+        GameResponseDto dto = gameMapper.toResponseDto(game);
+        dto.setActiveKeyCount(gameKeyRepository.countByGameIdAndStatus(game.getId(), GameKey.Status.ACTIVE));
+        return dto;
+    }
+
     public GameResponseDto getGameDetails(Integer gameId) {
-        return gameMapper.toResponseDto(getGame(gameId));
+        return toResponseDtoWithKeyCount(getGame(gameId));
     }
 
     private Provider getGameOwner(Game game) {
@@ -64,7 +72,7 @@ public class GameService {
         return gamesStream
                 .filter(g -> statusObj == null || g.getStatus().equals(statusObj))
                 .filter(g -> g.getTitle().toLowerCase().contains(normalizedTitle))
-                .map(gameMapper::toResponseDto)
+                .map(this::toResponseDtoWithKeyCount)
                 .toList();
     }
 
@@ -81,7 +89,7 @@ public class GameService {
         game.setImages(images);
         game.setDeveloper((Developer) jwtService.getCurrentProvider());
         game.setTags(tagService.getTagsByIds(gameCreateDto.getTagIds()));
-        return gameMapper.toResponseDto(gameRepository.save(game));
+        return toResponseDtoWithKeyCount(gameRepository.save(game));
     }
 
     @Transactional
@@ -139,7 +147,7 @@ public class GameService {
         }
 
         gameMapper.updateEntityFromDto(gameUpdateDto, game);
-        return gameMapper.toResponseDto(gameRepository.save(game));
+        return toResponseDtoWithKeyCount(gameRepository.save(game));
     }
 
     public List<Contract> getGameContracts(Integer gameId) {

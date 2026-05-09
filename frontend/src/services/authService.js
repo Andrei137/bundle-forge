@@ -408,6 +408,29 @@ export const authService = {
     return await response.json();
   },
 
+  uploadGameKeys: async (gameId, keys) => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/games/${gameId}/keys`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ keys }),
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to upload keys';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
   deleteGame: async (gameId) => {
     const token = authService.getToken();
     const response = await fetch(`${API_URL}/developers/games/${gameId}`, {
