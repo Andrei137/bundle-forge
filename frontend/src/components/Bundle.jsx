@@ -1,7 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { addToCart } from '../redux/slices/cartSlice';
 import './Bundle.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 /* ── Icons ── */
 const PlusIcon = () => (
@@ -71,45 +74,14 @@ const HeartIcon = () => (
   </svg>
 );
 
-/* ── Game data ── */
-const ALL_GAMES = [
-  { id: 1, title: 'Fear the Spotlight', rrp: 101.93, platforms: ['win','mac','linux'], image: 'https://fanatical.imgix.net/product/original/6fedd063-9f69-46a3-a5b6-b5789fbab98a.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 2, title: 'Tower of Mask', rrp: 55.02, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/0ce21c52-ea67-4b8c-9753-67b9d48db8e8.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 3, title: 'DreadOut 2', rrp: 85.61, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/4677c1e2-a1ad-4ab9-9b86-cfac7a55efcb.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 4, title: 'Kriophobia', rrp: 62.66, platforms: ['win','mac'], image: 'https://fanatical.imgix.net/product/original/dc11ac3d-e52f-4d6f-8aa5-33afad1fe883.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 5, title: 'The Door in the Basement', rrp: 55.02, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/f3b2d1b1-e899-44ca-8fc6-e1806dadc71c.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 6, title: 'Them and Us', rrp: 173.31, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/43b59812-0153-40a1-aaea-0440c05b773e.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 7, title: 'Draft of Darkness', rrp: 75.41, platforms: ['win','linux'], image: 'https://fanatical.imgix.net/product/original/9e89e524-ee67-47eb-b96d-dd820af18f7a.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 8, title: 'Lost Alone Ultimate', rrp: 75.41, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/21b66320-5e4f-4ab1-9e96-ca69e6f2f26c.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 9, title: "Creepy Shift: Uncle Joe's Motel", rrp: 35.64, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/4a31a4ec-b007-4bea-93d3-5012acc8f7ff.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 10, title: 'Employee of The Month', rrp: 50.94, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/0a637a0e-555b-42b6-a3ea-3a8ae34927bf.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 11, title: 'Creepy Shift: House For Sale', rrp: 35.64, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/10318f61-7070-4b3c-aa24-42b3f3cfb3e3.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 12, title: 'Creepy Shift: Roadside Diner', rrp: 35.64, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/38aebb52-be6a-4fda-8b76-f430dd802a84.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 13, title: 'The Alien Cube', rrp: 101.93, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/51c5de37-b85f-418d-a97f-3845c0424ab7.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 14, title: 'Jack Holmes: Master of Puppets', rrp: 76.43, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/102484df-b86c-499b-84c6-d85e809cd5bf.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 15, title: 'Mirror Forge', rrp: 65.21, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/78d1e133-f634-495d-be2b-b83e6fa2d9b3.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 16, title: 'Hauntsville', rrp: 94.28, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/9b037f3d-5edb-470d-ae16-4f37025c2429.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 17, title: 'Y. Village - The Visitors', rrp: 39.72, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/fb63a08e-18e3-415e-9a89-4f9332071882.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 18, title: 'Locked in my Darkness 1 & 2', rrp: 71.28, platforms: ['win','linux'], image: 'https://fanatical.imgix.net/product/original/e8845ea3-aa30-4908-8320-a4c4d4d3804c.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 19, title: 'Astrumis - Survive Together', rrp: 49.71, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/813f088d-c087-4b3e-8ced-800223f0342b.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-  { id: 20, title: 'CashGrab: Refunded', rrp: 35.13, platforms: ['win'], image: 'https://fanatical.imgix.net/product/original/2f7f2455-b0ff-4091-b6a2-77fa68a8f06e.jpeg?auto=compress,format&w=307&fit=crop&h=173' },
-];
-
-const TIERS = [
-  { min: 3, price: 16.98, label: '3 + Games' },
-  { min: 5, price: 15.30, label: '5 + Games' },
-  { min: 7, price: 14.53, label: '7 + Games', bestValue: true },
-];
-
-// Platform icon map
+/* ── Platform icon map ── */
 const PlatformIcon = ({ p }) => ({
   win: <WinIcon />, mac: <MacIcon />, linux: <LinuxIcon />
 }[p] || null);
 
-/* ── Platform icons display ── */
 const PlatformIcons = ({ platforms }) => (
   <div className="pam-card-platforms">
-    {platforms.map(p => <PlatformIcon key={p} p={p} />)}
+    {(platforms || []).map(p => <PlatformIcon key={p} p={p} />)}
   </div>
 );
 
@@ -142,67 +114,86 @@ const DonationSlider = ({ label, value, min, max, onChange, color, note }) => {
 /* ── Main component ── */
 export const Bundle = () => {
   const dispatch = useDispatch();
+  const { id: bundleId } = useParams();
 
-  // Selected game IDs (start with first 3 selected)
-  const [selected, setSelected] = useState(new Set([1, 2, 3]));
+  const [bundle, setBundle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+
+  const [selected, setSelected] = useState(new Set());
   const [donationOpen, setDonationOpen] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
   const [customAmountError, setCustomAmountError] = useState('');
-
-  // Minimums for sliders (% of base price)
-  const PLATFORM_MIN_PCT = 0.10; // 10%
-  const DEV_MIN_PCT = 0.15;      // 15%
-
-  // Donation splits (0–1 as pct of total)
   const [platformPct, setPlatformPct] = useState(0.10);
   const [devPct, setDevPct] = useState(0.50);
-  // charity gets remainder
+
+  useEffect(() => {
+    const url = bundleId
+      ? `${API_URL}/bundles/${bundleId}`
+      : `${API_URL}/bundles`;
+
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load bundle (${res.status})`);
+        return res.json();
+      })
+      .then(data => {
+        const b = bundleId ? data : data[0];
+        if (!b) throw new Error('No bundles available');
+        setBundle(b);
+        setPlatformPct((b.platformMinPct ?? 10) / 100);
+        setDevPct((b.devMinPct ?? 50) / 100);
+        // Pre-select the first numRequiredGames games of the lowest tier
+        const firstTier = [...(b.tiers || [])].sort((a, z) => a.numRequiredGames - z.numRequiredGames)[0];
+        const preCount = firstTier?.numRequiredGames ?? 3;
+        setSelected(new Set((b.games || []).slice(0, preCount).map(g => g.id)));
+      })
+      .catch(err => setFetchError(err.message))
+      .finally(() => setLoading(false));
+  }, [bundleId]);
+
+  const games = bundle?.games ?? [];
+  const tiers = useMemo(() => [...(bundle?.tiers ?? [])].sort((a, b) => a.numRequiredGames - b.numRequiredGames), [bundle]);
+  const PLATFORM_MIN_PCT = (bundle?.platformMinPct ?? 10) / 100;
+  const DEV_MIN_PCT = (bundle?.devMinPct ?? 15) / 100;
 
   const count = selected.size;
 
-  // Active tier
   const activeTier = useMemo(() => {
-    const sorted = [...TIERS].sort((a, b) => b.min - a.min);
-    return sorted.find(t => count >= t.min) || TIERS[0];
-  }, [count]);
+    const sorted = [...tiers].sort((a, b) => b.numRequiredGames - a.numRequiredGames);
+    return sorted.find(t => count >= t.numRequiredGames) || tiers[0] || { numRequiredGames: 3, pricePerGame: 0 };
+  }, [count, tiers]);
 
-  // Base subtotal
   const basePrice = useMemo(() => {
-    if (count < 3) return 0;
-    return count * activeTier.price;
-  }, [count, activeTier]);
+    if (!tiers.length || count < (tiers[0]?.numRequiredGames ?? 3)) return 0;
+    return count * activeTier.pricePerGame;
+  }, [count, activeTier, tiers]);
 
-  // Total (custom amount if set and valid)
   const total = useMemo(() => {
     const ca = parseFloat(customAmount);
     if (!isNaN(ca) && ca > basePrice) return ca;
     return basePrice;
   }, [customAmount, basePrice]);
 
-  // RRP total
   const rrpTotal = useMemo(() => {
-    return ALL_GAMES.filter(g => selected.has(g.id)).reduce((s, g) => s + g.rrp, 0);
-  }, [selected]);
+    return games.filter(g => selected.has(g.id)).reduce((s, g) => s + (g.rrp ?? 0), 0);
+  }, [selected, games]);
 
   const savingPct = rrpTotal > 0 ? Math.round((1 - total / rrpTotal) * 100) : 0;
 
-  // Donation amounts
   const platformAmt = total * platformPct;
   const devAmt = total * devPct;
   const charityAmt = total - platformAmt - devAmt;
-
   const platformMin = total * PLATFORM_MIN_PCT;
   const devMin = total * DEV_MIN_PCT;
 
   const handlePlatformChange = (val) => {
-    const remaining = total - val - devAmt;
-    if (remaining < 0) return;
+    if (total - val - devAmt < 0) return;
     setPlatformPct(val / total);
   };
 
   const handleDevChange = (val) => {
-    const remaining = total - platformAmt - val;
-    if (remaining < 0) return;
+    if (total - platformAmt - val < 0) return;
     setDevPct(val / total);
   };
 
@@ -220,21 +211,44 @@ export const Bundle = () => {
   const toggleGame = (id) => {
     setSelected(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
 
+  const minGames = tiers[0]?.numRequiredGames ?? 3;
+  const canCheckout = count >= minGames;
+
   const handleGoToCart = () => {
-    if (count < 3) return;
-    const selectedGames = ALL_GAMES.filter(g => selected.has(g.id));
-    selectedGames.forEach(game => {
-      dispatch(addToCart({ id: game.id, title: game.title, price: activeTier.price, image: game.image, quantity: 1 }));
+    if (!canCheckout) return;
+    games.filter(g => selected.has(g.id)).forEach(game => {
+      dispatch(addToCart({
+        id: game.id,
+        title: game.title,
+        price: activeTier.pricePerGame,
+        image: game.cover ? `${API_URL}${game.cover}` : '',
+        quantity: 1,
+      }));
     });
   };
 
-  const canCheckout = count >= 3;
+  if (loading) {
+    return (
+      <div className="pam-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <p style={{ color: '#888' }}>Loading bundle...</p>
+      </div>
+    );
+  }
+
+  if (fetchError || !bundle) {
+    return (
+      <div className="pam-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <p style={{ color: '#ff4444' }}>{fetchError || 'Bundle not found'}</p>
+      </div>
+    );
+  }
+
+  const firstTier = tiers[0];
 
   return (
     <div className="pam-page">
@@ -243,12 +257,13 @@ export const Bundle = () => {
         {/* ── LEFT: game grid ── */}
         <section className="pam-left">
           <div className="pam-grid">
-            {ALL_GAMES.map(game => {
+            {games.map(game => {
               const isSelected = selected.has(game.id);
+              const imgSrc = game.cover ? `${API_URL}${game.cover}` : '';
               return (
                 <article key={game.id} className={`pam-card ${isSelected ? 'pam-card--selected' : ''}`}>
                   <div className="pam-card-cover">
-                    <img src={game.image} alt={game.title} className="pam-card-img" loading="lazy" />
+                    {imgSrc && <img src={imgSrc} alt={game.title} className="pam-card-img" loading="lazy" />}
                     <div className="pam-card-overlay">
                       <span className="pam-card-name">{game.title}</span>
                     </div>
@@ -264,8 +279,8 @@ export const Bundle = () => {
                       <PlatformIcons platforms={game.platforms} />
                     </div>
                     <div className="pam-card-bottom">
-                      <a href="#" className="pam-card-details-link">Product Details</a>
-                      <span className="pam-card-rrp"><span className="pam-card-rrp-label">RRP</span> RON {game.rrp.toFixed(2)}</span>
+                      <a href={`/game/${game.id}`} className="pam-card-details-link">Product Details</a>
+                      <span className="pam-card-rrp"><span className="pam-card-rrp-label">RRP</span> RON {(game.rrp ?? 0).toFixed(2)}</span>
                     </div>
                     <button
                       className={`pam-card-btn ${isSelected ? 'pam-card-btn--selected' : ''}`}
@@ -286,31 +301,38 @@ export const Bundle = () => {
 
         {/* ── RIGHT: sticky sidebar ── */}
         <aside className="pam-right">
-          {/* Cover */}
-          <div className="pam-cover-wrap">
-            <img
-              src="https://fanatical.imgix.net/product/original/db4e7503-78e4-4f8a-be5c-49e5c7b48809.jpeg?auto=compress,format&w=524&fit=max"
-              alt="Build your own Survival Horror Bundle"
-              className="pam-cover-img"
-            />
-          </div>
+          {bundle.cover && (
+            <div className="pam-cover-wrap">
+              <img
+                src={`${API_URL}${bundle.cover}`}
+                alt={bundle.title}
+                className="pam-cover-img"
+              />
+            </div>
+          )}
 
-          {/* Save more message */}
-          <p className="pam-save-msg">
-            Build your own Bundle from <span className="pam-save-msg-highlight">3 for <strong>RON 50.94</strong></span>. Add games to start saving. The more you add, the more you save!
-          </p>
+          {firstTier && (
+            <p className="pam-save-msg">
+              Build your own Bundle from{' '}
+              <span className="pam-save-msg-highlight">
+                {firstTier.numRequiredGames} for <strong>RON {(firstTier.numRequiredGames * firstTier.pricePerGame).toFixed(2)}</strong>
+              </span>. Add games to start saving. The more you add, the more you save!
+            </p>
+          )}
 
           <div className="pam-sticky-container">
             {/* Tier boxes */}
             <div className="pam-tiers">
-              {TIERS.map(tier => (
-                <div key={tier.min} className={`pam-tier ${count >= tier.min ? 'pam-tier--active' : ''}`}>
+              {tiers.map((tier, idx) => (
+                <div key={tier.numRequiredGames} className={`pam-tier ${count >= tier.numRequiredGames ? 'pam-tier--active' : ''}`}>
                   <div className="pam-tier-qty">
-                    {tier.label}
-                    {tier.bestValue && <span className="pam-tier-best">Best value</span>}
+                    {tier.numRequiredGames}+ Games
+                    {idx === tiers.length - 1 && tiers.length > 1 && (
+                      <span className="pam-tier-best">Best value</span>
+                    )}
                   </div>
                   <div className="pam-tier-price">
-                    <span className="pam-tier-price-val">RON {tier.price.toFixed(2)}</span>
+                    <span className="pam-tier-price-val">RON {tier.pricePerGame.toFixed(2)}</span>
                     <span className="pam-tier-price-per"> / Per item</span>
                   </div>
                 </div>
@@ -319,7 +341,7 @@ export const Bundle = () => {
 
             {/* Other amount input */}
             <div className="pam-custom-amount">
-              <label className="pam-custom-amount-label">Pay more — support developers & charity</label>
+              <label className="pam-custom-amount-label">Pay more — support developers &amp; charity</label>
               <div className="pam-custom-amount-wrap">
                 <span className="pam-custom-amount-prefix">RON</span>
                 <input
@@ -379,7 +401,6 @@ export const Bundle = () => {
                     </span>
                   </div>
 
-                  {/* Visual split bar */}
                   <div className="pam-split-bar">
                     <div className="pam-split-seg" style={{ width: `${platformPct * 100}%`, background: '#f90' }} title="Platform" />
                     <div className="pam-split-seg" style={{ width: `${devPct * 100}%`, background: '#4fc3f7' }} title="Developers" />
@@ -408,60 +429,42 @@ export const Bundle = () => {
                   )}
                 </div>
               </div>
-              {count < 3 && (
-                <p className="pam-subtotal-hint">Select at least 3 games to continue</p>
+              {count < minGames && (
+                <p className="pam-subtotal-hint">Select at least {minGames} games to continue</p>
               )}
               <button className="pam-go-to-cart" disabled={!canCheckout} onClick={handleGoToCart}>
                 <CartIcon /> GO TO CART
               </button>
             </div>
 
-            {/* Region */}
-            <div className="pam-region">
-              <CheckCircleIcon />
-              <span>This product activates in Romania 🇷🇴</span>
-              <a href="#regions" className="pam-check-regions">Check Regions</a>
-            </div>
-
-            {/* Payments */}
-            <div className="pam-payments">
-              <span className="pam-payments-label">Payments:</span>
-              <div className="pam-payment-icons">
-                {['PayPal', 'VISA', 'MC', 'G Pay', 'BNPL'].map(p => (
-                  <span key={p} className="pam-payment-icon">{p}</span>
-                ))}
-              </div>
-            </div>
-
             {/* ── Charity info ── */}
-            <div className="pam-charity-info">
-              <div className="pam-charity-info-header">
-                <HeartIcon />
-                <span className="pam-charity-info-name">Whale & Dolphin Conservation</span>
+            {bundle.charity && (
+              <div className="pam-charity-info">
+                <div className="pam-charity-info-header">
+                  <HeartIcon />
+                  <span className="pam-charity-info-name">{bundle.charity.name}</span>
+                </div>
+                <p className="pam-charity-info-desc">{bundle.charity.shortDescription}</p>
+                {bundle.charity.website && (
+                  <a href={bundle.charity.website} target="_blank" rel="noopener noreferrer" className="pam-charity-info-link">
+                    Visit their website <ExternalLinkIcon />
+                  </a>
+                )}
               </div>
-              <p className="pam-charity-info-desc">
-                WDC is the leading global charity dedicated to the protection of whales and dolphins. They work to end captivity, bycatch, and other threats through advocacy, research, and education worldwide.
-              </p>
-              <a href="https://uk.whales.org" target="_blank" rel="noopener noreferrer" className="pam-charity-info-link">
-                Visit their website <ExternalLinkIcon />
-              </a>
-            </div>
+            )}
           </div>
         </aside>
       </div>
 
       {/* ── Bundle info below ── */}
       <div className="pam-bundle-info">
-        <h1 className="pam-bundle-title">Build your own Survival Horror Bundle</h1>
-        <p className="pam-bundle-short">
-          Test your nerves with our brand new collection of unsettling survival horror titles! If you're prepared for the frights, you might just last the night.
-        </p>
+        <h1 className="pam-bundle-title">{bundle.title}</h1>
+        <p className="pam-bundle-short">{bundle.shortDescription}</p>
         <section className="pam-bundle-about">
           <h2>About this Bundle</h2>
-          <p>It's time to test your mettle in perilous new worlds with our freshly curated Build your own Survival Horror Bundle.</p>
-          <p>Choose from this creepy collection of games and face demons, zombies, monsters, and more horrors beyond your imagination.</p>
-          <p>Genre veterans and novices alike will find a vast array of gloriously atmospheric worlds to survive, including abandoned spaceships, creepy motels, and twisted subterranean hellscapes.</p>
-          <p>It's time to clock in for the late shift, and see if you can make it through the night.</p>
+          {bundle.longDescription.split('\n').filter(Boolean).map((para, i) => (
+            <p key={i}>{para}</p>
+          ))}
           <p><em>* All games are supplied as official Steam keys. Available while stocks last.</em></p>
         </section>
       </div>
