@@ -798,32 +798,187 @@ export const DeveloperAccount = () => {
                 ← Back to My Games
               </button>
               <h1>{gameDetails.title}</h1>
-              {gameDetails.cover && <img src={`${API_URL}${gameDetails.cover}`} alt={gameDetails.title} style={{ maxWidth: '300px', borderRadius: '4px', marginBottom: '1rem' }} />}
 
-              <div className="account-section">
+              <div className="account-section" style={{ maxWidth: '800px' }}>
                 <h3>Game Details</h3>
+
                 <div className="detail-row">
                   <div className="detail-label">
                     <p className="detail-title">TITLE</p>
                     <p className="detail-value">{gameDetails.title}</p>
                   </div>
                 </div>
+
                 <div className="detail-row">
                   <div className="detail-label">
                     <p className="detail-title">PRICE</p>
-                    <p className="detail-value">RON {gameDetails.price.toFixed(2)}</p>
+                    <p className="detail-value">
+                      RON {(gameDetails.initialPrice ?? gameDetails.price).toFixed(2)}
+                      {gameDetails.discountPercentage > 0 && (
+                        <span style={{ marginLeft: '8px', color: '#4CAF50', fontSize: '0.9rem' }}>
+                          {gameDetails.discountPercentage}% off → RON {gameDetails.price.toFixed(2)}
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">DISCOUNT PERCENTAGE</p>
+                    <p className="detail-value">{gameDetails.discountPercentage ?? 0}%</p>
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">COVER IMAGE</p>
+                    {gameDetails.cover
+                      ? <img src={`${API_URL}${gameDetails.cover}`} alt={gameDetails.title} style={{ maxWidth: '300px', borderRadius: '6px', marginTop: '8px', display: 'block' }} />
+                      : <p className="detail-value" style={{ color: '#666' }}>No cover uploaded</p>
+                    }
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label" style={{ width: '100%' }}>
+                    <p className="detail-title">YOUTUBE VIDEO IDs</p>
+                    {gameDetails.youtubeIds && gameDetails.youtubeIds.length > 0
+                      ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                          {gameDetails.youtubeIds.map((ytId, idx) => (
+                            <div key={idx} style={{ position: 'relative', backgroundColor: '#1a1a1a', borderRadius: '8px', overflow: 'hidden' }}>
+                              <img src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`} alt={`Video ${idx + 1}`} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                              <div style={{ position: 'absolute', top: '8px', left: '8px', pointerEvents: 'none' }}>
+                                <RedYoutubeIcon width="32" height="32" style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))' }} />
+                              </div>
+                              <div style={{ padding: '4px 8px', fontSize: '0.75rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ytId}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                      : <p className="detail-value" style={{ color: '#666' }}>No videos added</p>
+                    }
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label" style={{ width: '100%' }}>
+                    <p className="detail-title">SCREENSHOTS</p>
+                    {gameDetails.images && gameDetails.images.length > 0
+                      ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                          {gameDetails.images.map((img, idx) => (
+                            <div key={idx} style={{ backgroundColor: '#1a1a1a', borderRadius: '8px', overflow: 'hidden' }}>
+                              <img src={`${API_URL}${img}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )
+                      : <p className="detail-value" style={{ color: '#666' }}>No screenshots uploaded</p>
+                    }
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">SHORT DESCRIPTION</p>
+                    <p className="detail-value" style={{ whiteSpace: 'pre-wrap' }}>{gameDetails.shortDescription || <span style={{ color: '#666' }}>—</span>}</p>
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">LONG DESCRIPTION</p>
+                    <p className="detail-value" style={{ whiteSpace: 'pre-wrap' }}>{gameDetails.longDescription || <span style={{ color: '#666' }}>—</span>}</p>
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">LANGUAGES</p>
+                    {gameDetails.languages && gameDetails.languages.length > 0
+                      ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                          {gameDetails.languages.map((lang, idx) => (
+                            <span key={idx} style={{ backgroundColor: '#f90', color: '#000', padding: '4px 12px', borderRadius: '4px', fontSize: '0.85rem', fontWeight: '500' }}>{lang}</span>
+                          ))}
+                        </div>
+                      )
+                      : <p className="detail-value" style={{ color: '#666' }}>No languages specified</p>
+                    }
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">LINK</p>
+                    {gameDetails.link
+                      ? <a href={gameDetails.link} target="_blank" rel="noopener noreferrer" className="detail-value" style={{ color: '#f90' }}>{gameDetails.link}</a>
+                      : <p className="detail-value" style={{ color: '#666' }}>—</p>
+                    }
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">TAGS</p>
+                    {gameDetails.tags && gameDetails.tags.length > 0
+                      ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                          {gameDetails.tags.map(tag => (
+                            <span key={tag.id} style={{ background: 'rgba(255, 153, 0, 0.15)', border: '1px solid rgba(255, 153, 0, 0.35)', color: '#f90', padding: '4px 10px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: '500' }}>
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )
+                      : <p className="detail-value" style={{ color: '#666' }}>No tags</p>
+                    }
+                  </div>
+                </div>
+
+                <div className="detail-row">
+                  <div className="detail-label">
+                    <p className="detail-title">SYSTEM REQUIREMENTS</p>
+                    {gameDetails.systemRequirements && Object.keys(gameDetails.systemRequirements).length > 0
+                      ? (
+                        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          {Object.entries(gameDetails.systemRequirements).map(([platform, reqs]) => (
+                            <div key={platform} style={{ backgroundColor: '#1a1a1a', borderRadius: '4px', padding: '16px' }}>
+                              <h4 style={{ margin: '0 0 12px 0' }}>{platform}</h4>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                {['minimum', 'recommended'].map(type => (
+                                  reqs[type] && (
+                                    <div key={type} style={{ paddingBottom: '12px' }}>
+                                      <h5 style={{ margin: '0 0 10px 0', color: '#f90' }}>{type.charAt(0).toUpperCase() + type.slice(1)} Requirements</h5>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.875rem' }}>
+                                        {['os', 'processor', 'memory', 'graphics', 'graphicsAPI', 'storage', 'note'].map(field => (
+                                          reqs[type][field] && (
+                                            <div key={field}>
+                                              <span style={{ color: '#888' }}>{field === 'graphicsAPI' ? 'Graphics API' : field.charAt(0).toUpperCase() + field.slice(1)}: </span>
+                                              <span style={{ color: '#ccc' }}>{reqs[type][field]}</span>
+                                            </div>
+                                          )
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                      : <p className="detail-value" style={{ color: '#666' }}>No system requirements specified</p>
+                    }
+                  </div>
+                </div>
+
                 <div className="detail-row">
                   <div className="detail-label">
                     <p className="detail-title">STATUS</p>
-                    <p className="detail-value">{gameDetails.status}</p>
-                  </div>
-                </div>
-                <div className="detail-row">
-                  <div className="detail-label">
-                    <p className="detail-title">DESCRIPTION</p>
-                    <p className="detail-value" style={{ whiteSpace: 'pre-wrap' }}>{gameDetails.longDescription}</p>
+                    <p className="detail-value">{getStatusLabel(gameDetails.status)}</p>
                   </div>
                 </div>
               </div>
