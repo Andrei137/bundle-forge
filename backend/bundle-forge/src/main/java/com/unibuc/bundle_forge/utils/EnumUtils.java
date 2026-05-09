@@ -37,6 +37,7 @@ public final class EnumUtils {
 
         E newStatus = fromString(enumClass, status);
         E currentStatus = entity.getStatus();
+        if (newStatus.equals(currentStatus)) return;
         if (!newStatus.canTransitionFrom(currentStatus)) {
             throw new ValidationException(
                     String.format(
