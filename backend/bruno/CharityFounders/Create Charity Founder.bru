@@ -1,0 +1,28 @@
+meta {
+  name: Create Charity Founder
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}/charity-founders
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Save The Children Foundation",
+    "website": "https://www.savethechildren.org",
+    "shortDescription": "Supporting children through education, healthcare, and emergency relief programs worldwide.",
+    "longDescription": "Save The Children Foundation is a global non-profit organization dedicated to improving the lives of children through access to education, healthcare, nutrition, and emergency humanitarian support. The organization works closely with local communities and international partners to provide long-term sustainable solutions for vulnerable children and families."
+  }
+  
+  
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

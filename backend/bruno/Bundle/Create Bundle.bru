@@ -1,0 +1,71 @@
+meta {
+  name: Create Bundle
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{url}}/bundles
+  body: multipartForm
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "best-bundle",
+    "shortDescription": "ceva short description",
+    "longDescription": "ceva long description",
+    "platformMinPct": 10,
+    "devMinPct": 20,
+    "gameIds": [3, 4, 6, 7, 8, 9, 10, 11],
+    "tiers": [
+      {
+        "numRequiredGames": 3,
+        "pricePerGame": 13.04
+      },
+      {
+        "numRequiredGames": 5,
+        "pricePerGame": 12.01
+      },
+      {
+        "numRequiredGames": 7,
+        "pricePerGame": 11.74
+      }
+    ]
+  }
+  
+}
+
+body:multipart-form {
+  bundle: '''
+    {
+      "title": "best-bundle",
+      "shortDescription": "ceva short description",
+      "longDescription": "ceva long description",
+      "platformMinPct": 10,
+      "devMinPct": 20,
+      "gameIds": [3, 4, 6, 7, 8, 9, 10, 11],
+      "tiers": [
+        {
+          "numRequiredGames": 3,
+          "pricePerGame": 13.04
+        },
+        {
+          "numRequiredGames": 5,
+          "pricePerGame": 12.01
+        },
+        {
+          "numRequiredGames": 7,
+          "pricePerGame": 11.74
+        }
+      ],
+      "charityFounderId": 1
+    }
+  ''' @contentType(application/json)
+  cover: @file(/home/seb/Downloads/build-your-own-killer-bundle.jpeg)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
