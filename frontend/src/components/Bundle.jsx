@@ -130,14 +130,27 @@ export const Bundle = () => {
         setBundle(b);
         setPlatformPct((b.platformMinPct ?? 10) / 100);
         setDevPct((b.devMinPct ?? 50) / 100);
-        // Pre-select the first numRequiredGames games of the lowest tier
-        const firstTier = [...(b.tiers || [])].sort((a, z) => a.numRequiredGames - z.numRequiredGames)[0];
-        const preCount = firstTier?.numRequiredGames ?? 3;
-        setSelected(new Set((b.games || []).slice(0, preCount).map(g => g.id)));
+
+        const storageKey = `bundle-selection-${b.id}`;
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const savedIds = new Set(JSON.parse(saved));
+          const validIds = new Set((b.games || []).map(g => g.id).filter(id => savedIds.has(id)));
+          setSelected(validIds);
+        } else {
+          const firstTier = [...(b.tiers || [])].sort((a, z) => a.numRequiredGames - z.numRequiredGames)[0];
+          const preCount = firstTier?.numRequiredGames ?? 3;
+          setSelected(new Set((b.games || []).slice(0, preCount).map(g => g.id)));
+        }
       })
       .catch(err => setFetchError(err.message))
       .finally(() => setLoading(false));
   }, [bundleId]);
+
+  useEffect(() => {
+    if (!bundle) return;
+    localStorage.setItem(`bundle-selection-${bundle.id}`, JSON.stringify([...selected]));
+  }, [selected, bundle]);
 
   const games = bundle?.games ?? [];
   const tiers = useMemo(() => [...(bundle?.tiers ?? [])].sort((a, b) => a.numRequiredGames - b.numRequiredGames), [bundle]);
@@ -426,7 +439,7 @@ export const Bundle = () => {
                   />
 
                   {(() => {
-                    const charityPct = Math.max(0, Math.round((1 - platformPct - devPct) * 100));
+                    const charityPct = canCheckout ? Math.max(0, Math.round((1 - platformPct - devPct) * 100)) : 0;
                     const maxCharityPct = Math.floor((1 - PLATFORM_MIN_PCT - DEV_MIN_PCT) * 100);
                     const fillPct = charityPct;
                     return (
