@@ -131,6 +131,57 @@
 .fd-category-badge--star-deal { background: #d97706; color: #fff; }
 .fd-category-badge--bundle-deal { background: #059669; color: #fff; }
 .fd-category-badge--flash-sale { background: #dc2626; color: #fff; }
+.fd-category-badge--biggest-deals { background: #dc2626; color: #fff; }
+.fd-category-badge--new-releases { background: #d97706; color: #fff; }
+.fd-category-badge--bundle-spotlight { background: #059669; color: #fff; }
+.fd-category-badge--staff-picks { background: #3a3af0; color: #fff; }
+
+/* Main card price block */
+.fd-main-price-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.fd-main-discount {
+  background: #000;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fd-main-prices {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.fd-main-was {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.7rem;
+  text-decoration: line-through;
+  white-space: nowrap;
+}
+
+.fd-main-now {
+  color: #f90;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Support DRM label */
+.fd-support-drm {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+}
 
 .fd-view-btn {
   background: #f90;
