@@ -147,7 +147,7 @@
 
 .pam-card-details-link {
   color: rgba(255,255,255,0.45);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   text-decoration: underline;
   text-decoration-color: transparent;
   transition: color 0.15s, text-decoration-color 0.15s;
@@ -159,8 +159,9 @@
 }
 
 .pam-card-rrp {
-  font-size: 0.72rem;
+  font-size: 1.3rem;
   color: rgba(255,255,255,0.55);
+  font-weight: 600;
 }
 
 .pam-card-rrp-label {
