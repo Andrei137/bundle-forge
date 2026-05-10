@@ -9,6 +9,8 @@ import AppleIcon from '../assets/icons/apple.svg?react';
 import LinuxIcon from '../assets/icons/linux.svg?react';
 import TrashIcon from '../assets/icons/trash.svg?react';
 import PlusIcon from '../assets/icons/plus.svg?react';
+import PreviousIcon from '../assets/icons/previous.svg?react';
+import NextIcon from '../assets/icons/next.svg?react';
 import './Bundle.css';
 import './Game.css';
 
@@ -48,8 +50,16 @@ const PlatformIcons = ({ platforms }) => (
 );
 
 /* ── Donation slider row ── */
-const DonationSlider = ({ label, value, min, max, onChange, color, note }) => {
-  const pct = max > 0 ? ((value - min) / Math.max(max - min, 0.01)) * 100 : 0;
+const DonationSlider = ({ label, value, min, max, onChange, color, note, total }) => {
+  const currentPct = total > 0 ? Math.round((value / total) * 100) : 0;
+  const minPct = total > 0 ? Math.ceil((min / total) * 100) : 0;
+  const maxPct = total > 0 ? Math.floor((max / total) * 100) : 100;
+
+  const stepPct = (delta) => {
+    const newPct = Math.min(maxPct, Math.max(minPct, currentPct + delta));
+    onChange(newPct);
+  };
+
   return (
     <div className="pam-slider-row">
       <div className="pam-slider-header">
@@ -57,16 +67,31 @@ const DonationSlider = ({ label, value, min, max, onChange, color, note }) => {
         <span className="pam-slider-value" style={{ color }}>RON {value.toFixed(2)}</span>
       </div>
       {note && <div className="pam-slider-note">{note}</div>}
-      <div className="pam-slider-track-wrap">
-        <div className="pam-slider-fill" style={{ width: `${Math.max(0, Math.min(100, pct))}%`, background: color }} />
+      <div className="pam-slider-with-pct">
+        <button className="pam-slider-step-btn" onClick={() => stepPct(-1)} disabled={currentPct <= minPct}>
+          <PreviousIcon width="8" height="8" className="icon-white" />
+        </button>
+        <div className="pam-slider-track-wrap">
+          <div className="pam-slider-fill" style={{ width: `${currentPct}%`, background: color }} />
+          <input
+            type="range"
+            className="pam-slider-input"
+            min={minPct}
+            max={maxPct}
+            step={1}
+            value={currentPct}
+            onChange={e => onChange(parseInt(e.target.value, 10))}
+          />
+        </div>
+        <button className="pam-slider-step-btn" onClick={() => stepPct(1)} disabled={currentPct >= maxPct}>
+          <NextIcon width="8" height="8" className="icon-white" />
+        </button>
         <input
-          type="range"
-          className="pam-slider-input"
-          min={min}
-          max={max}
-          step={0.01}
-          value={value}
-          onChange={e => onChange(parseFloat(e.target.value))}
+          type="number"
+          className="pam-slider-pct-input"
+          value={currentPct}
+          readOnly
+          tabIndex={-1}
         />
       </div>
     </div>
@@ -149,14 +174,56 @@ export const Bundle = () => {
   const platformMin = total * PLATFORM_MIN_PCT;
   const devMin = total * DEV_MIN_PCT;
 
-  const handlePlatformChange = (val) => {
-    if (total - val - devAmt < 0) return;
-    setPlatformPct(val / total);
-  };
+  const redistributePct = (target, newPct) => {
+    let p = Math.round(platformPct * 100);
+    let d = Math.round(devPct * 100);
+    let c = Math.max(0, 100 - p - d);
+    const minP = Math.round(PLATFORM_MIN_PCT * 100);
+    const minD = Math.round(DEV_MIN_PCT * 100);
 
-  const handleDevChange = (val) => {
-    if (total - platformAmt - val < 0) return;
-    setDevPct(val / total);
+    if (target === 'platform') {
+      const delta = newPct - p;
+      if (delta > 0) {
+        // Take from Dev first, then Charity
+        let rem = delta;
+        const fromD = Math.min(rem, d - minD); d -= fromD; rem -= fromD;
+        const fromC = Math.min(rem, c);         c -= fromC; rem -= fromC;
+        p += delta - rem;
+      } else {
+        // Give to Charity
+        if (p + delta < minP) return;
+        c += -delta; p += delta;
+      }
+    } else if (target === 'dev') {
+      const delta = newPct - d;
+      if (delta > 0) {
+        // Take from Platform first, then Charity
+        let rem = delta;
+        const fromP = Math.min(rem, p - minP); p -= fromP; rem -= fromP;
+        const fromC = Math.min(rem, c);         c -= fromC; rem -= fromC;
+        d += delta - rem;
+      } else {
+        // Give to Charity
+        if (d + delta < minD) return;
+        c += -delta; d += delta;
+      }
+    } else {
+      const delta = newPct - c;
+      if (delta > 0) {
+        // Take from Platform first, then Dev
+        let rem = delta;
+        const fromP = Math.min(rem, p - minP); p -= fromP; rem -= fromP;
+        const fromD = Math.min(rem, d - minD); d -= fromD; rem -= fromD;
+        c += delta - rem;
+      } else {
+        // Give to Dev
+        if (c + delta < 0) return;
+        d += -delta; c += delta;
+      }
+    }
+
+    setPlatformPct(p / 100);
+    setDevPct(d / 100);
   };
 
   const handleCustomAmount = (e) => {
@@ -342,26 +409,62 @@ export const Bundle = () => {
                     value={platformAmt}
                     min={platformMin}
                     max={total - devAmt}
-                    onChange={handlePlatformChange}
+                    onChange={pct => redistributePct('platform', pct)}
                     color="#f90"
                     note={`Min: RON ${platformMin.toFixed(2)} (${Math.round(PLATFORM_MIN_PCT * 100)}%)`}
+                    total={total}
                   />
                   <DonationSlider
                     label="Developers"
                     value={devAmt}
                     min={devMin}
                     max={total - platformAmt}
-                    onChange={handleDevChange}
+                    onChange={pct => redistributePct('dev', pct)}
                     color="#4fc3f7"
                     note={`Min: RON ${devMin.toFixed(2)} (${Math.round(DEV_MIN_PCT * 100)}%)`}
+                    total={total}
                   />
 
-                  <div className="pam-charity-split">
-                    <span className="pam-charity-split-label">Charity</span>
-                    <span className="pam-charity-split-value" style={{ color: '#4ade80' }}>
-                      RON {Math.max(0, charityAmt).toFixed(2)}
-                    </span>
-                  </div>
+                  {(() => {
+                    const charityPct = Math.max(0, Math.round((1 - platformPct - devPct) * 100));
+                    const maxCharityPct = Math.floor((1 - PLATFORM_MIN_PCT - DEV_MIN_PCT) * 100);
+                    const fillPct = charityPct;
+                    return (
+                      <div className="pam-slider-row">
+                        <div className="pam-slider-header">
+                          <span className="pam-slider-label">Charity</span>
+                          <span className="pam-slider-value" style={{ color: '#4ade80' }}>RON {Math.max(0, charityAmt).toFixed(2)}</span>
+                        </div>
+                        <div className="pam-slider-with-pct">
+                          <button className="pam-slider-step-btn" onClick={() => redistributePct('charity', charityPct - 1)} disabled={charityPct <= 0}>
+                            <PreviousIcon width="8" height="8" className="icon-white" />
+                          </button>
+                          <div className="pam-slider-track-wrap">
+                            <div className="pam-slider-fill" style={{ width: `${Math.max(0, Math.min(100, fillPct))}%`, background: '#4ade80' }} />
+                            <input
+                              type="range"
+                              className="pam-slider-input"
+                              min={0}
+                              max={maxCharityPct}
+                              step={1}
+                              value={charityPct}
+                              onChange={e => redistributePct('charity', parseInt(e.target.value, 10))}
+                            />
+                          </div>
+                          <button className="pam-slider-step-btn" onClick={() => redistributePct('charity', charityPct + 1)} disabled={charityPct >= maxCharityPct}>
+                            <NextIcon width="8" height="8" className="icon-white" />
+                          </button>
+                          <input
+                            type="number"
+                            className="pam-slider-pct-input"
+                            value={charityPct}
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="pam-split-bar">
                     <div className="pam-split-seg" style={{ width: `${platformPct * 100}%`, background: '#f90' }} title="Platform" />
@@ -395,7 +498,7 @@ export const Bundle = () => {
                 <p className="pam-subtotal-hint">Select at least {minGames} games to continue</p>
               )}
               <button className="pam-go-to-cart" disabled={!canCheckout} onClick={handleGoToCart}>
-                <CartIcon width="16" height="16" className="icon-white" /> GO TO CART
+                <CartIcon width="16" height="16" /> GO TO CART
               </button>
             </div>
 
@@ -420,7 +523,7 @@ export const Bundle = () => {
 
       {/* ── Bundle info below ── */}
       <div className="pam-bundle-info">
-        <h1 className="pam-bundle-title">{bundle.title}</h1>
+        <h1 className="pam-bundle-title">Build your own {bundle.title}</h1>
         <p className="pam-bundle-short">{bundle.shortDescription}</p>
         <section className="pam-bundle-about">
           <h2>About this Bundle</h2>

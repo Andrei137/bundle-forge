@@ -451,12 +451,58 @@
   color: rgba(255,255,255,0.35);
 }
 
+.pam-slider-with-pct {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .pam-slider-track-wrap {
   position: relative;
   height: 6px;
   background: #333;
   border-radius: 3px;
+  flex: 1;
 }
+
+.pam-slider-step-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  padding: 0;
+}
+
+.pam-slider-step-btn:hover:not(:disabled) { background: #383838; border-color: #555; }
+.pam-slider-step-btn:disabled { opacity: 0.35; cursor: default; }
+
+.pam-slider-pct-input {
+  width: 46px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.25rem 0.4rem;
+  text-align: center;
+  outline: none;
+  pointer-events: none;
+  user-select: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.pam-slider-pct-input::-webkit-inner-spin-button,
+.pam-slider-pct-input::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; }
 
 .pam-slider-fill {
   position: absolute;
