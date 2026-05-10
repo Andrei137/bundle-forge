@@ -1,7 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SteamIcon from '../assets/icons/steam.svg?react';
+import WindowsIcon from '../assets/icons/windows.svg?react';
+import AppleIcon from '../assets/icons/apple.svg?react';
+import LinuxIcon from '../assets/icons/linux.svg?react';
 import './FeaturedDeals.css';
+
+const PLATFORM_ICONS = {
+  Windows: <WindowsIcon width="12" height="12" />,
+  macOS:   <AppleIcon   width="12" height="12" />,
+  Linux:   <LinuxIcon   width="12" height="12" />,
+};
+const PLATFORM_ORDER = ['Windows', 'macOS', 'Linux'];
+
+const PlatformIcons = ({ platforms }) => {
+  const set = new Set(platforms ?? []);
+  return (
+    <>
+      {PLATFORM_ORDER.filter(p => set.has(p)).map(p => (
+        <span key={p}>{PLATFORM_ICONS[p]}</span>
+      ))}
+    </>
+  );
+};
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -79,9 +100,17 @@ export const FeaturedDeals = () => {
                     <div className="fd-main-desc">{main.developer}</div>
                   )}
                   <div className="fd-main-footer">
-                    <span className={`fd-category-badge fd-category-badge--${badgeClass}`}>
-                      {label}
-                    </span>
+                    <div className="fd-main-footer-left">
+                      <span className={`fd-category-badge fd-category-badge--${badgeClass}`}>
+                        {label}
+                      </span>
+                      {main.type === 'GAME' && (
+                        <div className="fd-main-platform-icons">
+                          <SteamIcon width="14" height="14" />
+                          <PlatformIcons platforms={main.platforms} />
+                        </div>
+                      )}
+                    </div>
 
                     <div className="fd-main-price-block">
                       {main.discountPercentage > 0 && (
@@ -124,7 +153,10 @@ export const FeaturedDeals = () => {
                       <div className="fd-support-bottom">
                         <div className="fd-support-icons">
                           <SteamIcon width="14" height="14" />
-                          <span className="fd-support-drm">{item.type === 'BUNDLE' ? 'BUNDLE' : 'STEAM'}</span>
+                          {item.type === 'BUNDLE'
+                            ? <span className="fd-support-drm">BUNDLE</span>
+                            : <PlatformIcons platforms={item.platforms} />
+                          }
                         </div>
                         <div className="fd-support-right">
                           {item.discountPercentage > 0 && (

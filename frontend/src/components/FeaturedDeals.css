@@ -136,6 +136,25 @@
 .fd-category-badge--bundle-spotlight { background: #059669; color: #fff; }
 .fd-category-badge--staff-picks { background: #3a3af0; color: #fff; }
 
+/* Main footer left: badge + platform icons */
+.fd-main-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fd-main-platform-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #fff;
+}
+
+.fd-main-platform-icons svg {
+  color: #fff;
+  fill: #fff;
+}
+
 /* Main card price block */
 .fd-main-price-block {
   display: flex;
@@ -296,8 +315,13 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: rgba(255,255,255,0.7);
+  color: #fff;
   flex-shrink: 0;
+}
+
+.fd-support-icons svg {
+  color: #fff;
+  fill: #fff;
 }
 
 .fd-support-discount {
