@@ -666,3 +666,8 @@
   height: 16px;
   fill: #fff;
 }
+
+.icon-white,
+.icon-white * {
+  fill: #fff;
+}
