@@ -7,34 +7,18 @@ import SteamIcon from '../assets/icons/steam.svg?react';
 import WindowsIcon from '../assets/icons/windows.svg?react';
 import AppleIcon from '../assets/icons/apple.svg?react';
 import LinuxIcon from '../assets/icons/linux.svg?react';
+import TrashIcon from '../assets/icons/trash.svg?react';
+import PlusIcon from '../assets/icons/plus.svg?react';
 import './Bundle.css';
 import './Game.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 /* ── Icons ── */
-const PlusIcon = () => (
-  <svg viewBox="0 0 448 512" fill="currentColor" width="12" height="12">
-    <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z"/>
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg viewBox="0 0 448 512" fill="currentColor" width="12" height="12">
-    <path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0L284.2 0c12.1 0 23.2 6.8 28.6 17.7L320 32l96 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 96C14.3 96 0 81.7 0 64S14.3 32 32 32l96 0 7.2-14.3zM32 128l384 0 0 320c0 35.3-28.7 64-64 64L96 512c-35.3 0-64-28.7-64-64l0-320zm96 64c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16z"/>
-  </svg>
-);
-
 const ChevronIcon = ({ open }) => (
   <svg viewBox="0 0 512 512" fill="currentColor" width="12" height="12"
     style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
     <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
-  </svg>
-);
-
-const CheckCircleIcon = () => (
-  <svg viewBox="0 0 512 512" fill="#4ade80" width="14" height="14">
-    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/>
   </svg>
 );
 
@@ -265,9 +249,9 @@ export const Bundle = () => {
                       onClick={() => toggleGame(game.id)}
                     >
                       {isSelected ? (
-                        <><TrashIcon /> Remove from bundle</>
+                        <><TrashIcon width="12" height="12" className="icon-white" /> Remove from bundle</>
                       ) : (
-                        <><PlusIcon /> Add to bundle</>
+                        <><PlusIcon fill="currentColor" width="12" height="12" /> Add to bundle</>
                       )}
                     </button>
                   </div>
