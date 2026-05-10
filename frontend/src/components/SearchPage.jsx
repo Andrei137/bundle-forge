@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '../redux/slices/cartSlice';
+import { useState, useMemo } from 'react';import { useNavigate } from 'react-router-dom';
+import SteamIcon from '../assets/icons/steam.svg?react';
+import WindowsIcon from '../assets/icons/windows.svg?react';
+import AppleIcon from '../assets/icons/apple.svg?react';
+import LinuxIcon from '../assets/icons/linux.svg?react';
 import './SearchPage.css';
 
 /* ── Icons ── */
@@ -27,26 +29,6 @@ const PlusIcon = () => (
 const MinusIcon = () => (
   <svg viewBox="0 0 448 512" fill="currentColor" width="10" height="10">
     <path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z"/>
-  </svg>
-);
-const SteamIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-  </svg>
-);
-const WinIcon = () => (
-  <svg viewBox="0 0 448 512" fill="currentColor" width="11" height="11">
-    <path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/>
-  </svg>
-);
-const MacIcon = () => (
-  <svg viewBox="0 0 384 512" fill="currentColor" width="11" height="11">
-    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-  </svg>
-);
-const LinuxIcon = () => (
-  <svg viewBox="0 0 448 512" fill="currentColor" width="11" height="11">
-    <path d="M220.8 123.3c1 .5 1.8 1.7 3 1.7 1.1 0 2.8-.4 2.9-1.5.2-1.4-1.9-2.3-3.2-2.9-1.7-.7-3.9-1-5.5-.1-.4.2-.8.7-.6 1.1.3 1.3 2.3 1.1 3.4 1.7z"/>
   </svg>
 );
 const ChevronLeftIcon = () => (
@@ -102,33 +84,19 @@ const PRODUCTS = [
 
 const FILTER_SECTIONS = [
   { id:'productType', label:'Product Type', items:[
-    { label:'Game', count:'10,722' }, { label:'DLC', count:'3,709' }, { label:'Book', count:'445' },
-    { label:'Comic', count:'363' }, { label:'Audio', count:'39' }, { label:'Book bundle', count:'32' },
-    { label:'Bundle', count:'28' }, { label:'Graphic novel', count:'20' },
+    { label:'Game', count:'10,722' }, { label:'Bundle', count:'28' },
   ]},
   { id:'platform', label:'Platform', items:[
-    { label:'Steam', count:'14,222' }, { label:'Drm free', count:'876' }, { label:'Meta', count:'100' },
-    { label:'Gog', count:'65' }, { label:'Epic Games', count:'63' },
+    { label:'Windows', count:'14,244' }, { label:'Linux', count:'2,445' }, { label:'MacOS', count:'3,934' },
   ]},
-  { id:'genre', label:'Genre', searchable:true, items:[
+  { id:'tag', label:'Tag', searchable:true, items:[
     { label:'Action', count:'3,869' }, { label:'Adventure', count:'3,734' }, { label:'Strategy', count:'2,449' },
     { label:'Casual', count:'2,186' }, { label:'Simulation', count:'2,082' }, { label:'RPG', count:'2,006' },
     { label:'Story Rich', count:'1,972' }, { label:'Exploration', count:'1,472' },
   ]},
-  { id:'features', label:'Features', searchable:true, items:[
-    { label:'Single player', count:'12,972' }, { label:'Steam achievements', count:'9,461' },
-    { label:'Full controller support', count:'5,677' }, { label:'Steam trading cards', count:'4,578' },
-    { label:'Multi player', count:'4,409' }, { label:'Co-op', count:'2,430' },
-  ]},
-  { id:'os', label:'Operating System', items:[
-    { label:'Windows', count:'14,244' }, { label:'Mac', count:'3,934' }, { label:'Linux', count:'2,445' },
-  ]},
-  { id:'steamdeck', label:'Steam Deck', items:[
-    { label:'Playable', count:'3,421' }, { label:'Verified', count:'2,689' },
-  ]},
-  { id:'themes', label:'Themes', searchable:true, items:[
-    { label:'Atmospheric', count:'2,116' }, { label:'Fantasy', count:'1,431' }, { label:'Colorful', count:'1,354' },
-    { label:'Funny', count:'1,103' }, { label:'Pixel Graphics', count:'1,097' }, { label:'Sci-fi', count:'1,089' },
+  { id:'developer', label:'Developer', searchable:true, items:[
+    { label:'Capcom', count:'142' }, { label:'CD Projekt Red', count:'12' }, { label:'FromSoftware', count:'18' },
+    { label:'Konami', count:'31' }, { label:'Paradox Interactive', count:'87' }, { label:'Ubisoft', count:'203' },
   ]},
 ];
 
@@ -195,10 +163,11 @@ const FilterSection = ({ section, openSections, toggle, activeFilters, onToggleF
 };
 
 /* ── Product card ── */
-const ProductCard = ({ product, onAddToCart }) => {
+const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
   const labelCfg = product.label ? LABEL_CONFIG[product.labelType] : null;
   return (
-    <div className="sp-card">
+    <div className="sp-card" onClick={() => navigate(`/games/${product.id}`)} style={{ cursor: 'pointer' }}>
       {labelCfg && (
         <div className={`sp-card-label ${labelCfg.cls}`}>
           <span className="sp-card-label-text">{product.label}</span>
@@ -206,9 +175,9 @@ const ProductCard = ({ product, onAddToCart }) => {
           <div className={`sp-card-label-triangle sp-card-label-triangle--${product.labelType}`} />
         </div>
       )}
-      <a href={`/en/game/${product.id}`} className="sp-card-cover">
+      <div className="sp-card-cover">
         <img src={product.image} alt={product.title} className="sp-card-img" loading="lazy" />
-      </a>
+      </div>
       <div className="sp-card-stripe">
         <div className="sp-card-name">{product.title}</div>
         <div className="sp-card-footer">
@@ -236,12 +205,12 @@ const ProductCard = ({ product, onAddToCart }) => {
           </div>
           <div className="sp-card-meta">
             <div className="sp-card-platforms">
-              {product.platforms.includes('win') && <WinIcon />}
-              {product.platforms.includes('mac') && <MacIcon />}
-              {product.platforms.includes('linux') && <LinuxIcon />}
+              {product.platforms.includes('win') && <WindowsIcon className="sp-card-os-icon" />}
+              {product.platforms.includes('mac') && <AppleIcon className="sp-card-os-icon" />}
+              {product.platforms.includes('linux') && <LinuxIcon className="sp-card-os-icon" />}
             </div>
             <div className="sp-card-drm">
-              <SteamIcon />
+              <SteamIcon className="sp-card-os-icon" />
             </div>
             {product.isDlc && <span className="sp-card-dlc">DLC</span>}
           </div>
@@ -254,9 +223,7 @@ const ProductCard = ({ product, onAddToCart }) => {
 /* ── Main SearchPage ── */
 export const SearchPage = () => {
   const [filtersVisible, setFiltersVisible] = useState(true);
-  const [openSections, setOpenSections] = useState(
-    new Set(['productType', 'platform', 'genre', 'features', 'os'])
-  );
+  const [openSections, setOpenSections] = useState(new Set(['price']));
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [onSaleOnly, setOnSaleOnly] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
