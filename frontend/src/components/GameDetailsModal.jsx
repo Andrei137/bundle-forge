@@ -77,16 +77,16 @@ export const GameDetailsModal = () => {
               <div className="price-block">
                 {game.discount > 0 && (
                   <div className="savings-info">
-                    Save ${(game.originalPrice - game.price).toFixed(2)}
+                    Save RON {(game.originalPrice - game.price).toFixed(2)}
                   </div>
                 )}
                 <div className="price-display">
                   <span className="current-price">
-                    ${game.price}
+                    RON {game.price}
                   </span>
                   {game.discount > 0 && (
                     <span className="original-price">
-                      Was ${game.originalPrice}
+                      Was RON {game.originalPrice}
                     </span>
                   )}
                 </div>

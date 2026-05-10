@@ -49,13 +49,13 @@ export const GameCard = ({ game }) => {
 
         <div className="game-card-pricing">
           <div className="price-section">
-            <span className="current-price">${game.price}</span>
+            <span className="current-price">RON {game.price}</span>
             {game.discount > 0 && (
-              <span className="original-price">${game.originalPrice}</span>
+              <span className="original-price">RON {game.originalPrice}</span>
             )}
           </div>
           <div className="savings">
-            Save ${(game.originalPrice - game.price).toFixed(2)}
+            Save RON {(game.originalPrice - game.price).toFixed(2)}
           </div>
         </div>
 

@@ -19,7 +19,7 @@ export const ShoppingCart = () => {
   };
 
   const handleCheckout = () => {
-    alert('Proceeding to checkout with total: $' + total.toFixed(2));
+    alert('Proceeding to checkout with total: RON ' + total.toFixed(2));
     dispatch(clearCart());
     dispatch(closeCart());
   };
@@ -56,7 +56,7 @@ export const ShoppingCart = () => {
 
                   <div className="cart-item-details">
                     <h4>{item.title}</h4>
-                    <p className="cart-item-price">${item.price}</p>
+                    <p className="cart-item-price">RON {item.price}</p>
                   </div>
 
                   <div className="cart-item-quantity">
@@ -93,16 +93,16 @@ export const ShoppingCart = () => {
               {savedTotal > 0 && (
                 <div className="summary-row savings">
                   <span>Total Savings</span>
-                  <span className="savings-value">-${savedTotal.toFixed(2)}</span>
+                  <span className="savings-value">-RON {savedTotal.toFixed(2)}</span>
                 </div>
               )}
               <div className="summary-row subtotal">
                 <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
+                <span>RON {total.toFixed(2)}</span>
               </div>
               <div className="summary-row total">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>RON {total.toFixed(2)}</span>
               </div>
             </div>
 
