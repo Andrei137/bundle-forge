@@ -16,7 +16,6 @@ import {
   DeveloperAccount,
   Orders,
   ProductLibrary,
-  Wishlist,
   CouponsRewards,
   Support,
   Footer
@@ -129,15 +128,6 @@ function App() {
           element={
             <Layout>
               <ProductLibrary />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/wishlist"
-          element={
-            <Layout>
-              <Wishlist />
             </Layout>
           }
         />
