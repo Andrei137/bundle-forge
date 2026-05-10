@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/tags/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/bundles/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/charity-founders/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/search").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
