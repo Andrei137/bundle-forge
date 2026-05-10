@@ -18,7 +18,6 @@ export { Account } from './Account';
 export { DeveloperAccount } from './DeveloperAccount';
 export { Orders } from './Orders';
 export { ProductLibrary } from './ProductLibrary';
-export { Wishlist } from './Wishlist';
 export { CouponsRewards } from './CouponsRewards';
 export { Support } from './Support';
 export { TagPickerModal } from './TagPickerModal';
