@@ -107,63 +107,48 @@ const FilterSection = ({ section, openSections, toggle, activeFilters, onToggleF
   );
 };
 
-/* ── Platform icon helper ── */
-const PlatformIcon = ({ platform }) => {
-  const p = platform.toLowerCase();
-  if (p === 'windows' || p === 'win') return <WindowsIcon className="sp-card-os-icon" />;
-  if (p === 'macos' || p === 'mac' || p === 'osx') return <AppleIcon className="sp-card-os-icon" />;
-  if (p === 'linux') return <LinuxIcon className="sp-card-os-icon" />;
-  return null;
-};
-
 /* ── Product card ── */
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
-  const labelCfg = product.label ? LABEL_CONFIG[product.labelType] : null;
   const isBundle = product.type === 'BUNDLE';
+  const discountedPrice = product.price != null && product.discountPercentage > 0
+    ? product.price * (1 - product.discountPercentage / 100)
+    : null;
 
   return (
-    <div className="sp-card" onClick={() => navigate(isBundle ? `/bundle/${product.id}` : `/game/${product.id}`)} style={{ cursor: 'pointer' }}>
-      {labelCfg && (
-        <div className={`sp-card-label ${labelCfg.cls}`}>
-          <span className="sp-card-label-text">{product.label}</span>
-          <div className="sp-card-label-slash" />
-          <div className={`sp-card-label-triangle sp-card-label-triangle--${product.labelType}`} />
-        </div>
-      )}
-      <div className="sp-card-cover">
-        <img src={product.cover} alt={product.title} className="sp-card-img" loading="lazy" />
+    <div className="sp-card" onClick={() => navigate(isBundle ? `/bundle/${product.id}` : `/game/${product.id}`)}>
+      <div className="sp-card-img-wrap">
+        <img src={`${API_URL}${product.cover}`} alt={product.title} className="sp-card-img" loading="lazy" />
       </div>
-      <div className="sp-card-stripe">
+      <div className="sp-card-bar">
         <div className="sp-card-name">{product.title}</div>
-        <div className="sp-card-footer">
-          <div className="sp-card-purchase">
-            {isBundle ? (
-              <div className="sp-card-timer">Bundle</div>
-            ) : product.price != null ? (
-              <div className="sp-card-price-wrap">
-                {product.discountPercentage > 0 && (
-                  <span className="sp-card-discount">-{product.discountPercentage}%</span>
+        <div className="sp-card-bottom">
+          <div className="sp-card-drm-label">
+            <SteamIcon className="sp-card-os-icon" />
+            <span>{isBundle ? 'BUNDLE' : 'STEAM'}</span>
+            {!isBundle && (() => {
+              const ps = (product.platforms || []).map(p => p.toLowerCase());
+              return <>
+                {ps.some(p => p === 'windows' || p === 'win') && <WindowsIcon className="sp-card-os-icon" />}
+                {ps.some(p => p === 'linux') && <LinuxIcon className="sp-card-os-icon" />}
+                {ps.some(p => p === 'macos' || p === 'mac' || p === 'osx') && <AppleIcon className="sp-card-os-icon" />}
+              </>;
+            })()}
+          </div>
+          <div className="sp-card-right">
+            {!isBundle && product.discountPercentage > 0 && (
+              <span className="sp-card-discount">-{product.discountPercentage}%</span>
+            )}
+            {isBundle ? null : product.price != null ? (
+              <div className="sp-card-prices">
+                {discountedPrice != null && (
+                  <span className="sp-card-was">RON {product.price.toFixed(2)}</span>
                 )}
-                <div className="sp-card-prices">
-                  <span className="sp-card-now">RON {product.price.toFixed(2)}</span>
-                </div>
+                <span className="sp-card-now">
+                  RON {(discountedPrice ?? product.price).toFixed(2)}
+                </span>
               </div>
             ) : null}
-          </div>
-          <div className="sp-card-meta">
-            {!isBundle && (
-              <>
-                <div className="sp-card-platforms">
-                  {(product.platforms || []).map(p => (
-                    <PlatformIcon key={p} platform={p} />
-                  ))}
-                </div>
-                <div className="sp-card-drm">
-                  <SteamIcon className="sp-card-os-icon" />
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -230,6 +215,11 @@ export const SearchPage = () => {
       const tag = availableTags.find(t => t.name === name);
       if (tag) params.append('tagIds', tag.id);
     });
+
+    const platformFilters = [...activeFilters]
+      .filter(f => f.startsWith('platform:'))
+      .map(f => f.split(':')[1]);
+    platformFilters.forEach(p => params.append('platforms', p));
 
     params.set('page', page - 1);
     params.set('size', perPage);
