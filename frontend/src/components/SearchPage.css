@@ -333,57 +333,23 @@
 
 /* ── Card ── */
 .sp-card {
-  position: relative;
-  background: #212121;
+  background: #2a2a2a;
   border-radius: 6px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
   transition: transform 0.2s;
 }
 
 .sp-card:hover { transform: translateY(-2px); }
 
-/* Label badge */
-.sp-card-label {
-  position: absolute;
-  top: 0; left: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.sp-card-label-text {
-  padding: 0.3rem 0.6rem;
-  background: #4a9eff;
-  color: #fff;
-}
-
-.sp-card-label--recommended .sp-card-label-text { background: #a855f7; }
-.sp-card-label--launched    .sp-card-label-text { background: #f90; color: #212121; }
-.sp-card-label--earlyaccess .sp-card-label-text { background: #4ade80; color: #111; }
-.sp-card-label--library     .sp-card-label-text { background: #22d3ee; color: #111; }
-
-.sp-card-label-slash {
-  width: 0; height: 0;
-  border-top: 24px solid transparent;
-  border-bottom: 0;
-}
-
-.sp-card-label--recommended .sp-card-label-slash { border-left: 10px solid #a855f7; }
-.sp-card-label--launched    .sp-card-label-slash { border-left: 10px solid #f90; }
-.sp-card-label--earlyaccess .sp-card-label-slash { border-left: 10px solid #4ade80; }
-.sp-card-label--library     .sp-card-label-slash { border-left: 10px solid #22d3ee; }
-.sp-card-label--default     .sp-card-label-slash { border-left: 10px solid #4a9eff; }
-
-/* Cover */
-.sp-card-cover {
-  display: block;
+/* Image */
+.sp-card-img-wrap {
+  position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sp-card-img {
@@ -394,14 +360,15 @@
   transition: transform 0.3s;
 }
 
-.sp-card:hover .sp-card-img { transform: scale(1.04); }
+.sp-card:hover .sp-card-img { transform: scale(1.05); }
 
-/* Card stripe */
-.sp-card-stripe {
-  padding: 0.55rem 0.65rem 0.6rem;
+/* Bottom bar */
+.sp-card-bar {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  background: #2a2a2a;
+  height: 100%;
 }
 
 .sp-card-name {
@@ -411,41 +378,54 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  align-self: flex-start;
+  width: 100%;
 }
 
-.sp-card-footer {
+.sp-card-bottom {
+  margin-top: auto;
+  padding-top: 0.4rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
+  gap: 8px;
+  width: 100%;
 }
 
-/* Price */
-.sp-card-purchase { display: flex; align-items: center; }
-
-.sp-card-timer {
-  font-size: 0.72rem;
-  font-weight: 700;
+/* DRM label (left side) */
+.sp-card-drm-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   color: rgba(255,255,255,0.7);
-  background: #1a1a1a;
-  padding: 0.2rem 0.45rem;
-  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
-.sp-card-timer--ending { color: #f87171; }
+.sp-card-os-icon {
+  width: 14px;
+  height: 14px;
+  fill: rgba(255,255,255,0.7);
+}
+.sp-card-os-icon * {
+  fill: rgba(255,255,255,0.7);
+}
 
-.sp-card-price-wrap {
+/* Price section (right side) */
+.sp-card-right {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .sp-card-discount {
-  background: #1a1a1a;
+  background: #000;
   color: #fff;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.15rem 0.35rem;
+  padding: 0.2rem 0.35rem;
   border-radius: 3px;
   white-space: nowrap;
 }
@@ -457,63 +437,21 @@
 }
 
 .sp-card-was {
+  color: rgba(255,255,255,0.45);
   font-size: 0.65rem;
-  color: rgba(255,255,255,0.35);
   text-decoration: line-through;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sp-card-now {
-  font-size: 0.78rem;
-  font-weight: 700;
   color: #f90;
-  white-space: nowrap;
-}
-
-.sp-card-from {
-  font-weight: 400;
-  font-size: 0.7rem;
-  color: rgba(255,153,0,0.7);
-}
-
-/* Right meta */
-.sp-card-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-shrink: 0;
-}
-
-.sp-card-platforms {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  color: rgba(255,255,255,0.5);
-}
-
-.sp-card-drm {
-  display: flex;
-  align-items: center;
-  color: rgba(255,255,255,0.5);
-}
-
-.sp-card-os-icon {
-  width: 11px;
-  height: 11px;
-  fill: rgba(255,255,255,0.5);
-}
-.sp-card-os-icon * {
-  fill: rgba(255,255,255,0.5);
-}
-
-.sp-card-dlc {
-  background: #2a2a2a;
-  color: rgba(255,255,255,0.55);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.1rem 0.35rem;
-  border-radius: 2px;
-  border: 1px solid #3a3a3a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Pagination ── */

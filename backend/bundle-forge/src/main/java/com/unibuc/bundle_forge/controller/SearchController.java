@@ -25,11 +25,12 @@ public class SearchController {
             @RequestParam(required = false) String type,
             @RequestParam(required = false) List<Integer> tagIds,
             @RequestParam(required = false) String developer,
+            @RequestParam(required = false) List<String> platforms,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "24") int size,
             @RequestParam(defaultValue = "newest") String sort
     ) {
-        return ResponseUtils.ok(searchService.search(q, type, tagIds, developer, page, size, sort));
+        return ResponseUtils.ok(searchService.search(q, type, tagIds, developer, platforms, page, size, sort));
     }
 
 }
