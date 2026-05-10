@@ -55,13 +55,13 @@ export const BundlesSection = () => {
                   <div className="price-info">
                     <span className="current-price">${bundle.price}</span>
                     <span className="original-price">
-                      Was ${bundle.originalPrice}
+                      Was RON {bundle.originalPrice}
                     </span>
                   </div>
                 </div>
 
                 <div className="bundle-savings">
-                  Save ${(bundle.originalPrice - bundle.price).toFixed(2)}
+                  Save RON {(bundle.originalPrice - bundle.price).toFixed(2)}
                 </div>
 
                 <button
