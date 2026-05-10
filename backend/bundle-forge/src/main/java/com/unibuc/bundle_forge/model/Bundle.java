@@ -51,6 +51,10 @@ public class Bundle {
     @Builder.Default
     private List<BundleTier> tiers = new ArrayList<>();
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer salesCount = 0;
+
     @ManyToOne
     @JoinColumn(name = "charity_founder_id")
     private CharityFounder charityFounder;

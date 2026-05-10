@@ -165,12 +165,20 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #fff;
   flex-shrink: 0;
 }
 
 .ts-card-icons svg {
   color: #fff;
+  fill: #fff;
+}
+
+.ts-card-type-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.03em;
 }
 
 .ts-card-discount {

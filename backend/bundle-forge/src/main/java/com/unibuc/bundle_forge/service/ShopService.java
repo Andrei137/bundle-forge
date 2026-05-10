@@ -53,6 +53,9 @@ public final class ShopService {
 
         customer.getOwnedGames().add(game);
         customerRepository.save(customer);
+
+        game.setSalesCount(game.getSalesCount() + 1);
+        gameRepository.save(game);
     }
 
 }

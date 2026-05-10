@@ -117,6 +117,10 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @JsonIgnore
     private List<Contract> contracts;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer salesCount = 0;
+
     @ManyToMany
     @JoinTable(
         name = "game_tags",

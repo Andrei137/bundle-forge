@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,4 +19,5 @@ public class FeaturedItemDto {
     private Double price;
     private Integer discountPercentage;
     private String developer;
+    private List<String> platforms;
 }

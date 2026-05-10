@@ -187,6 +187,7 @@ public class FeaturedService {
                 .price(game.getPrice())
                 .discountPercentage(game.getDiscountPercentage() != null ? game.getDiscountPercentage() : 0)
                 .developer(game.getDeveloper() != null ? game.getDeveloper().getDisplayName() : null)
+                .platforms(game.getSystemRequirements() != null ? new java.util.ArrayList<>(game.getSystemRequirements().keySet()) : List.of())
                 .build();
     }
 
