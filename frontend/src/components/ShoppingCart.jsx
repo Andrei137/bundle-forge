@@ -1,11 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { removeFromCart, updateQuantity, clearCart } from '../redux/slices/cartSlice';
+import { useNavigate } from 'react-router-dom';
+import { removeFromCart, updateQuantity } from '../redux/slices/cartSlice';
 import { closeCart } from '../redux/slices/uiSlice';
 import './ShoppingCart.css';
 
 export const ShoppingCart = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cartOpen = useSelector(state => state.ui.cartOpen);
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
   const { items, total, savedTotal } = useSelector(state => state.cart);
 
   const handleRemoveItem = (itemId) => {
@@ -19,9 +22,12 @@ export const ShoppingCart = () => {
   };
 
   const handleCheckout = () => {
-    alert('Proceeding to checkout with total: RON ' + total.toFixed(2));
-    dispatch(clearCart());
     dispatch(closeCart());
+    if (!isAuthenticated) {
+      navigate('/account/login');
+      return;
+    }
+    navigate('/checkout');
   };
 
   return (

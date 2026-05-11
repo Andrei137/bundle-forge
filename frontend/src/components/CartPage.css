@@ -1,0 +1,569 @@
+/* ── Page shell ── */
+.cp-page {
+  max-width: 1140px;
+  margin: 2rem auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.cp-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: oklch(97% 0.005 260);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.01em;
+}
+
+.cp-title svg {
+  color: oklch(97% 0.005 260);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* ── Two-column layout ── */
+.cp-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+/* ── Bundle group ── */
+.cp-bundle-group {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid oklch(30% 0.02 260 / 0.6);
+  margin-bottom: 1rem;
+}
+
+.cp-bundle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+  background: oklch(18% 0.02 260);
+}
+
+.cp-bundle-name {
+  color: oklch(95% 0.005 260);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.cp-bundle-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.cp-bundle-total {
+  color: oklch(75% 0.18 55);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.cp-bundle-games {
+  background: #2B2B2B;
+}
+
+/* ── Individual section ── */
+.cp-individual-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Game row ── */
+.cp-game-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto auto auto auto;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid oklch(22% 0.015 260 / 0.8);
+  transition: background 180ms ease-out;
+}
+
+.cp-game-row:last-child {
+  border-bottom: none;
+}
+
+.cp-game-row:not(.cp-game-row--bundled) {
+  background: #2B2B2B;
+  border-radius: 8px;
+  border: 1px solid oklch(30% 0.02 260 / 0.6);
+  margin-bottom: 0.6rem;
+}
+
+.cp-game-row:not(.cp-game-row--bundled):last-child {
+  margin-bottom: 0;
+}
+
+.cp-game-row:hover {
+  background: #333333;
+}
+
+/* ── Game image ── */
+.cp-game-img {
+  width: 64px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.cp-game-img--placeholder {
+  background: oklch(20% 0.015 260);
+}
+
+/* ── Game meta ── */
+.cp-game-meta {
+  overflow: hidden;
+}
+
+.cp-game-title {
+  display: block;
+  color: oklch(93% 0.005 260);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Pricing group ── */
+.cp-game-price-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.cp-badge {
+  display: inline-block;
+  background: oklch(10% 0.01 260);
+  color: oklch(93% 0.005 260);
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.cp-price-was {
+  color: oklch(55% 0.01 260);
+  font-size: 0.78rem;
+  text-decoration: line-through;
+}
+
+.cp-price-now {
+  color: oklch(75% 0.18 55);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* ── Quantity control ── */
+.cp-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: oklch(20% 0.015 260);
+  border-radius: 5px;
+  padding: 0.25rem 0.4rem;
+  flex-shrink: 0;
+}
+
+.cp-qty-btn {
+  background: transparent;
+  border: none;
+  color: oklch(75% 0.18 55);
+  font-size: 1rem;
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: color 150ms, background 150ms;
+}
+
+.cp-qty-btn:hover:not(:disabled) {
+  color: oklch(85% 0.2 55);
+  background: oklch(25% 0.02 260);
+}
+
+.cp-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cp-qty-val {
+  color: oklch(95% 0.005 260);
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ── Remove button ── */
+.cp-remove {
+  background: oklch(22% 0.015 260);
+  border: 1px solid oklch(28% 0.015 260);
+  color: oklch(50% 0.01 260);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+.cp-remove:hover {
+  color: oklch(65% 0.2 20);
+  border-color: oklch(55% 0.2 20 / 0.5);
+  background: oklch(18% 0.02 20);
+}
+
+/* ── Right column (summary + coupon stacked) ── */
+.cp-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+/* ── Summary sidebar ── */
+.cp-right-col {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.cp-summary {
+  background: #2B2B2B;
+  border: 1px solid oklch(28% 0.02 260 / 0.7);
+  border-radius: 10px;
+  padding: 1.4rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.cp-summary-title {
+  color: oklch(97% 0.005 260);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid oklch(25% 0.015 260);
+}
+
+.cp-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.9rem;
+  color: #6A6A6A;
+}
+
+.cp-summary-val {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.cp-summary-val--was {
+  color: oklch(55% 0.01 260);
+  text-decoration: line-through;
+}
+
+.cp-summary-val--saving {
+  color: oklch(72% 0.18 145);
+}
+
+.cp-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 0.6rem;
+  border-top: 1px solid oklch(25% 0.015 260);
+  color: oklch(95% 0.005 260);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cp-summary-total-val {
+  color: oklch(75% 0.18 55);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.cp-summary-note {
+  color: #6A6A6A;
+  font-size: 0.76rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── CTA button ── */
+.cp-btn-checkout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.9rem 1rem;
+  background: oklch(68% 0.19 55);
+  color: oklch(10% 0.01 260);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 200ms ease-out, transform 150ms ease-out, box-shadow 200ms ease-out;
+}
+
+.cp-btn-checkout:hover {
+  background: oklch(72% 0.19 55);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px oklch(68% 0.19 55 / 0.35);
+}
+
+.cp-btn-checkout:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ── Guarantee block ── */
+.cp-guarantee {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem;
+  background: oklch(16% 0.015 260);
+  border-radius: 6px;
+  border: 1px solid oklch(25% 0.015 260);
+}
+
+.cp-guarantee svg {
+  color: oklch(75% 0.18 55);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cp-guarantee-title {
+  color: oklch(90% 0.005 260);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.cp-guarantee-desc {
+  color: oklch(55% 0.01 260);
+  font-size: 0.78rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Payment methods ── */
+.cp-payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cp-payment-label {
+  color: oklch(50% 0.01 260);
+  font-size: 0.78rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.cp-payment-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cp-pay-chip {
+  background: oklch(19% 0.015 260);
+  border: 1px solid oklch(28% 0.015 260);
+  color: oklch(65% 0.01 260);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Coupon box ── */
+.cp-coupon {
+  background: #2B2B2B;
+  border: 1px solid oklch(28% 0.02 260 / 0.7);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cp-coupon-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: oklch(93% 0.005 260);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.cp-coupon-toggle:hover {
+  background: oklch(100% 0 0 / 0.04);
+}
+
+.cp-coupon-toggle svg {
+  color: oklch(60% 0.01 260);
+  flex-shrink: 0;
+}
+
+.cp-coupon-body {
+  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-top: 1px solid oklch(25% 0.015 260);
+  padding-top: 1rem;
+}
+
+.cp-coupon-hint {
+  color: oklch(65% 0.01 260);
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.cp-coupon-field {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid oklch(40% 0.01 260 / 0.5);
+}
+
+.cp-coupon-input {
+  flex: 1;
+  padding: 0.65rem 0.9rem;
+  background: oklch(96% 0.005 260);
+  border: none;
+  color: oklch(15% 0.01 260);
+  font-size: 0.9rem;
+  outline: none;
+  min-width: 0;
+}
+
+.cp-coupon-input::placeholder {
+  color: oklch(55% 0.01 260);
+}
+
+.cp-coupon-apply {
+  padding: 0.65rem 1.1rem;
+  background: oklch(68% 0.19 55);
+  color: oklch(10% 0.01 260);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms;
+  white-space: nowrap;
+}
+
+.cp-coupon-apply:hover:not(:disabled) {
+  background: oklch(72% 0.19 55);
+}
+
+.cp-coupon-apply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Empty state ── */
+.cp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.cp-empty-headline {
+  color: oklch(80% 0.005 260);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.cp-empty-sub {
+  color: oklch(50% 0.01 260);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.cp-btn-primary {
+  margin-top: 0.5rem;
+  background: oklch(68% 0.19 55);
+  color: oklch(10% 0.01 260);
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 200ms;
+}
+
+.cp-btn-primary:hover {
+  background: oklch(72% 0.19 55);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .cp-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-right-col {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .cp-game-row {
+    grid-template-columns: 56px 1fr auto auto auto;
+    grid-template-rows: auto auto;
+    row-gap: 0.5rem;
+  }
+
+  .cp-game-price-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .cp-qty {
+    grid-column: 2;
+    grid-row: 2;
+    width: fit-content;
+  }
+}

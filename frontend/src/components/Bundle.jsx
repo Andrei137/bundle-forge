@@ -270,6 +270,8 @@ export const Bundle = () => {
         price: activeTier.pricePerGame,
         image: game.cover ? `${API_URL}${game.cover}` : '',
         quantity: 1,
+        bundleId: String(bundle.id),
+        bundleName: bundle.title,
       }));
     });
   };

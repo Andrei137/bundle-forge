@@ -305,6 +305,7 @@ const fetchGame = async (gameId) => {
   const data = await response.json();
 
   return {
+    id: data.id,
     title: data.title,
     price: data.price,
     originalPrice: data.initialPrice,
@@ -364,12 +365,12 @@ export const Game = () => {
 
   const handleAddToCart = () => {
     dispatch(addToCart({
-      id: game.title,
+      id: game.id,
       title: game.title,
       price: game.price,
       originalPrice: game.originalPrice,
       discount: game.discount,
-      image: game.cover,
+      image: `${API_URL}${game.cover}`,
       quantity: 1,
     }));
   };

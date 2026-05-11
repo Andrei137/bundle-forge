@@ -18,6 +18,9 @@ import {
   ProductLibrary,
   CouponsRewards,
   Support,
+  CartPage,
+  Checkout,
+  CheckoutSuccess,
   Footer
 } from './components'
 import './App.css'
@@ -119,6 +122,33 @@ function App() {
           element={
             <Layout>
               <Orders />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/cart"
+          element={
+            <Layout>
+              <CartPage />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/checkout"
+          element={
+            <Layout>
+              <Checkout />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/checkout/success"
+          element={
+            <Layout>
+              <CheckoutSuccess />
             </Layout>
           }
         />
