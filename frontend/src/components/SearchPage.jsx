@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import SteamIcon from '../assets/icons/steam.svg?react';
 import WindowsIcon from '../assets/icons/windows.svg?react';
 import AppleIcon from '../assets/icons/apple.svg?react';
@@ -160,12 +160,34 @@ const ProductCard = ({ product }) => {
 export const SearchPage = () => {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [openSections, setOpenSections] = useState(new Set(['price']));
-  const [activeFilters, setActiveFilters] = useState(new Set());
-  const [onSaleOnly, setOnSaleOnly] = useState(false);
-  const [priceFilter, setPriceFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [perPage, setPerPage] = useState('24');
-  const [page, setPage] = useState(1);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sortBy = searchParams.get('sort') || 'newest';
+  const perPage = searchParams.get('size') || '24';
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const onSaleOnly = searchParams.get('onSale') === 'true';
+  const priceFilter = searchParams.get('price') || 'all';
+  const activeFilters = new Set(searchParams.getAll('f'));
+
+  const setSortBy = useCallback((val) => {
+    setSearchParams(prev => { const n = new URLSearchParams(prev); n.set('sort', val); n.set('page', '1'); return n; });
+  }, [setSearchParams]);
+
+  const setPerPage = useCallback((val) => {
+    setSearchParams(prev => { const n = new URLSearchParams(prev); n.set('size', val); n.set('page', '1'); return n; });
+  }, [setSearchParams]);
+
+  const setPage = useCallback((val) => {
+    setSearchParams(prev => { const n = new URLSearchParams(prev); n.set('page', String(typeof val === 'function' ? val(parseInt(prev.get('page') || '1', 10)) : val)); return n; });
+  }, [setSearchParams]);
+
+  const setOnSaleOnly = useCallback((val) => {
+    setSearchParams(prev => { const n = new URLSearchParams(prev); val ? n.set('onSale', 'true') : n.delete('onSale'); n.set('page', '1'); return n; });
+  }, [setSearchParams]);
+
+  const setPriceFilter = useCallback((val) => {
+    setSearchParams(prev => { const n = new URLSearchParams(prev); val === 'all' ? n.delete('price') : n.set('price', val); n.set('page', '1'); return n; });
+  }, [setSearchParams]);
 
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -200,33 +222,34 @@ export const SearchPage = () => {
 
   const buildSearchParams = useCallback(() => {
     const params = new URLSearchParams();
+    const filters = new Set(searchParams.getAll('f'));
 
-    const hasGame   = activeFilters.has('productType:Game');
-    const hasBundle = activeFilters.has('productType:Bundle');
+    const hasGame   = filters.has('productType:Game');
+    const hasBundle = filters.has('productType:Bundle');
     if (hasGame && !hasBundle) params.set('type', 'GAME');
     else if (hasBundle && !hasGame) params.set('type', 'BUNDLE');
 
-    const developerFilter = [...activeFilters].find(f => f.startsWith('developer:'));
+    const developerFilter = [...filters].find(f => f.startsWith('developer:'));
     if (developerFilter) params.set('developer', developerFilter.split(':').slice(1).join(':'));
 
-    const tagFilters = [...activeFilters].filter(f => f.startsWith('tag:'));
+    const tagFilters = [...filters].filter(f => f.startsWith('tag:'));
     tagFilters.forEach(f => {
       const name = f.split(':').slice(1).join(':');
       const tag = availableTags.find(t => t.name === name);
       if (tag) params.append('tagIds', tag.id);
     });
 
-    const platformFilters = [...activeFilters]
+    const platformFilters = [...filters]
       .filter(f => f.startsWith('platform:'))
       .map(f => f.split(':')[1]);
     platformFilters.forEach(p => params.append('platforms', p));
 
-    params.set('page', page - 1);
-    params.set('size', perPage);
-    params.set('sort', sortBy);
+    params.set('page', parseInt(searchParams.get('page') || '1', 10) - 1);
+    params.set('size', searchParams.get('size') || '24');
+    params.set('sort', searchParams.get('sort') || 'newest');
 
     return params;
-  }, [activeFilters, availableTags, page, perPage, sortBy]);
+  }, [searchParams, availableTags]);
 
   useEffect(() => {
     setLoading(true);
@@ -255,12 +278,15 @@ export const SearchPage = () => {
   };
 
   const toggleFilter = (key) => {
-    setActiveFilters(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
+    setSearchParams(prev => {
+      const n = new URLSearchParams(prev);
+      const current = new Set(prev.getAll('f'));
+      current.has(key) ? current.delete(key) : current.add(key);
+      n.delete('f');
+      current.forEach(k => n.append('f', k));
+      n.set('page', '1');
+      return n;
     });
-    setPage(1);
   };
 
   const filteredProducts = useMemo(() => {
@@ -296,7 +322,7 @@ export const SearchPage = () => {
               <select
                 className="sp-select"
                 value={perPage}
-                onChange={e => { setPerPage(e.target.value); setPage(1); }}
+                onChange={e => setPerPage(e.target.value)}
               >
                 <option value="24">24 Results</option>
                 <option value="36">36 Results</option>
@@ -306,7 +332,7 @@ export const SearchPage = () => {
             </div>
             <div className="sp-control-btn sp-control-select-wrap">
               <SortIcon />
-              <select className="sp-select" value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1); }}>
+              <select className="sp-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
                 <option value="newest">Latest</option>
                 <option value="price_asc">Price: Low to High</option>
                 <option value="price_desc">Price: High to Low</option>

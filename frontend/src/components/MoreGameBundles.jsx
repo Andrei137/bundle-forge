@@ -33,7 +33,7 @@ export const MoreGameBundles = () => {
 
         <div className="mgb-header">
           <h2 className="mgb-heading">More Game Bundles</h2>
-          <a href="/search" className="mgb-view-all-btn">VIEW ALL</a>
+          <button className="mgb-view-all-btn" onClick={() => navigate('/search?' + new URLSearchParams([['f', 'productType:Bundle']]))}>VIEW ALL</button>
         </div>
 
         <div className="mgb-slider-wrapper">
