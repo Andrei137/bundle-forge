@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
@@ -77,7 +77,6 @@ export const Checkout = () => {
   const [paymentUuid, setPaymentUuid] = useState(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
-  const initRef = useRef(false);
 
   const payableItems = useMemo(
     () => cartItems.filter((i) => Number.isInteger(i.id)),
@@ -90,27 +89,24 @@ export const Checkout = () => {
       return;
     }
     if (payableItems.length === 0) return;
-    if (initRef.current) return;
-    initRef.current = true;
 
     const items = payableItems.map((i) => ({ gameId: i.id, quantity: i.quantity }));
     const idempotencyKey = sessionStorage.getItem('bundleforge_idem_key') || generateIdempotencyKey();
     sessionStorage.setItem('bundleforge_idem_key', idempotencyKey);
 
     let cancelled = false;
-    Promise.resolve().then(() => {
-      if (cancelled) return;
-      setCreating(true);
-      return checkoutService
-        .createPayment(items, idempotencyKey)
-        .then((res) => {
-          if (cancelled) return;
-          setClientSecret(res.clientSecret);
-          setPaymentUuid(res.paymentUuid);
-        })
-        .catch((err) => { if (!cancelled) setError(err.message); })
-        .finally(() => { if (!cancelled) setCreating(false); });
-    });
+    setCreating(true);
+
+    checkoutService
+      .createPayment(items, idempotencyKey)
+      .then((res) => {
+        if (cancelled) return;
+        setClientSecret(res.clientSecret);
+        setPaymentUuid(res.paymentUuid);
+      })
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setCreating(false); });
+
     return () => { cancelled = true; };
   }, [isAuthenticated, payableItems, navigate]);
 
