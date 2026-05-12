@@ -55,6 +55,9 @@ public class Bundle {
     @Builder.Default
     private Integer salesCount = 0;
 
+    @Column(nullable = false)
+    private Integer daysLeft;
+
     @ManyToOne
     @JoinColumn(name = "charity_founder_id")
     private CharityFounder charityFounder;

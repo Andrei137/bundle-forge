@@ -28,6 +28,10 @@ public class BundleCreateDto {
     @Max(value = 100, message = "devMinPct must be between 0 and 100")
     private Integer devMinPct;
 
+    @NotNull(message = "daysLeft is required")
+    @Min(value = 1, message = "daysLeft must be at least 1")
+    private Integer daysLeft;
+
     private Integer charityFounderId;
 
     @NotNull(message = "gameIds is required")
