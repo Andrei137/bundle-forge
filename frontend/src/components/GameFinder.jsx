@@ -1,36 +1,41 @@
-import { useState, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import bgImage from '@/assets/images/product-finder-background-doom.jpg';
 import './GameFinder.css';
 
-const GENRES = ['All', 'Action', 'Adventure', 'RPG', 'Strategy', 'Simulation', 'Horror', 'Puzzle', 'Sports', 'Racing', 'Platformer', 'Shooter'];
-const PLAYSTYLES = ['All', 'Single Player', 'Multiplayer', 'Co-op', 'Competitive', 'Open World', 'Story Rich', 'Casual', 'Hardcore'];
-const THEMES = ['All', 'Sci-Fi', 'Fantasy', 'Post-Apocalyptic', 'Historical', 'Cyberpunk', 'Medieval', 'Modern', 'Space', 'Stealth'];
+const API_URL = import.meta.env.VITE_API_URL;
+const PLATFORMS = ['All', 'Windows', 'Linux', 'MacOS'];
 
 export const GameFinder = () => {
-  const games = useSelector(state => state.games.all);
+  const navigate = useNavigate();
 
-  const [genre, setGenre] = useState('All');
-  const [playstyle, setPlaystyle] = useState('All');
-  const [theme, setTheme] = useState('All');
-  const [searched, setSearched] = useState(false);
+  const [tags, setTags] = useState([]);
+  const [developers, setDevelopers] = useState([]);
 
-  const resultCount = useMemo(() => {
-    let filtered = games;
-    if (genre !== 'All') filtered = filtered.filter(g => g.genre === genre || g.tags?.includes(genre));
-    if (playstyle !== 'All') filtered = filtered.filter(g => g.tags?.includes(playstyle));
-    if (theme !== 'All') filtered = filtered.filter(g => g.tags?.includes(theme));
-    // Fallback: show a proportional estimate if no exact matches
-    if (filtered.length === 0 && games.length > 0) {
-      const ratio = (genre === 'All' ? 1 : 0.3) * (playstyle === 'All' ? 1 : 0.5) * (theme === 'All' ? 1 : 0.6);
-      return Math.max(1, Math.round(games.length * ratio));
-    }
-    return filtered.length || games.length;
-  }, [games, genre, playstyle, theme]);
+  const [tag, setTag] = useState('All');
+  const [platform, setPlatform] = useState('All');
+  const [developer, setDeveloper] = useState('All');
 
-  const handleSearch = () => setSearched(true);
+  useEffect(() => {
+    fetch(`${API_URL}/tags`)
+      .then(r => r.json())
+      .then(data => setTags(Array.isArray(data) ? data : []))
+      .catch(() => {});
 
-  const handleGenreClear = () => setGenre('All');
+    fetch(`${API_URL}/developers`)
+      .then(r => r.json())
+      .then(data => setDevelopers(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (tag !== 'All') params.append('f', `tag:${tag}`);
+    if (platform !== 'All') params.append('f', `platform:${platform}`);
+    if (developer !== 'All') params.append('f', `developer:${developer}`);
+    window.scrollTo(0, 0);
+    navigate(`/search?${params}`);
+  };
 
   return (
     <section className="game-finder">
@@ -47,60 +52,44 @@ export const GameFinder = () => {
 
         <div className="game-finder-panel">
           <div className="finder-filters">
-            {/* Genre */}
             <div className="finder-field">
-              <label className="finder-label">Select a genre:</label>
+              <label className="finder-label">Select a tag:</label>
               <div className="finder-select-wrapper">
-                <select
-                  className="finder-select"
-                  value={genre}
-                  onChange={e => setGenre(e.target.value)}
-                >
-                  {GENRES.map(g => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
+                <select className="finder-select" value={tag} onChange={e => setTag(e.target.value)}>
+                  <option value="All">All</option>
+                  {tags.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
                 </select>
-                {genre !== 'All' && (
-                  <button className="finder-clear-btn" onClick={handleGenreClear} aria-label="Clear genre">
-                    ✕
-                  </button>
+                {tag !== 'All' && (
+                  <button className="finder-clear-btn" onClick={() => setTag('All')} aria-label="Clear tag">✕</button>
                 )}
               </div>
             </div>
 
-            {/* Playstyle */}
             <div className="finder-field">
-              <label className="finder-label">Select a playstyle:</label>
+              <label className="finder-label">Select a platform:</label>
               <div className="finder-select-wrapper">
-                <select
-                  className="finder-select"
-                  value={playstyle}
-                  onChange={e => setPlaystyle(e.target.value)}
-                >
-                  {PLAYSTYLES.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
+                <select className="finder-select" value={platform} onChange={e => setPlatform(e.target.value)}>
+                  {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
+                {platform !== 'All' && (
+                  <button className="finder-clear-btn" onClick={() => setPlatform('All')} aria-label="Clear platform">✕</button>
+                )}
               </div>
             </div>
 
-            {/* Theme */}
             <div className="finder-field">
-              <label className="finder-label">Select a theme:</label>
+              <label className="finder-label">Select a developer:</label>
               <div className="finder-select-wrapper">
-                <select
-                  className="finder-select"
-                  value={theme}
-                  onChange={e => setTheme(e.target.value)}
-                >
-                  {THEMES.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
+                <select className="finder-select" value={developer} onChange={e => setDeveloper(e.target.value)}>
+                  <option value="All">All</option>
+                  {developers.map(d => <option key={d.id} value={d.displayName}>{d.displayName}</option>)}
                 </select>
+                {developer !== 'All' && (
+                  <button className="finder-clear-btn" onClick={() => setDeveloper('All')} aria-label="Clear developer">✕</button>
+                )}
               </div>
             </div>
 
-            {/* Results + Search */}
             <div className="finder-action">
               <button className="finder-search-btn" onClick={handleSearch}>
                 SEARCH

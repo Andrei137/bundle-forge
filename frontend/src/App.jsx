@@ -57,7 +57,7 @@ function App() {
                 <TopSellers />
                 <MoreGameBundles />
                 <GameFinder />
-                <GamersRecommend />
+                {/* TODO: <GamersRecommend /> */}
               </>
             </Layout>
           }
