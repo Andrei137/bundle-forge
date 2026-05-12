@@ -181,6 +181,31 @@
   text-align: right;
 }
 
+.fd-main-action-btn {
+  background: #f90;
+  border: none;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #212121;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: background 0.2s;
+}
+
+.fd-main-action-btn:hover {
+  background: #e08800;
+}
+
+.fd-main-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .fd-main-was {
   color: rgba(255,255,255,0.5);
   font-size: 0.7rem;

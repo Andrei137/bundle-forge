@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import CartIcon from '../assets/icons/cart.svg?react';
+import ViewIcon from '../assets/icons/view.svg?react';
 import SteamIcon from '../assets/icons/steam.svg?react';
 import WindowsIcon from '../assets/icons/windows.svg?react';
 import AppleIcon from '../assets/icons/apple.svg?react';
 import LinuxIcon from '../assets/icons/linux.svg?react';
+import { addToCart } from '../redux/slices/cartSlice';
 import './TopSellers.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -37,6 +40,7 @@ const effectivePrice = (item) => {
 };
 
 export const TopSellers = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All Products');
   const [items, setItems] = useState([]);
@@ -51,6 +55,20 @@ export const TopSellers = () => {
 
   const handleClick = (item) => {
     navigate(item.type === 'BUNDLE' ? `/bundle/${item.id}` : `/game/${item.id}`);
+  };
+
+  const handleAddToCart = (e, item) => {
+    e.stopPropagation();
+    const ep = effectivePrice(item);
+    dispatch(addToCart({
+      id: item.id,
+      title: item.title,
+      price: ep ?? item.price,
+      originalPrice: item.price,
+      discount: item.discountPercentage,
+      image: `${API_URL}${item.cover}`,
+      quantity: 1,
+    }));
   };
 
   return (
@@ -102,7 +120,7 @@ export const TopSellers = () => {
                       }
                     </div>
                     <div className="ts-card-right">
-                      {ep != null && (
+                      {item.type !== 'BUNDLE' && ep != null && (
                         <div className="ts-card-prices">
                           {item.discountPercentage > 0 && (
                             <span className="ts-card-was">RON {item.price.toFixed(2)}</span>
@@ -110,13 +128,23 @@ export const TopSellers = () => {
                           <span className="ts-card-now">RON {ep.toFixed(2)}</span>
                         </div>
                       )}
-                      <button
-                        className="ts-cart-btn"
-                        onClick={(e) => { e.stopPropagation(); }}
-                        aria-label="Add to cart"
-                      >
-                        <CartIcon />
-                      </button>
+                      {item.type === 'BUNDLE' ? (
+                        <button
+                          className="ts-cart-btn"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/bundle/${item.id}`); }}
+                          aria-label={`View ${item.title}`}
+                        >
+                          <ViewIcon />
+                        </button>
+                      ) : (
+                        <button
+                          className="ts-cart-btn"
+                          onClick={(e) => handleAddToCart(e, item)}
+                          aria-label={`Add ${item.title} to cart`}
+                        >
+                          <CartIcon />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
