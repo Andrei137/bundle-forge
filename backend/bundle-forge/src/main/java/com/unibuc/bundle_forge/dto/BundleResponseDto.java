@@ -19,6 +19,7 @@ public class BundleResponseDto {
     private String longDescription;
     private Integer platformMinPct;
     private Integer devMinPct;
+    private Integer daysLeft;
     private List<BundleGameDto> games;
     private List<BundleTierDto> tiers;
     private CharityFounderDto charity;

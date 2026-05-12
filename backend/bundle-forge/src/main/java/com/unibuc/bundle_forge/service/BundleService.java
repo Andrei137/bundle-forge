@@ -55,6 +55,7 @@ public class BundleService {
         bundle.setLongDescription(dto.getLongDescription());
         bundle.setPlatformMinPct(dto.getPlatformMinPct());
         bundle.setDevMinPct(dto.getDevMinPct());
+        bundle.setDaysLeft(dto.getDaysLeft());
         bundle.setGames(gameRepository.findAllById(dto.getGameIds()));
         bundle.setTiers(toTiers(dto.getTiers()));
         bundle.setCharityFounder(resolveCharity(dto.getCharityFounderId()));
@@ -78,6 +79,7 @@ public class BundleService {
                 .longDescription(dto.getLongDescription())
                 .platformMinPct(dto.getPlatformMinPct())
                 .devMinPct(dto.getDevMinPct())
+                .daysLeft(dto.getDaysLeft())
                 .games(gameRepository.findAllById(dto.getGameIds()))
                 .tiers(toTiers(dto.getTiers()))
                 .charityFounder(resolveCharity(dto.getCharityFounderId()))
@@ -106,6 +108,7 @@ public class BundleService {
                 .longDescription(bundle.getLongDescription())
                 .platformMinPct(bundle.getPlatformMinPct())
                 .devMinPct(bundle.getDevMinPct())
+                .daysLeft(bundle.getDaysLeft())
                 .games(bundle.getGames().stream().map(this::toGameDto).toList())
                 .tiers(bundle.getTiers().stream()
                         .sorted(Comparator.comparingInt(BundleTier::getNumRequiredGames))
