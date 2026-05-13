@@ -72,6 +72,8 @@ export const Checkout = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const cartItems = useSelector((state) => state.cart.items);
   const cartTotal = useSelector((state) => state.cart.total);
+  const coupon = useSelector((state) => state.cart.coupon);
+  const couponDiscount = useSelector((state) => state.cart.couponDiscount);
 
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentUuid, setPaymentUuid] = useState(null);
@@ -98,7 +100,7 @@ export const Checkout = () => {
     setCreating(true);
 
     checkoutService
-      .createPayment(items, idempotencyKey)
+      .createPayment(items, idempotencyKey, coupon?.code)
       .then((res) => {
         if (cancelled) return;
         setClientSecret(res.clientSecret);
@@ -168,9 +170,15 @@ export const Checkout = () => {
               <span>RON {(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
+          {couponDiscount > 0 && (
+            <div className="checkout-summary__line checkout-summary__line--coupon">
+              <span>Coupon savings{coupon?.name ? ` (${coupon.name})` : ''}</span>
+              <span className="checkout-summary__coupon-val">-RON {couponDiscount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="checkout-summary__total">
             <span>Total</span>
-            <span>RON {cartTotal.toFixed(2)}</span>
+            <span>RON {(cartTotal - couponDiscount).toFixed(2)}</span>
           </div>
         </div>
       </div>

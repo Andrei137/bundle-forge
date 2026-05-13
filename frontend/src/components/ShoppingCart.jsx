@@ -1,15 +1,40 @@
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { removeFromCart, updateQuantity } from '../redux/slices/cartSlice';
+import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '../redux/slices/cartSlice';
 import { closeCart } from '../redux/slices/uiSlice';
 import './ShoppingCart.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const ShoppingCart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartOpen = useSelector(state => state.ui.cartOpen);
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  const { items, total, savedTotal } = useSelector(state => state.cart);
+  const { items, total, savedTotal, coupon, couponDiscount } = useSelector(state => state.cart);
+
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const res = await fetch(`${API_URL}/coupons/${encodeURIComponent(code)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || 'Invalid coupon');
+      dispatch(applyCoupon(data));
+      setCouponInput('');
+    } catch (e) {
+      setCouponError(e.message);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handleRemoveItem = (itemId) => {
     dispatch(removeFromCart(itemId));
@@ -102,14 +127,46 @@ export const ShoppingCart = () => {
                   <span className="savings-value">-RON {savedTotal.toFixed(2)}</span>
                 </div>
               )}
+              {couponDiscount > 0 && (
+                <div className="summary-row savings">
+                  <span>Coupon savings {coupon && <span className="cart-coupon-tag">{coupon.name}</span>}</span>
+                  <span className="savings-value">-RON {couponDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="summary-row subtotal">
                 <span>Subtotal</span>
                 <span>RON {total.toFixed(2)}</span>
               </div>
               <div className="summary-row total">
                 <span>Total</span>
-                <span>RON {total.toFixed(2)}</span>
+                <span>RON {(total - couponDiscount).toFixed(2)}</span>
               </div>
+            </div>
+
+            <div className="cart-coupon">
+              {coupon ? (
+                <div className="cart-coupon-applied">
+                  <span>{coupon.name} applied</span>
+                  <button className="cart-coupon-remove" onClick={() => dispatch(removeCoupon())}>✕</button>
+                </div>
+              ) : (
+                <>
+                  <div className="cart-coupon-row">
+                    <input
+                      className="cart-coupon-input"
+                      placeholder="Coupon code"
+                      value={couponInput}
+                      onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
+                      onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
+                      maxLength={14}
+                    />
+                    <button className="cart-coupon-btn" onClick={handleApplyCoupon} disabled={couponLoading}>
+                      {couponLoading ? '...' : 'APPLY'}
+                    </button>
+                  </div>
+                  {couponError && <p className="cart-coupon-error">{couponError}</p>}
+                </>
+              )}
             </div>
 
             <div className="cart-actions">

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { removeFromCart, updateQuantity } from '../redux/slices/cartSlice';
+import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '../redux/slices/cartSlice';
 import './CartPage.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const LockIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
@@ -124,8 +126,41 @@ const ChevronIcon = ({ open }) => (
 );
 
 const CouponBox = () => {
+  const dispatch = useDispatch();
+  const coupon = useSelector(state => state.cart.coupon);
+  const couponDiscount = useSelector(state => state.cart.couponDiscount);
+
   const [open, setOpen] = useState(true);
   const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleApply = async () => {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${API_URL}/coupons/${encodeURIComponent(trimmed)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || 'Invalid coupon');
+      dispatch(applyCoupon(data));
+      setSuccess(`"${data.name}" applied`);
+      setCode('');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemove = () => {
+    dispatch(removeCoupon());
+    setSuccess('');
+    setError('');
+  };
 
   return (
     <div className="cp-coupon">
@@ -136,18 +171,42 @@ const CouponBox = () => {
 
       {open && (
         <div className="cp-coupon-body">
-          <p className="cp-coupon-hint">Do you have a coupon code?</p>
-          <div className="cp-coupon-field">
-            <input
-              className="cp-coupon-input"
-              type="text"
-              placeholder="Enter coupon code"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              aria-label="Coupon code"
-            />
-            <button className="cp-coupon-apply" disabled={!code.trim()}>Apply</button>
-          </div>
+          {coupon ? (
+            <div className="cp-coupon-applied-row">
+              <div className="cp-coupon-applied-info">
+                <span className="cp-coupon-applied-name">{coupon.name}</span>
+                <span className="cp-coupon-applied-saving">-RON {couponDiscount.toFixed(2)}</span>
+              </div>
+              <button className="cp-coupon-remove-btn" onClick={handleRemove} aria-label="Remove coupon">
+                Remove
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="cp-coupon-hint">Do you have a coupon code?</p>
+              <div className="cp-coupon-field">
+                <input
+                  className="cp-coupon-input"
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={code}
+                  onChange={e => { setCode(e.target.value.toUpperCase()); setError(''); setSuccess(''); }}
+                  onKeyDown={e => e.key === 'Enter' && handleApply()}
+                  aria-label="Coupon code"
+                  maxLength={14}
+                />
+                <button
+                  className="cp-coupon-apply"
+                  onClick={handleApply}
+                  disabled={!code.trim() || loading}
+                >
+                  {loading ? '...' : 'Apply'}
+                </button>
+              </div>
+              {error && <p className="cp-coupon-feedback cp-coupon-feedback--error">{error}</p>}
+              {success && <p className="cp-coupon-feedback cp-coupon-feedback--success">{success}</p>}
+            </>
+          )}
         </div>
       )}
     </div>
@@ -157,7 +216,7 @@ const CouponBox = () => {
 export const CartPage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  const { items, total, savedTotal } = useSelector(state => state.cart);
+  const { items, total, savedTotal, couponDiscount } = useSelector(state => state.cart);
 
   const fullPrice = savedTotal > 0 ? total + savedTotal : null;
 
@@ -226,9 +285,16 @@ export const CartPage = () => {
             </div>
           )}
 
+          {couponDiscount > 0 && (
+            <div className="cp-summary-row">
+              <span>Coupon savings</span>
+              <span className="cp-summary-val cp-summary-val--saving">-RON {couponDiscount.toFixed(2)}</span>
+            </div>
+          )}
+
           <div className="cp-summary-total">
             <span>Total</span>
-            <span className="cp-summary-total-val">RON {total.toFixed(2)}</span>
+            <span className="cp-summary-total-val">RON {(total - couponDiscount).toFixed(2)}</span>
           </div>
 
           <p className="cp-summary-note">
