@@ -72,6 +72,17 @@
   white-space: nowrap;
 }
 
+.checkout-summary__line--coupon {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.checkout-summary__coupon-val {
+  color: #4ade80;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .checkout-summary__total {
   display: flex;
   justify-content: space-between;

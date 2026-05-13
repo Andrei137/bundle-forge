@@ -495,6 +495,67 @@
   cursor: not-allowed;
 }
 
+.cp-coupon-feedback {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.cp-coupon-feedback--error {
+  color: #f87171;
+}
+
+.cp-coupon-feedback--success {
+  color: #4ade80;
+}
+
+.cp-coupon-applied-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: oklch(28% 0.03 155 / 0.5);
+  border: 1px solid oklch(55% 0.15 155 / 0.4);
+  border-radius: 6px;
+}
+
+.cp-coupon-applied-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cp-coupon-applied-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e2e2;
+}
+
+.cp-coupon-applied-saving {
+  font-size: 0.8rem;
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.cp-coupon-remove-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #a0a0a0;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.cp-coupon-remove-btn:hover {
+  color: #f87171;
+  border-color: #f87171;
+}
+
 /* ── Empty state ── */
 .cp-empty {
   display: flex;
