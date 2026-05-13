@@ -9,6 +9,12 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js';
 import { clearCart } from '../redux/slices/cartSlice';
+
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
+    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+  </svg>
+);
 import { checkoutService } from '../services/checkoutService';
 import './Checkout.css';
 
@@ -146,7 +152,7 @@ export const Checkout = () => {
       <h1 className="checkout-page__title">Checkout</h1>
       <div className="checkout-grid">
         <div className="checkout-card">
-          <div className="checkout-card__title">Payment details</div>
+          <h2 className="checkout-payment-title"><LockIcon /> Secure Payments</h2>
           {creating && <div className="checkout-loading">Preparing secure payment…</div>}
           {error && <div className="checkout-error">{error}</div>}
           {clientSecret && stripePromise && (
@@ -157,28 +163,26 @@ export const Checkout = () => {
         </div>
 
         <div className="checkout-card">
-          <div className="checkout-card__title">Order summary</div>
-          {cartItems.map((item) => (
-            <div key={item.id} className="checkout-summary__line">
-              <div className="checkout-summary__item-title">
-                {item.image && <img src={item.image} alt={item.title} />}
-                <span>
-                  {item.title}
-                  {item.quantity > 1 ? ` × ${item.quantity}` : ''}
+          <div className="checkout-card__title">Order Summary</div>
+          <div className="checkout-summary__items">
+            {cartItems.map((item) => (
+              <div key={item.id} className="checkout-summary__line">
+                <span className="checkout-summary__item-name">
+                  {item.title}{item.quantity > 1 ? ` ×${item.quantity}` : ''}
                 </span>
+                <span className="checkout-summary__item-price">RON {(item.price * item.quantity).toFixed(2)}</span>
               </div>
-              <span>RON {(item.price * item.quantity).toFixed(2)}</span>
-            </div>
-          ))}
-          {couponDiscount > 0 && (
-            <div className="checkout-summary__line checkout-summary__line--coupon">
-              <span>Coupon savings{coupon?.name ? ` (${coupon.name})` : ''}</span>
-              <span className="checkout-summary__coupon-val">-RON {couponDiscount.toFixed(2)}</span>
-            </div>
-          )}
+            ))}
+            {couponDiscount > 0 && (
+              <div className="checkout-summary__line checkout-summary__line--coupon">
+                <span>Coupon savings{coupon?.name ? ` (${coupon.name})` : ''}</span>
+                <span className="checkout-summary__coupon-val">-RON {couponDiscount.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
           <div className="checkout-summary__total">
-            <span>Total</span>
-            <span>RON {(cartTotal - couponDiscount).toFixed(2)}</span>
+            <span>TOTAL</span>
+            <span className="checkout-summary__total-val">RON {(cartTotal - couponDiscount).toFixed(2)}</span>
           </div>
         </div>
       </div>
