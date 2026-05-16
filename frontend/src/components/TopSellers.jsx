@@ -90,7 +90,9 @@ export const TopSellers = () => {
         </div>
 
         <div className="ts-grid">
-          {items.map((item) => {
+          {items.length === 0 ? (
+            <div className="ts-empty">No products available right now.</div>
+          ) : items.map((item) => {
             const ep = effectivePrice(item);
             return (
               <div
@@ -151,7 +153,7 @@ export const TopSellers = () => {
               </div>
             );
           })}
-        </div>
+          </div>
       </div>
     </section>
   );

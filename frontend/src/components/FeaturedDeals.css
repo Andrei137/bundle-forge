@@ -471,3 +471,9 @@
     display: none;
   }
 }
+.fd-empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #8f98a0;
+  font-size: 14px;
+}

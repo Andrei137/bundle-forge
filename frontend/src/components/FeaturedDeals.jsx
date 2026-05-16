@@ -63,12 +63,6 @@ export const FeaturedDeals = () => {
       .catch(() => {});
   }, []);
 
-  if (slides.length === 0) return null;
-
-  const { label, main, support } = slides[slide];
-  const totalSlides = slides.length;
-  const badgeClass = BADGE_CLASS[label] ?? 'staff-picks';
-
   const handleClick = (item) => {
     navigate(item.type === 'BUNDLE' ? `/bundle/${item.id}` : `/game/${item.id}`);
   };
@@ -87,6 +81,20 @@ export const FeaturedDeals = () => {
     }));
   };
 
+  if (slides.length === 0) {
+    return (
+      <section className="fd-section">
+        <div className="fd-container">
+          <h2 className="fd-heading">Featured Deals</h2>
+          <div className="fd-empty">No featured deals available right now.</div>
+        </div>
+      </section>
+    );
+  }
+
+  const { label, main, support } = slides[slide];
+  const totalSlides = slides.length;
+  const badgeClass = BADGE_CLASS[label] ?? 'staff-picks';
   const ep = effectivePrice(main);
 
   return (
