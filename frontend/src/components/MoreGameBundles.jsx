@@ -19,8 +19,6 @@ export const MoreGameBundles = () => {
       .catch(() => {});
   }, []);
 
-  if (bundles.length === 0) return null;
-
   const totalSlides = Math.ceil(bundles.length / CARDS_PER_SLIDE);
   const visibleBundles = bundles.slice(
     slide * CARDS_PER_SLIDE,
@@ -36,76 +34,82 @@ export const MoreGameBundles = () => {
           <button className="mgb-view-all-btn" onClick={() => navigate('/search?' + new URLSearchParams([['f', 'productType:Bundle']]))}>VIEW ALL</button>
         </div>
 
-        <div className="mgb-slider-wrapper">
-          <button
-            className="fd-arrow fd-arrow--left"
-            onClick={() => setSlide(s => Math.max(0, s - 1))}
-            disabled={slide === 0}
-            aria-label="Previous"
-          >
-            <svg viewBox="0 0 320 512">
-              <path fill="currentColor" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z" />
-            </svg>
-          </button>
-
-          <div className="mgb-cards">
-            {visibleBundles.map((bundle) => (
-              <div key={bundle.id} className="mgb-card" onClick={() => navigate(`/bundle/${bundle.id}`)} style={{ cursor: 'pointer' }}>
-                <div className="mgb-card-img-wrap">
-                  <img
-                    src={`${API_URL}${bundle.cover}`}
-                    alt={bundle.title}
-                    className="mgb-card-img"
-                    loading="lazy"
-                  />
-                  <div className="mgb-card-overlay">
-                    <span className="mgb-quick-look">{bundle.title}</span>
-                    <button
-                      className="mgb-view-btn"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/bundle/${bundle.id}`); }}
-                    >
-                      <ViewIcon />
-                      VIEW
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mgb-card-footer">
-                  <div className="mgb-card-drm">
-                    <SteamIcon width="16" height="16" fill="#fff" />
-                    <span className="mgb-card-drm-label">Steam</span>
-                  </div>
-                  <div className={`mgb-card-timer ${bundle.daysLeft <= 1 ? 'mgb-card-timer--ending' : ''}`}>
-                    {bundle.daysLeft <= 1 ? `${bundle.daysLeft} DAY LEFT` : `${bundle.daysLeft} DAYS LEFT`}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            className="fd-arrow fd-arrow--right"
-            onClick={() => setSlide(s => Math.min(totalSlides - 1, s + 1))}
-            disabled={slide === totalSlides - 1}
-            aria-label="Next"
-          >
-            <svg viewBox="0 0 320 512">
-              <path fill="currentColor" d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
-            </svg>
-          </button>
-        </div>
-
-        {totalSlides > 1 && (
-          <div className="mgb-dots">
-            {Array.from({ length: totalSlides }, (_, i) => (
+        {bundles.length === 0 ? (
+          <div className="mgb-empty">No bundles available right now.</div>
+        ) : (
+          <>
+            <div className="mgb-slider-wrapper">
               <button
-                key={i}
-                className={`mgb-dot ${i === slide ? 'mgb-dot--active' : ''}`}
-                onClick={() => setSlide(i)}
-                aria-label={`Go to slide ${i + 1} of ${totalSlides}`}
-              />
-            ))}
-          </div>
+                className="fd-arrow fd-arrow--left"
+                onClick={() => setSlide(s => Math.max(0, s - 1))}
+                disabled={slide === 0}
+                aria-label="Previous"
+              >
+                <svg viewBox="0 0 320 512">
+                  <path fill="currentColor" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z" />
+                </svg>
+              </button>
+
+              <div className="mgb-cards">
+                {visibleBundles.map((bundle) => (
+                  <div key={bundle.id} className="mgb-card" onClick={() => navigate(`/bundle/${bundle.id}`)} style={{ cursor: 'pointer' }}>
+                    <div className="mgb-card-img-wrap">
+                      <img
+                        src={`${API_URL}${bundle.cover}`}
+                        alt={bundle.title}
+                        className="mgb-card-img"
+                        loading="lazy"
+                      />
+                      <div className="mgb-card-overlay">
+                        <span className="mgb-quick-look">{bundle.title}</span>
+                        <button
+                          className="mgb-view-btn"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/bundle/${bundle.id}`); }}
+                        >
+                          <ViewIcon />
+                          VIEW
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mgb-card-footer">
+                      <div className="mgb-card-drm">
+                        <SteamIcon width="16" height="16" fill="#fff" />
+                        <span className="mgb-card-drm-label">Steam</span>
+                      </div>
+                      <div className={`mgb-card-timer ${bundle.daysLeft <= 1 ? 'mgb-card-timer--ending' : ''}`}>
+                        {bundle.daysLeft <= 1 ? `${bundle.daysLeft} DAY LEFT` : `${bundle.daysLeft} DAYS LEFT`}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="fd-arrow fd-arrow--right"
+                onClick={() => setSlide(s => Math.min(totalSlides - 1, s + 1))}
+                disabled={slide === totalSlides - 1}
+                aria-label="Next"
+              >
+                <svg viewBox="0 0 320 512">
+                  <path fill="currentColor" d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
+                </svg>
+              </button>
+            </div>
+
+            {totalSlides > 1 && (
+              <div className="mgb-dots">
+                {Array.from({ length: totalSlides }, (_, i) => (
+                  <button
+                    key={i}
+                    className={`mgb-dot ${i === slide ? 'mgb-dot--active' : ''}`}
+                    onClick={() => setSlide(i)}
+                    aria-label={`Go to slide ${i + 1} of ${totalSlides}`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
       </div>
