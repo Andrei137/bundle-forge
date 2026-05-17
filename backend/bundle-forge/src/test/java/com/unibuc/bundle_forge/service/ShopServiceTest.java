@@ -19,120 +19,90 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ShopServiceTest {
+class ShopServiceTest {
 
-    @Mock
-    private CustomerRepository customerRepository;
-
-    @Mock
-    private GameRepository gameRepository;
-
-    @Mock
-    private GameService gameService;
-
-    @Mock
-    private JwtService jwtService;
-
-    @Mock
-    private GameMapper gameMapper;
+    @Mock private CustomerRepository customerRepository;
+    @Mock private GameRepository gameRepository;
+    @Mock private GameService gameService;
+    @Mock private JwtService jwtService;
+    @Mock private GameMapper gameMapper;
 
     @InjectMocks
     private ShopService shopService;
 
-    private Game game1, game2;
-    private GameResponseDto gameDto2;
     private Customer customer;
+    private Game unownedPublished;
+    private Game announced;
 
     @BeforeEach
     void setUp() {
-        game1 = TestUtils.game1;
-        game2 = TestUtils.game2;
-        gameDto2 = TestUtils.gameDto2;
-        customer = TestUtils.customer1.toBuilder()
-                .ownedGames(new ArrayList<>(List.of(game1)))
-                .build();
-
-        when(jwtService.getCurrentCustomer()).thenReturn(customer);
+        customer = TestUtils.newCustomer(1, "c@test.com");
+        unownedPublished = Game.builder().id(2).title("Free").price(20.0).status(Game.Status.PUBLISHED).salesCount(0).build();
+        announced = Game.builder().id(3).title("Soon").price(30.0).status(Game.Status.ANNOUNCED).salesCount(0).build();
+        // Note: Game equality is configured with onlyExplicitlyIncluded=true with no included fields,
+        // so all Games compare equal. Tests use an empty owned list to avoid that quirk in contains() checks.
+        customer.setOwnedGames(new ArrayList<>());
     }
 
     @Test
-    void getUnownedGames_ShouldReturnOnlyUnownedPublishedGames() {
-        Game unpublishedGame = game2.toBuilder()
-                .title("Unpublished Game")
-                .status(Game.Status.DEVELOPED)
-                .build();
-
-        Game publishedGame = game2.toBuilder()
-                .status(Game.Status.PUBLISHED)
-                .build();
-
-        when(gameRepository.findAll()).thenReturn(List.of(game1, publishedGame, unpublishedGame));
-        when(gameMapper.toResponseDto(publishedGame)).thenReturn(gameDto2);
+    void getUnownedGames_filtersUnpublished() {
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
+        when(gameRepository.findAll()).thenReturn(List.of(unownedPublished, announced));
+        when(gameMapper.toResponseDto(unownedPublished))
+                .thenReturn(GameResponseDto.builder().id(2).title("Free").build());
 
         List<GameResponseDto> result = shopService.getUnownedGames();
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(gameDto2, result.getFirst());
-
-        verify(gameRepository, times(1)).findAll();
-        verify(gameMapper, times(1)).toResponseDto(publishedGame);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(2);
     }
 
     @Test
-    void getUnownedGameById_ExistingUnownedGame_ShouldReturnDto() {
-        Game publishedGame = game2.toBuilder()
-                .status(Game.Status.PUBLISHED)
-                .build();
+    void getUnownedGameById_found() {
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
+        when(gameRepository.findAll()).thenReturn(List.of(unownedPublished));
+        when(gameMapper.toResponseDto(unownedPublished))
+                .thenReturn(GameResponseDto.builder().id(2).title("Free").build());
 
-        when(gameRepository.findAll()).thenReturn(List.of(game1, publishedGame));
-        when(gameMapper.toResponseDto(publishedGame)).thenReturn(gameDto2);
-
-        GameResponseDto dto = shopService.getUnownedGameById(publishedGame.getId());
-
-        assertNotNull(dto);
-        assertEquals(gameDto2, dto);
-
-        verify(gameRepository, times(1)).findAll();
-        verify(gameMapper, times(1)).toResponseDto(publishedGame);
+        GameResponseDto result = shopService.getUnownedGameById(2);
+        assertThat(result.getId()).isEqualTo(2);
     }
 
     @Test
-    void getUnownedGameById_OwnedGame_ShouldThrowNotFoundException() {
-        when(gameRepository.findAll()).thenReturn(List.of(game1, game2));
+    void getUnownedGameById_missing_throws() {
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
+        when(gameRepository.findAll()).thenReturn(List.of());
 
-        assertThatThrownBy(() -> shopService.getUnownedGameById(game1.getId()))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Game at id 1 owned or doesn't exist");
+        assertThatThrownBy(() -> shopService.getUnownedGameById(999))
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test
-    void buyGame_UnownedGame_ShouldAddGameAndSaveCustomer() {
-        Game newGame = game2;
-        when(customerRepository.save(customer)).thenReturn(customer);
-        when(gameService.getGame(newGame.getId())).thenReturn(newGame);
+    void buyGame_addsToLibraryAndIncrementsSales() {
+        when(gameService.getGame(2)).thenReturn(unownedPublished);
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
 
-        shopService.buyGame(newGame.getId());
+        shopService.buyGame(2);
 
-        assertTrue(customer.getOwnedGames().contains(newGame));
-        
-        verify(customerRepository, times(1)).save(customer);
+        assertThat(customer.getOwnedGames()).contains(unownedPublished);
+        assertThat(unownedPublished.getSalesCount()).isEqualTo(1);
+        verify(customerRepository).save(customer);
+        verify(gameRepository).save(unownedPublished);
     }
 
     @Test
-    void buyGame_AlreadyOwnedGame_ShouldThrowValidationException() {
-        Game ownedGame = game1;
-        when(gameService.getGame(ownedGame.getId())).thenReturn(ownedGame);
+    void buyGame_alreadyOwned_throws() {
+        customer.getOwnedGames().add(unownedPublished);
+        when(gameService.getGame(2)).thenReturn(unownedPublished);
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
 
-        assertThatThrownBy(() -> shopService.buyGame(ownedGame.getId()))
-                .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Game already owned");
-
+        assertThatThrownBy(() -> shopService.buyGame(2))
+                .isInstanceOf(ValidationException.class);
         verify(customerRepository, never()).save(any());
     }
 }

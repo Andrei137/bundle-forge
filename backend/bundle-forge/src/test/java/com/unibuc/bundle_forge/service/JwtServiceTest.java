@@ -2,190 +2,121 @@ package com.unibuc.bundle_forge.service;
 
 import com.unibuc.bundle_forge.exception.UnauthorizedException;
 import com.unibuc.bundle_forge.model.Customer;
-import com.unibuc.bundle_forge.model.Publisher;
-import com.unibuc.bundle_forge.model.User;
+import com.unibuc.bundle_forge.model.Developer;
+import com.unibuc.bundle_forge.model.Provider;
 import com.unibuc.bundle_forge.repository.UserRepository;
 import com.unibuc.bundle_forge.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class JwtServiceTest {
+class JwtServiceTest {
 
-    private static final String TEST_SECRET = "59ea8c46bff1d4e107b627cb853e06d522de5e592ece36d718b1244442b324f2";
+    private static final String TEST_SECRET =
+            "dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdGVzdGluZy1wdXJwb3Nlcy1vbmx5LXBsZWFzZS1jaGFuZ2U=";
 
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private Authentication auth;
-
-    @InjectMocks
-    private JwtService jwtService = new JwtService(TEST_SECRET);
-
-    private Customer customer;
-    private Publisher publisher;
+    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        customer = TestUtils.customer1;
-        publisher = TestUtils.publisher1;
+        jwtService = new JwtService(TEST_SECRET);
+        ReflectionTestUtils.setField(jwtService, "userRepository", userRepository);
     }
 
     @AfterEach
-    void clearSecurityContext() {
+    void tearDown() {
         SecurityContextHolder.clearContext();
     }
 
     @Test
-    void getToken_and_extractUserId_success() {
-        String token = jwtService.getToken("admin");
-        String extracted = jwtService.extractUserId(token);
-
-        assertEquals("admin", extracted);
+    void encryptPassword_returnsNonNullHash() {
+        String hash = JwtService.encryptPassword("hello");
+        assertThat(hash).isNotBlank().isNotEqualTo("hello");
     }
 
     @Test
-    void encryptPassword_success() {
-        String rawPassword = "SECRET_PASSWORD_123!";
-        String encoded = JwtService.encryptPassword(rawPassword);
-
-        assertNotEquals(rawPassword, encoded);
-        assertTrue(JwtService.isPasswordValid(rawPassword, encoded));
+    void isPasswordValid_matches() {
+        String hash = JwtService.encryptPassword("hello");
+        assertThat(JwtService.isPasswordValid("hello", hash)).isTrue();
+        assertThat(JwtService.isPasswordValid("wrong", hash)).isFalse();
     }
 
     @Test
-    void checkAdmin_adminUser_ok() {
-        when(auth.getPrincipal()).thenReturn("admin");
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        assertDoesNotThrow(() -> jwtService.checkAdmin());
-
-        verify(auth, times(1)).getPrincipal();
+    void getToken_andExtract_roundtrip() {
+        String token = jwtService.getToken("42");
+        assertThat(jwtService.extractUserId(token)).isEqualTo("42");
     }
 
     @Test
-    void checkAdmin_nonAdmin_throwsException() {
-        when(auth.getPrincipal()).thenReturn("nonAdmin");
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        assertThrows(UnauthorizedException.class, () -> jwtService.checkAdmin());
-    }
-
-    @Test
-    void checkAdmin_noAuth_throwsException() {
+    void getCurrentUser_noAuthentication_throws() {
         SecurityContextHolder.clearContext();
-
-        assertThrows(UnauthorizedException.class, () -> jwtService.checkAdmin());
+        assertThatThrownBy(() -> jwtService.getCurrentUser())
+                .isInstanceOf(UnauthorizedException.class);
     }
 
     @Test
-    void getUser_validUser_success() {
-        when(auth.getPrincipal()).thenReturn(customer.getId().toString());
-        when(userRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
+    void getCurrentUser_authenticatedCustomer_returnsCustomer() {
+        Customer customer = TestUtils.newCustomer(1, "c@test.com");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("1", "n/a", java.util.List.of()));
+        when(userRepository.findById(1)).thenReturn(Optional.of(customer));
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User result = jwtService.getCurrentUser();
-
-        assertEquals(customer.getId(), result.getId());
-        assertEquals(customer.getUsername(), result.getUsername());
-
-        verify(auth, times(1)).getPrincipal();
-        verify(userRepository, times(1)).findById(argThat(id -> id.equals(customer.getId())));
+        assertThat(jwtService.getCurrentUser()).isSameAs(customer);
+        assertThat(jwtService.getCurrentCustomer()).isSameAs(customer);
+        assertThat(jwtService.getCurrentProvider()).isNull();
     }
 
     @Test
-    void getUser_userNotFound_throwsException() {
-        when(auth.getPrincipal()).thenReturn("404");
-        when(userRepository.findById(404)).thenReturn(Optional.empty());
+    void getCurrentProvider_returnsProvider() {
+        Developer dev = TestUtils.newDeveloper(2, "d@test.com", Provider.Status.ACCEPTED);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("2", "n/a", java.util.List.of()));
+        when(userRepository.findById(2)).thenReturn(Optional.of(dev));
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        assertThrows(UnauthorizedException.class, () -> jwtService.getCurrentUser());
-
-        verify(auth, times(1)).getPrincipal();
-        verify(userRepository, times(1)).findById(argThat(id -> id.equals(404)));
+        assertThat(jwtService.getCurrentProvider()).isSameAs(dev);
+        assertThat(jwtService.getCurrentCustomer()).isNull();
     }
 
     @Test
-    void getUser_noAuthentication_throwsException() {
-        SecurityContextHolder.clearContext();
+    void getCurrentUser_missingUser_throws() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("99", "n/a", java.util.List.of()));
+        when(userRepository.findById(99)).thenReturn(Optional.empty());
 
-        assertThrows(UnauthorizedException.class, () -> jwtService.getCurrentUser());
+        assertThatThrownBy(() -> jwtService.getCurrentUser())
+                .isInstanceOf(UnauthorizedException.class);
     }
 
     @Test
-    void getCustomer_validCustomer_success() {
-        when(auth.getPrincipal()).thenReturn(customer.getId().toString());
-        when(userRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
+    void checkAdmin_nonAdmin_throws() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("1", "n/a", java.util.List.of()));
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User result = jwtService.getCurrentCustomer();
-
-        assertEquals(customer.getId(), result.getId());
-        assertEquals(customer.getUsername(), result.getUsername());
-
-        verify(auth, times(1)).getPrincipal();
-        verify(userRepository, times(1)).findById(argThat(id -> id.equals(customer.getId())));
+        assertThatThrownBy(() -> jwtService.checkAdmin())
+                .isInstanceOf(UnauthorizedException.class);
     }
 
     @Test
-    void getCustomer_invalidCustomer_success() {
-        when(auth.getPrincipal()).thenReturn(publisher.getId().toString());
-        when(userRepository.findById(publisher.getId())).thenReturn(Optional.of(publisher));
+    void checkAdmin_admin_ok() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin", "n/a", java.util.List.of()));
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User result = jwtService.getCurrentCustomer();
-
-        assertNull(result);
-
-        verify(auth, times(1)).getPrincipal();
-        verify(userRepository, times(1)).findById(argThat(id -> id.equals(publisher.getId())));
-    }
-
-    @Test
-    void getProvider_validProvider_success() {
-        when(auth.getPrincipal()).thenReturn(publisher.getId().toString());
-        when(userRepository.findById(publisher.getId())).thenReturn(Optional.of(publisher));
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User result = jwtService.getCurrentProvider();
-
-        assertEquals(publisher.getId(), result.getId());
-        assertEquals(publisher.getUsername(), result.getUsername());
-
-        verify(auth, times(1)).getPrincipal();
-        verify(userRepository, times(1)).findById(argThat(id -> id.equals(publisher.getId())));
-    }
-
-    @Test
-    void getProvider_invalidProvider_success() {
-        when(auth.getPrincipal()).thenReturn(customer.getId().toString());
-        when(userRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User result = jwtService.getCurrentProvider();
-
-        assertNull(result);
-
-        verify(auth, times(1)).getPrincipal();
-        verify(userRepository, times(1)).findById(argThat(id -> id.equals(customer.getId())));
+        jwtService.checkAdmin();
     }
 }

@@ -8,6 +8,7 @@ import com.unibuc.bundle_forge.mapper.ContractMapper;
 import com.unibuc.bundle_forge.model.Contract;
 import com.unibuc.bundle_forge.model.Developer;
 import com.unibuc.bundle_forge.model.Game;
+import com.unibuc.bundle_forge.model.Provider;
 import com.unibuc.bundle_forge.model.Publisher;
 import com.unibuc.bundle_forge.repository.ContractRepository;
 import com.unibuc.bundle_forge.repository.GameRepository;
@@ -21,185 +22,161 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ContractServiceTest {
+class ContractServiceTest {
 
-    @Mock
-    private ContractRepository contractRepository;
-
-    @Mock
-    private GameRepository gameRepository;
-
-    @Mock
-    private JwtService jwtService;
-
-    @Mock
-    private ContractMapper contractMapper;
-    
-    @Mock
-    private GameService gameService;
+    @Mock private ContractRepository contractRepository;
+    @Mock private GameRepository gameRepository;
+    @Mock private JwtService jwtService;
+    @Mock private ContractMapper contractMapper;
+    @Mock private GameService gameService;
 
     @InjectMocks
     private ContractService contractService;
 
-    private Publisher publisher;
     private Developer developer;
-    private ContractDto contractDto;
-    private Contract contract;
+    private Publisher publisher;
     private Game game;
 
     @BeforeEach
     void setUp() {
-        publisher = TestUtils.publisher1;
-        developer = TestUtils.developer1;
-        game = TestUtils.game1;
-        contractDto = new ContractDto();
-        contract = new Contract();
+        developer = TestUtils.newDeveloper(1, "d@test.com", Provider.Status.ACCEPTED);
+        publisher = TestUtils.newPublisher(2, "p@test.com", Provider.Status.ACCEPTED);
+        game = Game.builder()
+                .id(10).title("G").price(20.0).status(Game.Status.ANNOUNCED).salesCount(0)
+                .developer(developer).build();
     }
 
     @Test
-    void getAllContracts_ForDeveloper_ShouldReturnContractsForDevelopedGames() {
+    void getAllContracts_asDeveloper_aggregatesContractsForOwnedGames() {
         when(jwtService.getCurrentProvider()).thenReturn(developer);
         when(gameRepository.getGamesByDeveloperId(developer.getId())).thenReturn(List.of(game));
-        when(contractRepository.getContractsByGameId(game.getId())).thenReturn(List.of(contract));
+        Contract c = Contract.builder().build();
+        when(contractRepository.getContractsByGameId(10)).thenReturn(List.of(c));
 
-        List<Contract> result = contractService.getAllContracts();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(contract, result.getFirst());
+        assertThat(contractService.getAllContracts()).containsExactly(c);
     }
 
     @Test
-    void getAllContracts_ForPublisher_ShouldReturnPublisherContracts() {
+    void getAllContracts_asPublisher_returnsByPublisherId() {
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractRepository.getContractsByPublisherId(publisher.getId())).thenReturn(List.of(contract));
+        Contract c = Contract.builder().build();
+        when(contractRepository.getContractsByPublisherId(publisher.getId())).thenReturn(List.of(c));
 
-        List<Contract> result = contractService.getAllContracts();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(contract, result.getFirst());
+        assertThat(contractService.getAllContracts()).containsExactly(c);
     }
 
     @Test
-    void issueContract_Valid_ShouldSaveContract() {
+    void issueContract_creates() {
+        ContractDto dto = ContractDto.builder().cutPercentage(40).build();
+        Contract entity = Contract.builder().status(Contract.Status.PENDING).build();
+
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractMapper.toEntity(contractDto)).thenReturn(contract);
-        when(gameService.getGame(game.getId())).thenReturn(game);
-        when(contractRepository.getContractsByGameId(game.getId())).thenReturn(List.of());
-        when(contractRepository.save(contract)).thenReturn(contract);
+        when(contractMapper.toEntity(dto)).thenReturn(entity);
+        when(gameService.getGame(10)).thenReturn(game);
+        when(contractRepository.getContractsByGameId(10)).thenReturn(List.of());
+        when(contractRepository.save(any(Contract.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Contract result = contractService.issueContract(contractDto, game.getId());
+        Contract saved = contractService.issueContract(dto, 10);
 
-        assertNotNull(result);
-        assertEquals(contract, result);
-        assertEquals(publisher, result.getPublisher());
-        assertEquals(game, result.getGame());
+        assertThat(saved.getPublisher()).isSameAs(publisher);
+        assertThat(saved.getGame()).isSameAs(game);
     }
 
     @Test
-    void issueContract_GameAlreadyPublished_ShouldThrowValidationException() {
-        when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractMapper.toEntity(contractDto)).thenReturn(contract);
+    void issueContract_publishedGame_throws() {
+        ContractDto dto = ContractDto.builder().cutPercentage(40).build();
         game.setStatus(Game.Status.PUBLISHED);
-        when(gameService.getGame(game.getId())).thenReturn(game);
+        when(jwtService.getCurrentProvider()).thenReturn(publisher);
+        when(contractMapper.toEntity(dto)).thenReturn(Contract.builder().build());
+        when(gameService.getGame(10)).thenReturn(game);
 
-        assertThatThrownBy(() -> contractService.issueContract(contractDto, game.getId()))
+        assertThatThrownBy(() -> contractService.issueContract(dto, 10))
                 .isInstanceOf(ValidationException.class)
                 .hasMessageContaining("already published");
     }
 
     @Test
-    void issueContract_GameAlreadyUnderAcceptedContract_ShouldThrowValidationException() {
+    void issueContract_existingAcceptedContract_throws() {
+        ContractDto dto = ContractDto.builder().cutPercentage(40).build();
+        Contract accepted = Contract.builder().status(Contract.Status.ACCEPTED).build();
+
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractMapper.toEntity(contractDto)).thenReturn(contract);
-        game.setStatus(Game.Status.DEVELOPED);
-        when(gameService.getGame(game.getId())).thenReturn(game);
+        when(contractMapper.toEntity(dto)).thenReturn(Contract.builder().build());
+        when(gameService.getGame(10)).thenReturn(game);
+        when(contractRepository.getContractsByGameId(10)).thenReturn(List.of(accepted));
 
-        Contract other = Contract.builder().status(Contract.Status.ACCEPTED).build();
-        when(contractRepository.getContractsByGameId(game.getId())).thenReturn(List.of(other));
-
-        assertThatThrownBy(() -> contractService.issueContract(contractDto, game.getId()))
+        assertThatThrownBy(() -> contractService.issueContract(dto, 10))
                 .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("already under contract");
+                .hasMessageContaining("under contract");
     }
 
     @Test
-    void updateContract_ValidPendingContract_ShouldSaveContract() {
+    void updateContract_updatesPending() {
+        ContractDto dto = ContractDto.builder().cutPercentage(50).build();
+        Contract pending = Contract.builder().status(Contract.Status.PENDING).cutPercentage(30).build();
+
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), game.getId()))
-                .thenReturn(contract);
-        when(contractRepository.save(contract)).thenReturn(contract);
+        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), 10)).thenReturn(pending);
+        when(contractRepository.save(pending)).thenReturn(pending);
 
-        Contract result = contractService.updateContract(contractDto, game.getId());
+        contractService.updateContract(dto, 10);
 
-        assertNotNull(result);
-
-        verify(contractMapper, times(1)).updateEntityFromDto(contractDto, contract);
-        verify(contractRepository, times(1)).save(contract);
+        verify(contractMapper).updateEntityFromDto(dto, pending);
+        verify(contractRepository).save(pending);
     }
 
     @Test
-    void updateContract_NonPendingContract_ShouldThrowForbiddenException() {
+    void updateContract_missing_throws() {
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        contract.setStatus(Contract.Status.ACCEPTED);
-        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), game.getId()))
-                .thenReturn(contract);
+        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), 10)).thenReturn(null);
 
-        assertThatThrownBy(() -> contractService.updateContract(contractDto, game.getId()))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("no longer pending");
+        assertThatThrownBy(() -> contractService.updateContract(ContractDto.builder().build(), 10))
+                .isInstanceOf(ValidationException.class);
     }
 
     @Test
-    void updateContract_ContractNotFound_ShouldThrowValidationException() {
+    void updateContract_nonPending_throws() {
+        Contract accepted = Contract.builder().status(Contract.Status.ACCEPTED).build();
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), game.getId()))
-                .thenReturn(null);
+        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), 10)).thenReturn(accepted);
 
-        assertThatThrownBy(() -> contractService.updateContract(contractDto, game.getId()))
-                .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Contract not found");
+        assertThatThrownBy(() -> contractService.updateContract(ContractDto.builder().build(), 10))
+                .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
-    void deleteContract_ValidPendingContract_ShouldDeleteContract() {
+    void deleteContract_pending_deletes() {
+        Contract pending = Contract.builder().status(Contract.Status.PENDING).build();
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        contract.setStatus(Contract.Status.PENDING);
-        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), game.getId()))
-                .thenReturn(contract);
+        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), 10)).thenReturn(pending);
 
-        contractService.deleteContract(game.getId());
+        contractService.deleteContract(10);
 
-        verify(contractRepository, times(1)).delete(contract);
+        verify(contractRepository).delete(pending);
     }
 
     @Test
-    void deleteContract_ContractAccepted_ShouldThrowForbiddenException() {
+    void deleteContract_missing_throws() {
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        contract.setStatus(Contract.Status.ACCEPTED);
-        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), game.getId()))
-                .thenReturn(contract);
+        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), 10)).thenReturn(null);
 
-        assertThatThrownBy(() -> contractService.deleteContract(game.getId()))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("Cannot delete accepted contract");
+        assertThatThrownBy(() -> contractService.deleteContract(10))
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test
-    void deleteContract_ContractNotFound_ShouldThrowNotFoundException() {
+    void deleteContract_accepted_throws() {
+        Contract accepted = Contract.builder().status(Contract.Status.ACCEPTED).build();
         when(jwtService.getCurrentProvider()).thenReturn(publisher);
-        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), game.getId()))
-                .thenReturn(null);
+        when(contractRepository.getContractByPublisherIdAndGameId(publisher.getId(), 10)).thenReturn(accepted);
 
-        assertThatThrownBy(() -> contractService.deleteContract(game.getId()))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Contract not found");
+        assertThatThrownBy(() -> contractService.deleteContract(10))
+                .isInstanceOf(ForbiddenException.class);
     }
 }

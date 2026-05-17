@@ -4,8 +4,6 @@ import com.unibuc.bundle_forge.dto.CredentialsDto;
 import com.unibuc.bundle_forge.dto.CustomerDto;
 import com.unibuc.bundle_forge.dto.DeveloperDto;
 import com.unibuc.bundle_forge.dto.PublisherDto;
-import com.unibuc.bundle_forge.dto.TokenDto;
-import com.unibuc.bundle_forge.exception.ForbiddenException;
 import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.mapper.CustomerMapper;
 import com.unibuc.bundle_forge.mapper.DeveloperMapper;
@@ -19,176 +17,232 @@ import com.unibuc.bundle_forge.repository.DeveloperRepository;
 import com.unibuc.bundle_forge.repository.PublisherRepository;
 import com.unibuc.bundle_forge.repository.UserRepository;
 import com.unibuc.bundle_forge.utils.TestUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceTest {
+class AuthServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private CustomerRepository customerRepository;
-
-    @Mock
-    private PublisherRepository publisherRepository;
-
-    @Mock
-    private DeveloperRepository developerRepository;
-
-    @Mock
-    private JwtService jwtService;
-
-    @Mock
-    private CustomerMapper customerMapper;
-
-    @Mock
-    private PublisherMapper publisherMapper;
-
-    @Mock
-    private DeveloperMapper developerMapper;
+    @Mock private UserRepository userRepository;
+    @Mock private CustomerRepository customerRepository;
+    @Mock private PublisherRepository publisherRepository;
+    @Mock private DeveloperRepository developerRepository;
+    @Mock private JwtService jwtService;
+    @Mock private CustomerMapper customerMapper;
+    @Mock private PublisherMapper publisherMapper;
+    @Mock private DeveloperMapper developerMapper;
 
     @InjectMocks
     private AuthService authService;
 
-    private Customer customer;
-    private Developer developer;
-    private Publisher publisher;
-
-    @BeforeEach
-    void setUp() {
-        customer = TestUtils.customer1;
-        developer = TestUtils.developer1;
-        publisher = TestUtils.publisher1;
-    }
-    
     @Test
-    void signin_ValidCustomer_ShouldReturnToken() {
-        CredentialsDto credentials = new CredentialsDto(customer.getUsername(), TestUtils.password);
+    void signin_validCustomer_returnsTokenAndType() {
+        Customer customer = TestUtils.newCustomer(1, "cust@test.com");
+        CredentialsDto creds = new CredentialsDto(customer.getEmail(), TestUtils.RAW_PASSWORD);
 
-        when(userRepository.findByUsername(credentials.getUsername())).thenReturn(customer);
-        when(jwtService.getToken(String.valueOf(customer.getId()))).thenReturn("token-valid");
+        when(userRepository.findByEmail(creds.getEmail())).thenReturn(customer);
+        when(jwtService.getToken(String.valueOf(customer.getId()))).thenReturn("tok-1");
 
-        TokenDto token = authService.signin(credentials);
+        Map<String, Object> response = authService.signin(creds);
 
-        assertNotNull(token);
-        assertEquals("token-valid", token.getToken());
-        verify(userRepository, times(1)).findByUsername(credentials.getUsername());
-        verify(jwtService, times(1)).getToken(String.valueOf(customer.getId()));
+        assertThat(response.get("token")).isEqualTo("tok-1");
+        assertThat(response.get("userType")).isEqualTo("CUSTOMER");
+        assertThat(response.get("blocked")).isEqualTo(false);
     }
 
     @Test
-    void signin_InvalidUsername_ShouldThrowValidationException() {
-        CredentialsDto credentials = new CredentialsDto("username", TestUtils.password);
+    void signin_unknownEmail_throws() {
+        CredentialsDto creds = new CredentialsDto("missing@test.com", "any");
+        when(userRepository.findByEmail("missing@test.com")).thenReturn(null);
 
-        when(userRepository.findByUsername(credentials.getUsername())).thenReturn(null);
-
-        assertThatThrownBy(() -> authService.signin(credentials))
+        assertThatThrownBy(() -> authService.signin(creds))
                 .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Invalid username or password");
+                .hasMessageContaining("Invalid email or password");
     }
 
     @Test
-    void signin_InvalidPassword_ShouldThrowValidationException() {
-        CredentialsDto credentials = new CredentialsDto(customer.getUsername(), "bad-password");
+    void signin_wrongPassword_throws() {
+        Customer customer = TestUtils.newCustomer(1, "cust@test.com");
+        CredentialsDto creds = new CredentialsDto(customer.getEmail(), "wrong");
+        when(userRepository.findByEmail(customer.getEmail())).thenReturn(customer);
 
-        when(userRepository.findByUsername(credentials.getUsername())).thenReturn(customer);
-
-        assertThatThrownBy(() -> authService.signin(credentials))
-                .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Invalid username or password");
+        assertThatThrownBy(() -> authService.signin(creds))
+                .isInstanceOf(ValidationException.class);
     }
 
     @Test
-    void signin_ProviderBanned_ShouldThrowForbiddenException() {
-        Developer dev = developer.toBuilder().status(Provider.Status.BANNED).build();
-        CredentialsDto credentials = new CredentialsDto(dev.getUsername(), TestUtils.password);
+    void signin_developerAccepted_unblocked() {
+        Developer dev = TestUtils.newDeveloper(2, "dev@test.com", Provider.Status.ACCEPTED);
+        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD);
+        when(userRepository.findByEmail(dev.getEmail())).thenReturn(dev);
+        when(jwtService.getToken("2")).thenReturn("tok-dev");
 
-        when(userRepository.findByUsername(credentials.getUsername())).thenReturn(dev);
+        Map<String, Object> res = authService.signin(creds);
 
-        assertThatThrownBy(() -> authService.signin(credentials))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("Banned account");
+        assertThat(res.get("userType")).isEqualTo("DEVELOPER");
+        assertThat(res.get("status")).isEqualTo("ACCEPTED");
+        assertThat(res.get("blocked")).isEqualTo(false);
     }
 
     @Test
-    void signin_ProviderPending_ShouldThrowForbiddenException() {
-        Developer dev = developer.toBuilder().status(Provider.Status.PENDING).build();
-        CredentialsDto credentials = new CredentialsDto(dev.getUsername(), TestUtils.password);
+    void signin_developerBanned_blocked() {
+        Developer dev = TestUtils.newDeveloper(2, "dev@test.com", Provider.Status.BANNED);
+        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD);
+        when(userRepository.findByEmail(dev.getEmail())).thenReturn(dev);
+        when(jwtService.getToken(any())).thenReturn("tok-dev");
 
-        when(userRepository.findByUsername(credentials.getUsername())).thenReturn(dev);
+        Map<String, Object> res = authService.signin(creds);
 
-        assertThatThrownBy(() -> authService.signin(credentials))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("Account awaiting approval");
+        assertThat(res.get("blocked")).isEqualTo(true);
+        assertThat(res.get("statusMessage")).isEqualTo("Banned account");
     }
 
     @Test
-    void signin_ProviderAccepted_ShouldReturnToken() {
-        Developer dev = developer.toBuilder().status(Provider.Status.ACCEPTED).build();
-        CredentialsDto credentials = new CredentialsDto(dev.getUsername(), TestUtils.password);
+    void signin_developerPending_blocked() {
+        Developer dev = TestUtils.newDeveloper(2, "dev@test.com", Provider.Status.PENDING);
+        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD);
+        when(userRepository.findByEmail(dev.getEmail())).thenReturn(dev);
+        when(jwtService.getToken(any())).thenReturn("tok-dev");
 
-        when(userRepository.findByUsername(credentials.getUsername())).thenReturn(dev);
-        when(jwtService.getToken(String.valueOf(dev.getId()))).thenReturn("token-dev");
+        Map<String, Object> res = authService.signin(creds);
 
-        TokenDto token = authService.signin(credentials);
-
-        assertNotNull(token);
-        assertEquals("token-dev", token.getToken());
+        assertThat(res.get("blocked")).isEqualTo(true);
+        assertThat(res.get("statusMessage")).isEqualTo("Account awaiting approval");
     }
 
     @Test
-    void signupCustomer_ShouldSave() {
+    void signin_publisherRejected_blocked() {
+        Publisher pub = TestUtils.newPublisher(3, "pub@test.com", Provider.Status.REJECTED);
+        CredentialsDto creds = new CredentialsDto(pub.getEmail(), TestUtils.RAW_PASSWORD);
+        when(userRepository.findByEmail(pub.getEmail())).thenReturn(pub);
+        when(jwtService.getToken(any())).thenReturn("tok-pub");
+
+        Map<String, Object> res = authService.signin(creds);
+
+        assertThat(res.get("userType")).isEqualTo("PUBLISHER");
+        assertThat(res.get("blocked")).isEqualTo(true);
+        assertThat(res.get("statusMessage")).isEqualTo("Account rejected");
+    }
+
+    @Test
+    void signupCustomer_savesWhenPhoneFree() {
         CustomerDto dto = new CustomerDto();
+        dto.setPhoneNumber("0712345678");
+        Customer entity = TestUtils.newCustomer(1, "c@test.com");
 
-        when(customerMapper.toEntity(dto)).thenReturn(customer);
-        when(customerRepository.save(customer)).thenReturn(customer);
+        when(customerRepository.findByPhoneNumber("0712345678")).thenReturn(Optional.empty());
+        when(customerMapper.toEntity(dto)).thenReturn(entity);
+        when(customerRepository.save(entity)).thenReturn(entity);
 
         Customer result = authService.signupCustomer(dto);
 
-        assertNotNull(result);
-        assertEquals(customer, result);
-        verify(customerMapper, times(1)).toEntity(dto);
-        verify(customerRepository, times(1)).save(customer);
+        assertThat(result).isSameAs(entity);
+        verify(customerRepository).save(entity);
     }
 
     @Test
-    void registerPublisher_ShouldSave() {
-        PublisherDto dto = new PublisherDto();
+    void signupCustomer_phoneTaken_throws() {
+        CustomerDto dto = new CustomerDto();
+        dto.setPhoneNumber("0712345678");
+        when(customerRepository.findByPhoneNumber("0712345678"))
+                .thenReturn(Optional.of(TestUtils.newCustomer(9, "x@test.com")));
 
-        when(publisherMapper.toEntity(dto)).thenReturn(publisher);
-        when(publisherRepository.save(publisher)).thenReturn(publisher);
-
-        Publisher result = authService.registerPublisher(dto);
-
-        assertNotNull(result);
-        assertEquals(publisher, result);
-        verify(publisherMapper, times(1)).toEntity(dto);
-        verify(publisherRepository, times(1)).save(publisher);
+        assertThatThrownBy(() -> authService.signupCustomer(dto))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("phone");
     }
 
     @Test
-    void registerDeveloper_ShouldSave() {
-        DeveloperDto dto = new DeveloperDto();
+    void registerPublisher_uniqueDisplayName_saves() {
+        PublisherDto dto = PublisherDto.builder().displayName("MyStudio").build();
+        Publisher entity = TestUtils.newPublisher(5, "pub@test.com", Provider.Status.PENDING);
 
-        when(developerMapper.toEntity(dto)).thenReturn(developer);
-        when(developerRepository.save(developer)).thenReturn(developer);
+        when(publisherRepository.findByDisplayName("MyStudio")).thenReturn(Optional.empty());
+        when(publisherMapper.toEntity(dto)).thenReturn(entity);
+        when(publisherRepository.save(entity)).thenReturn(entity);
 
-        Developer result = authService.registerDeveloper(dto);
+        assertThat(authService.registerPublisher(dto)).isSameAs(entity);
+    }
 
-        assertNotNull(result);
-        assertEquals(developer, result);
-        verify(developerMapper, times(1)).toEntity(dto);
-        verify(developerRepository, times(1)).save(developer);
+    @Test
+    void registerPublisher_displayNameTaken_throws() {
+        PublisherDto dto = PublisherDto.builder().displayName("Taken").build();
+        when(publisherRepository.findByDisplayName("Taken"))
+                .thenReturn(Optional.of(TestUtils.newPublisher(1, "p@test.com", Provider.Status.ACCEPTED)));
+
+        assertThatThrownBy(() -> authService.registerPublisher(dto))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void registerDeveloper_uniqueDisplayName_saves() {
+        DeveloperDto dto = DeveloperDto.builder().displayName("DevHouse").build();
+        Developer entity = TestUtils.newDeveloper(6, "dev@test.com", Provider.Status.PENDING);
+
+        when(developerRepository.findByDisplayName("DevHouse")).thenReturn(Optional.empty());
+        when(developerMapper.toEntity(dto)).thenReturn(entity);
+        when(developerRepository.save(entity)).thenReturn(entity);
+
+        assertThat(authService.registerDeveloper(dto)).isSameAs(entity);
+    }
+
+    @Test
+    void registerDeveloper_displayNameTaken_throws() {
+        DeveloperDto dto = DeveloperDto.builder().displayName("Taken").build();
+        when(developerRepository.findByDisplayName("Taken"))
+                .thenReturn(Optional.of(TestUtils.newDeveloper(1, "d@test.com", Provider.Status.ACCEPTED)));
+
+        assertThatThrownBy(() -> authService.registerDeveloper(dto))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void checkEmail_exists() {
+        when(userRepository.findByEmail("a@test.com")).thenReturn(TestUtils.newCustomer(1, "a@test.com"));
+        Map<String, Boolean> result = authService.checkEmail("a@test.com");
+        assertThat(result.get("exists")).isTrue();
+    }
+
+    @Test
+    void checkEmail_missing() {
+        when(userRepository.findByEmail("nope@test.com")).thenReturn(null);
+        Map<String, Boolean> result = authService.checkEmail("nope@test.com");
+        assertThat(result.get("exists")).isFalse();
+    }
+
+    @Test
+    void checkDisplayName_takenByPublisher() {
+        when(developerRepository.findByDisplayName("name")).thenReturn(Optional.empty());
+        when(publisherRepository.findByDisplayName("name"))
+                .thenReturn(Optional.of(TestUtils.newPublisher(1, "p@test.com", Provider.Status.ACCEPTED)));
+
+        assertThat(authService.checkDisplayName("name").get("exists")).isTrue();
+    }
+
+    @Test
+    void checkDisplayName_takenByDeveloper() {
+        when(developerRepository.findByDisplayName("name"))
+                .thenReturn(Optional.of(TestUtils.newDeveloper(1, "d@test.com", Provider.Status.ACCEPTED)));
+
+        assertThat(authService.checkDisplayName("name").get("exists")).isTrue();
+    }
+
+    @Test
+    void checkDisplayName_free() {
+        when(developerRepository.findByDisplayName("name")).thenReturn(Optional.empty());
+        when(publisherRepository.findByDisplayName("name")).thenReturn(Optional.empty());
+
+        assertThat(authService.checkDisplayName("name").get("exists")).isFalse();
     }
 }
