@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import AccountIcon from '@/assets/icons/account.svg?react';
@@ -7,19 +8,48 @@ import OrdersIcon from '@/assets/icons/order_history_keys.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
 import CouponsIcon from '@/assets/icons/coupoun_rewards.svg?react';
 import SupportIcon from '@/assets/icons/support.svg?react';
+import { couponsService } from '../services/couponsService';
 import './CouponsRewards.css';
+
+const CopyButton = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [text]);
+
+  return (
+    <button
+      className={`coupon-copy-btn${copied ? ' coupon-copy-btn--copied' : ''}`}
+      onClick={handleCopy}
+      title="Copy code"
+    >
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
+  );
+};
 
 export const CouponsRewards = () => {
   const navigate = useNavigate();
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    couponsService.getMyCoupons()
+      .then(setCoupons)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     navigate('/');
     return null;
   }
 
-  // Placeholder - would be fetched from backend
-  const coupons = [];
   const rewards = [];
 
   const menuItems = [
@@ -53,18 +83,30 @@ export const CouponsRewards = () => {
 
           <div className="coupons-section">
             <h2>Your Coupons</h2>
-            {coupons.length === 0 ? (
+            {loading ? (
+              <div className="empty-state"><p>Loading…</p></div>
+            ) : coupons.length === 0 ? (
               <div className="empty-state">
                 <p>You don't have any coupons yet. Check back later for exclusive offers!</p>
               </div>
             ) : (
               <div className="coupons-grid">
-                {coupons.map((coupon, idx) => (
-                  <div key={idx} className="coupon-card">
+                {coupons.map((coupon) => (
+                  <div key={coupon.code} className={`coupon-card${coupon.status !== 'ACTIVE' ? ' coupon-card--inactive' : ''}`}>
                     <h3>{coupon.name}</h3>
-                    <p className="code">{coupon.code}</p>
-                    <p className="discount">{coupon.discount}</p>
-                    <p className="expiry">Expires: {coupon.expiry}</p>
+                    <div className="coupon-code-row">
+                      <p className="code">{coupon.code}</p>
+                      <CopyButton text={coupon.code} />
+                    </div>
+                    <p className="discount">
+                      {coupon.type === 'PERCENTAGE' ? `${coupon.value}% OFF` : `${coupon.value} RON OFF`}
+                    </p>
+                    {coupon.expirationDate && (
+                      <p className="expiry">Expires: {new Date(coupon.expirationDate).toLocaleDateString()}</p>
+                    )}
+                    {coupon.status !== 'ACTIVE' && (
+                      <p className="coupon-status">{coupon.status}</p>
+                    )}
                   </div>
                 ))}
               </div>

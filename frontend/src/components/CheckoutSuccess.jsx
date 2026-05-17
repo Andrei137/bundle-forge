@@ -1,7 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { checkoutService } from '../services/checkoutService';
 import './Checkout.css';
+
+const CopyButton = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [text]);
+
+  return (
+    <button
+      className={`checkout-success-key__copy${copied ? ' checkout-success-key__copy--copied' : ''}`}
+      onClick={handleCopy}
+      disabled={!text}
+      title="Copy key"
+    >
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
+  );
+};
 
 const POLL_INTERVAL_MS = 2000;
 const MAX_POLLS = 30;
@@ -110,8 +132,18 @@ export const CheckoutSuccess = () => {
                 <div key={item.gameId} className="checkout-success-key">
                   <span>{item.title}</span>
                   <code>{item.gameKey || 'pending…'}</code>
+                  <CopyButton text={item.gameKey} />
                 </div>
               ))}
+            </div>
+
+            <div className="checkout-coupon-banner">
+              <span className="checkout-coupon-banner__icon">🎁</span>
+              <div className="checkout-coupon-banner__text">
+                <strong>You've earned a 5% discount coupon!</strong>
+                <span>A coupon has been added to your account as a thank-you for your purchase.</span>
+              </div>
+              <Link className="checkout-coupon-banner__link" to="/coupons-rewards">View coupon</Link>
             </div>
 
             <div className="checkout-success-actions">
