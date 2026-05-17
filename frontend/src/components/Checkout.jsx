@@ -109,6 +109,7 @@ export const Checkout = () => {
       .createPayment(items, idempotencyKey, coupon?.code)
       .then((res) => {
         if (cancelled) return;
+        if (!res.clientSecret) return;
         setClientSecret(res.clientSecret);
         setPaymentUuid(res.paymentUuid);
       })

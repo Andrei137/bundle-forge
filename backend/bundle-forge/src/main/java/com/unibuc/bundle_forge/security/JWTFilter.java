@@ -24,12 +24,16 @@ public final class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            final String token = authHeader.substring(7);
-            final String userId = jwtService.extractUserId(token);
+            try {
+                final String token = authHeader.substring(7);
+                final String userId = jwtService.extractUserId(token);
 
-            if (userId != null) {
-                Authentication authentication = new JWTAuthenticationToken(userId);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (userId != null) {
+                    Authentication authentication = new JWTAuthenticationToken(userId);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (Exception ignored) {
+                // invalid token — leave SecurityContext empty so Spring Security returns 401
             }
         }
 
