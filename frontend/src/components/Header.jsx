@@ -10,8 +10,14 @@ import OrdersIcon from '@/assets/icons/order_history_keys.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
 import SignOutIcon from '@/assets/icons/sign-out.svg?react';
 import DropdownIcon from '@/assets/icons/dropdown.svg?react';
+import SteamIcon from '@/assets/icons/steam.svg?react';
+import WindowsIcon from '@/assets/icons/windows.svg?react';
+import AppleIcon from '@/assets/icons/apple.svg?react';
+import LinuxIcon from '@/assets/icons/linux.svg?react';
 import logoImg from '@/assets/icons/bundle-forge-logo.svg';
 import './Header.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const Header = () => {
   const dispatch = useDispatch();
@@ -26,6 +32,11 @@ export const Header = () => {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountMenuRef = useRef(null);
+
+  // Search suggestions state
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchBarRef = useRef(null);
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -46,6 +57,45 @@ export const Header = () => {
     };
   }, [showAccountMenu]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchBarRef.current && !searchBarRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams({ q: searchQuery, size: 5 });
+      fetch(`${API_URL}/search?${params}`)
+        .then(r => r.json())
+        .then(data => {
+          setSuggestions(data.content || []);
+          setShowSuggestions(true);
+        })
+        .catch(() => setSuggestions([]));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    setShowSuggestions(false);
+    navigate(`/search?search=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
   return (
     <>
       <header className="header">
@@ -58,20 +108,70 @@ export const Header = () => {
             </a>
 
             {/* Search Bar */}
-            <div className="search-bar">
+            <div className="search-bar" ref={searchBarRef}>
               <input
                 type="text"
                 placeholder="Search PC, Mac, Linux Games"
                 value={searchQuery}
                 onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+                onKeyDown={handleSearchKeyDown}
+                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                 className="search-input"
               />
-              <button className="search-btn">
+              <button className="search-btn" onClick={handleSearch}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/>
                   <path d="M21 21l-4.35-4.35"/>
                 </svg>
               </button>
+
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="search-suggestions">
+                  {suggestions.map(item => {
+                    const discountedPrice = item.price != null && item.discountPercentage > 0
+                      ? item.price * (1 - item.discountPercentage / 100)
+                      : item.price;
+                    const route = item.type === 'BUNDLE' ? `/bundle/${item.id}` : `/game/${item.id}`;
+                    return (
+                      <div
+                        key={`${item.type}-${item.id}`}
+                        className="suggestion-item"
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          navigate(route);
+                        }}
+                      >
+                        <img
+                          src={`${API_URL}${item.cover}`}
+                          alt={item.title}
+                          className="suggestion-cover"
+                        />
+                        <div className="suggestion-info">
+                          <div className="suggestion-name">{item.title}</div>
+                          <div className="suggestion-meta">
+                            <SteamIcon className="suggestion-icon" />
+                            <span className="suggestion-drm">{item.type === 'BUNDLE' ? 'BUNDLE' : 'STEAM'}</span>
+                            {item.platforms?.includes('Windows') && <WindowsIcon className="suggestion-icon" />}
+                            {item.platforms?.includes('macOS') && <AppleIcon className="suggestion-icon" />}
+                            {item.platforms?.includes('Linux') && <LinuxIcon className="suggestion-icon" />}
+                          </div>
+                        </div>
+                        <div className="suggestion-price">
+                          {item.discountPercentage > 0 && (
+                            <span className="suggestion-discount">-{item.discountPercentage}%</span>
+                          )}
+                          <span className="suggestion-amount">
+                            {discountedPrice != null ? `RON ${discountedPrice.toFixed(2)}` : 'Free'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="suggestion-view-all" onClick={handleSearch}>
+                    View all results for &ldquo;{searchQuery}&rdquo;
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Header Actions */}
