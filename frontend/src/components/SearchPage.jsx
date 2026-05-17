@@ -222,6 +222,8 @@ export const SearchPage = () => {
 
   const buildSearchParams = useCallback(() => {
     const params = new URLSearchParams();
+    const searchTerm = searchParams.get('search');
+    if (searchTerm) params.set('q', searchTerm);
     const filters = new Set(searchParams.getAll('f'));
 
     const hasGame   = filters.has('productType:Game');
