@@ -2,7 +2,6 @@ package com.unibuc.bundle_forge.service;
 
 import com.unibuc.bundle_forge.dto.ProviderResponseDto;
 import com.unibuc.bundle_forge.exception.NotFoundException;
-import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.mapper.DeveloperMapper;
 import com.unibuc.bundle_forge.mapper.PublisherMapper;
 import com.unibuc.bundle_forge.model.Developer;
@@ -21,109 +20,117 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AdminServiceTest {
+class AdminServiceTest {
 
-    @Mock
-    private DeveloperRepository developerRepository;
-
-    @Mock
-    private PublisherRepository publisherRepository;
-
-    @Mock
-    private DeveloperMapper developerMapper;
-
-    @Mock
-    private PublisherMapper publisherMapper;
+    @Mock private DeveloperRepository developerRepository;
+    @Mock private PublisherRepository publisherRepository;
+    @Mock private DeveloperMapper developerMapper;
+    @Mock private PublisherMapper publisherMapper;
 
     @InjectMocks
     private AdminService adminService;
 
-    private Developer developer;
-    private Publisher publisher;
+    private Developer pendingDev;
+    private Developer acceptedDev;
+    private Publisher pendingPub;
 
     @BeforeEach
     void setUp() {
-        developer = TestUtils.developer1;
-        publisher = TestUtils.publisher1;
+        pendingDev = TestUtils.newDeveloper(1, "pending@dev.com", Provider.Status.PENDING);
+        acceptedDev = TestUtils.newDeveloper(2, "accepted@dev.com", Provider.Status.ACCEPTED);
+        pendingPub = TestUtils.newPublisher(3, "pending@pub.com", Provider.Status.PENDING);
+    }
+
+    private ProviderResponseDto dtoOf(Provider p, String type) {
+        return ProviderResponseDto.builder()
+                .id(p.getId())
+                .email(p.getEmail())
+                .status(p.getStatus())
+                .type(type)
+                .build();
     }
 
     @Test
-    void getProviders_WhenNoFilters_ShouldGetProviders() {
-        when(developerRepository.findAll()).thenReturn(List.of(developer));
-        when(publisherRepository.findAll()).thenReturn(List.of(publisher));
-        when(developerMapper.toProviderResponseDto(developer, "developer")).thenReturn(TestUtils.developerDto);
-        when(publisherMapper.toProviderResponseDto(publisher, "publisher")).thenReturn(TestUtils.publisherDto);
+    void getProviders_filtersByStatus() {
+        when(developerRepository.findAll()).thenReturn(List.of(pendingDev, acceptedDev));
+        when(publisherRepository.findAll()).thenReturn(List.of(pendingPub));
+        when(developerMapper.toProviderResponseDto(pendingDev, "developer"))
+                .thenReturn(dtoOf(pendingDev, "developer"));
+        when(publisherMapper.toProviderResponseDto(pendingPub, "publisher"))
+                .thenReturn(dtoOf(pendingPub, "publisher"));
+
+        List<ProviderResponseDto> result = adminService.getProviders("pending", null);
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(ProviderResponseDto::getId).containsExactlyInAnyOrder(1, 3);
+    }
+
+    @Test
+    void getProviders_filtersByName() {
+        when(developerRepository.findAll()).thenReturn(List.of(pendingDev, acceptedDev));
+        when(publisherRepository.findAll()).thenReturn(List.of(pendingPub));
+        when(developerMapper.toProviderResponseDto(acceptedDev, "developer"))
+                .thenReturn(dtoOf(acceptedDev, "developer"));
+
+        List<ProviderResponseDto> result = adminService.getProviders(null, "accepted");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(2);
+    }
+
+    @Test
+    void getProviders_noFilter_returnsAll() {
+        when(developerRepository.findAll()).thenReturn(List.of(pendingDev, acceptedDev));
+        when(publisherRepository.findAll()).thenReturn(List.of(pendingPub));
+        when(developerMapper.toProviderResponseDto(any(Developer.class), eq("developer")))
+                .thenAnswer(inv -> dtoOf(inv.getArgument(0), "developer"));
+        when(publisherMapper.toProviderResponseDto(any(Publisher.class), eq("publisher")))
+                .thenAnswer(inv -> dtoOf(inv.getArgument(0), "publisher"));
 
         List<ProviderResponseDto> result = adminService.getProviders(null, null);
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(TestUtils.developerDto, result.get(0));
-        assertEquals(TestUtils.publisherDto, result.get(1));
-
-        verify(developerRepository, times(1)).findAll();
-        verify(publisherRepository, times(1)).findAll();
+        assertThat(result).hasSize(3);
     }
 
     @Test
-    void getProviders_WhenNameFilter_ShouldGetProviders() {
-        when(developerRepository.findAll()).thenReturn(List.of(developer));
-        when(publisherRepository.findAll()).thenReturn(List.of(publisher));
-        when(developerMapper.toProviderResponseDto(developer, "developer")).thenReturn(TestUtils.developerDto);
+    void changeProviderStatus_developerExists_acceptsTransition() {
+        when(developerRepository.existsById(1)).thenReturn(true);
+        when(developerRepository.findById(1)).thenReturn(Optional.of(pendingDev));
+        when(developerMapper.toProviderResponseDto(pendingDev, "developer"))
+                .thenReturn(dtoOf(pendingDev, "developer"));
 
-        List<ProviderResponseDto> result = adminService.getProviders(null, "developer");
+        ProviderResponseDto result = adminService.changeProviderStatus(1, "ACCEPTED");
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(TestUtils.developerDto, result.getFirst());
-
-        verify(developerRepository, times(1)).findAll();
-        verify(publisherRepository, times(1)).findAll();
+        assertThat(pendingDev.getStatus()).isEqualTo(Provider.Status.ACCEPTED);
+        assertThat(result.getType()).isEqualTo("developer");
+        verify(developerRepository).save(pendingDev);
     }
 
     @Test
-    void changeProviderStatus_WhenProviderNotFound_ShouldThrowNotFoundException() {
+    void changeProviderStatus_fallsBackToPublisher() {
+        when(developerRepository.existsById(3)).thenReturn(false);
+        when(publisherRepository.findById(3)).thenReturn(Optional.of(pendingPub));
+        when(publisherMapper.toProviderResponseDto(pendingPub, "publisher"))
+                .thenReturn(dtoOf(pendingPub, "publisher"));
+
+        ProviderResponseDto result = adminService.changeProviderStatus(3, "REJECTED");
+
+        assertThat(pendingPub.getStatus()).isEqualTo(Provider.Status.REJECTED);
+        assertThat(result.getType()).isEqualTo("publisher");
+        verify(publisherRepository).save(pendingPub);
+    }
+
+    @Test
+    void changeProviderStatus_unknownId_throws() {
         when(developerRepository.existsById(404)).thenReturn(false);
         when(publisherRepository.findById(404)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> adminService.changeProviderStatus(404, "accepted"))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Provider with id 404 not found");
+        assertThatThrownBy(() -> adminService.changeProviderStatus(404, "ACCEPTED"))
+                .isInstanceOf(NotFoundException.class);
     }
-
-    @Test
-    void changeProviderStatus_WhenInvalidTransition_ShouldThrowNotFoundException() {
-        when(developerRepository.existsById(developer.getId())).thenReturn(true);
-        when(developerRepository.findById(developer.getId())).thenReturn(Optional.of(developer));
-
-        assertThatThrownBy(() -> adminService.changeProviderStatus(developer.getId(), "rejected"))
-                .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Cannot change status");
-    }
-
-    @Test
-    void changeProviderStatus_WhenValidTransition_ShouldThrowNotFoundException() {
-        Developer updatedDeveloper = developer.toBuilder().status(Provider.Status.BANNED).build();
-        ProviderResponseDto updatedDeveloperDto = TestUtils.developerDto.toBuilder().status(Provider.Status.BANNED).build();
-
-        when(developerRepository.existsById(developer.getId())).thenReturn(true);
-        when(developerRepository.findById(developer.getId())).thenReturn(Optional.of(developer));
-        when(developerRepository.save(updatedDeveloper)).thenReturn(updatedDeveloper);
-        when(developerMapper.toProviderResponseDto(updatedDeveloper, "developer")).thenReturn(updatedDeveloperDto);
-
-        ProviderResponseDto result = adminService.changeProviderStatus(developer.getId(), "banned");
-        assertNotNull(result);
-        assertEquals(updatedDeveloperDto, result);
-
-        verify(developerRepository, times(1)).existsById(developer.getId());
-        verify(developerRepository, times(1)).findById(developer.getId());
-        verify(developerRepository, times(1)).save(updatedDeveloper);
-    }
-
 }

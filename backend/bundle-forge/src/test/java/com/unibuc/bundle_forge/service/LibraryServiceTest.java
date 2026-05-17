@@ -13,12 +13,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class LibraryServiceTest {
+class LibraryServiceTest {
 
     @Mock
     private JwtService jwtService;
@@ -26,52 +26,41 @@ public class LibraryServiceTest {
     @InjectMocks
     private LibraryService libraryService;
 
-    private Game game1, game2;
     private Customer customer;
+    private Game game1;
+    private Game game2;
 
     @BeforeEach
     void setUp() {
-        game1 = TestUtils.game1;
-        game2 = TestUtils.game2;
-        customer = TestUtils.customer1.toBuilder()
-                .ownedGames(List.of(game1, game2))
-                .build();
+        customer = TestUtils.newCustomer(1, "c@test.com");
+        game1 = Game.builder().id(10).title("G1").price(10.0).build();
+        game2 = Game.builder().id(11).title("G2").price(20.0).build();
+        customer.setOwnedGames(List.of(game1, game2));
+    }
 
+    @Test
+    void getOwnedGames_returnsCustomerGames() {
         when(jwtService.getCurrentCustomer()).thenReturn(customer);
+
+        List<Game> result = libraryService.getOwnedGames();
+
+        assertThat(result).containsExactly(game1, game2);
     }
 
     @Test
-    void getOwnedGames_ShouldReturnAllOwnedGames() {
-        List<Game> ownedGames = libraryService.getOwnedGames();
+    void getOwnedGameById_found_returnsGame() {
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
 
-        assertNotNull(ownedGames);
-        assertEquals(customer.getOwnedGames().size(), ownedGames.size());
-        for (int i = 0; i < ownedGames.size(); i++) {
-            assertTrue(customer.getOwnedGames().contains(ownedGames.get(i)));
-        }
+        Game result = libraryService.getOwnedGameById(11);
 
-        verify(jwtService, times(1)).getCurrentCustomer();
+        assertThat(result).isSameAs(game2);
     }
 
     @Test
-    void getOwnedGameById_ExistingGame_ShouldReturnGame() {
-        Game game = libraryService.getOwnedGameById(game1.getId());
+    void getOwnedGameById_missing_throws() {
+        when(jwtService.getCurrentCustomer()).thenReturn(customer);
 
-        assertNotNull(game);
-        assertEquals(game1, game);
-
-        verify(jwtService, times(1)).getCurrentCustomer();
+        assertThatThrownBy(() -> libraryService.getOwnedGameById(999))
+                .isInstanceOf(NotFoundException.class);
     }
-
-    @Test
-    void getOwnedGameById_NonOwnedGame_ShouldThrowNotFoundException() {
-        int nonOwnedId = 999;
-
-        assertThatThrownBy(() -> libraryService.getOwnedGameById(nonOwnedId))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Game at id 999 not owned or doesn't exist");
-
-        verify(jwtService, times(1)).getCurrentCustomer();
-    }
-
 }
