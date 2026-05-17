@@ -371,10 +371,10 @@ export const SearchPage = () => {
                   <div className="sp-filter-section-body">
                     <ul className="sp-filter-list">
                       {[
-                        { val: 'under5',  label: 'Under €5.00' },
-                        { val: '5to10',   label: '€5.00 - €9.99' },
-                        { val: '10to20',  label: '€10.00 - €19.99' },
-                        { val: 'over20',  label: 'Over €20.00' },
+                        { val: 'under5',  label: 'Under RON 5.00' },
+                        { val: '5to10',   label: 'RON 5.00 - RON 9.99' },
+                        { val: '10to20',  label: 'RON 10.00 - RON 19.99' },
+                        { val: 'over20',  label: 'Over RON 20.00' },
                         { val: 'all',     label: 'All' },
                       ].map(opt => (
                         <li key={opt.val} className="sp-filter-item">
