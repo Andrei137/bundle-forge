@@ -179,6 +179,98 @@
   text-decoration: underline;
 }
 
+.order-row-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #f90;
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.order-row-button:hover {
+  text-decoration: underline;
+}
+
+.order-status {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.order-status--succeeded {
+  color: #4caf50;
+}
+
+.order-status--failed {
+  color: #e07c7c;
+}
+
+.order-status--pending {
+  color: #f5b950;
+}
+
+.order-keys-panel {
+  grid-column: 1 / -1;
+  background: #0d0d0d;
+  border-top: 1px solid #222;
+  padding: 16px 20px 22px;
+  margin-top: 8px;
+}
+
+.order-keys-panel h4 {
+  color: #ccc;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.order-key-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.order-key-row span {
+  color: #ddd;
+  font-size: 0.95rem;
+}
+
+.order-key-row code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #ffb86c;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.order-key-row code.muted {
+  color: #777;
+  font-style: italic;
+}
+
+.order-key-row button.copy-btn {
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #ddd;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.order-key-row button.copy-btn:hover {
+  border-color: #f90;
+  color: #f90;
+}
+
 .steam-sync-section {
   background: linear-gradient(135deg, #1a3d52 0%, #0d2540 100%);
   padding: 30px;
