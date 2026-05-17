@@ -49,11 +49,11 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @JsonView(ViewUtils.Public.class)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 400)
     @JsonView(ViewUtils.Provider.class)
     private String shortDescription;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
     @JsonView(ViewUtils.Provider.class)
     private String longDescription;
 
