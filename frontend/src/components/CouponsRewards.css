@@ -137,6 +137,13 @@
   font-size: 1.1rem;
 }
 
+.coupon-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+
 .coupon-card .code {
   background: #0d0d0d;
   color: #f90;
@@ -144,8 +151,31 @@
   border-radius: 4px;
   font-family: monospace;
   font-weight: bold;
-  margin: 10px 0;
+  margin: 0;
+  flex: 1;
+}
+
+.coupon-copy-btn {
+  flex-shrink: 0;
+  padding: 0.25rem 0.6rem;
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #999;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.coupon-copy-btn:hover {
+  border-color: #f90;
+  color: #f90;
+}
+
+.coupon-copy-btn--copied {
+  border-color: #22c55e;
+  color: #22c55e;
 }
 
 .coupon-card .discount {
@@ -159,6 +189,19 @@
   color: #888;
   font-size: 0.85rem;
   margin: 10px 0 0 0;
+}
+
+.coupon-card--inactive {
+  opacity: 0.5;
+  border-color: #555;
+}
+
+.coupon-status {
+  color: #888;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 8px 0 0 0;
 }
 
 .rewards-list {

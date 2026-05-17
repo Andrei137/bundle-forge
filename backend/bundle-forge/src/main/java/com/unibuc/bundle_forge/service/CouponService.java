@@ -4,12 +4,16 @@ import com.unibuc.bundle_forge.dto.CouponResponseDto;
 import com.unibuc.bundle_forge.exception.NotFoundException;
 import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.model.Coupon;
+import com.unibuc.bundle_forge.model.Customer;
 import com.unibuc.bundle_forge.repository.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -46,12 +50,37 @@ public class CouponService {
         });
     }
 
+    @Transactional
+    public void generatePostPurchaseCoupon(Customer customer) {
+        String code = "BF-" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        Coupon coupon = Coupon.builder()
+                .code(code)
+                .name("Thank You — 5% Off Your Next Order")
+                .type(Coupon.Type.PERCENTAGE)
+                .value(BigDecimal.valueOf(5))
+                .status(Coupon.Status.ACTIVE)
+                .expirationDate(LocalDate.now().plusMonths(3))
+                .customer(customer)
+                .build();
+        couponRepository.save(coupon);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CouponResponseDto> getMyCoupons(Customer customer) {
+        return couponRepository.findByCustomer(customer)
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
     public CouponResponseDto toDto(Coupon coupon) {
         return CouponResponseDto.builder()
                 .code(coupon.getCode())
                 .name(coupon.getName())
                 .type(coupon.getType().name())
                 .value(coupon.getValue())
+                .status(coupon.getStatus().name())
+                .expirationDate(coupon.getExpirationDate())
                 .build();
     }
 }

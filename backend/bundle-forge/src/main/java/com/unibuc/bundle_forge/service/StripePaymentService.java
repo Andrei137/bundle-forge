@@ -61,6 +61,7 @@ public class StripePaymentService {
     private final GameKeyRepository gameKeyRepository;
     private final CustomerRepository customerRepository;
     private final CouponRepository couponRepository;
+    private final CouponService couponService;
     private final IdempotencyService idempotencyService;
     private final JwtService jwtService;
     private final PaymentSaveHelper paymentSaveHelper;
@@ -287,6 +288,8 @@ public class StripePaymentService {
 
         payment.setStatus(Payment.Status.PAYMENT_SUCCEEDED);
         paymentRepository.save(payment);
+
+        couponService.generatePostPurchaseCoupon(customer);
     }
 
     void handlePaymentIntentFailed(Event event) {

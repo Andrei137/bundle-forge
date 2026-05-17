@@ -11,7 +11,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "coupon")
+@Table(name = "coupon", indexes = {
+        @Index(name = "idx_coupon_customer", columnList = "customer_id")
+})
 public class Coupon {
 
     public enum Type { PERCENTAGE, FIXED_AMOUNT }
@@ -38,4 +40,8 @@ public class Coupon {
 
     @Column
     private LocalDate expirationDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }
