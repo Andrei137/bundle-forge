@@ -2,6 +2,7 @@ package com.unibuc.bundle_forge.exception;
 
 import com.unibuc.bundle_forge.utils.ResponseUtils;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,6 +13,7 @@ import tools.jackson.databind.exc.InvalidFormatException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public final class GlobalExceptionHandler {
 
@@ -49,6 +51,7 @@ public final class GlobalExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<?> handleValidationException(ValidationException ex) {
+        log.debug("Validation rejected: {}", ex.getMessage());
         return ResponseUtils.badRequest(ex.getMessage());
     }
 

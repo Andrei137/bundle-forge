@@ -20,11 +20,13 @@ import com.unibuc.bundle_forge.repository.DeveloperRepository;
 import com.unibuc.bundle_forge.repository.PublisherRepository;
 import com.unibuc.bundle_forge.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public final class AuthService {
@@ -39,11 +41,14 @@ public final class AuthService {
     private final DeveloperMapper developerMapper;
 
     public Map<String, Object> signin(CredentialsDto credentials) {
+        log.debug("Signin attempt for email={}", credentials.getEmail());
         User user = userRepository.findByEmail(credentials.getEmail());
 
         if (user == null || !JwtService.isPasswordValid(credentials.getPassword(), user.getPassword())) {
+            log.info("Failed signin attempt for email={}", credentials.getEmail());
             throw new ValidationException("Invalid email or password");
         }
+        log.info("User id={} signed in", user.getId());
 
         Map<String, Object> response = new HashMap<>();
         String token = jwtService.getToken(String.valueOf(user.getId()));
@@ -92,7 +97,9 @@ public final class AuthService {
         if (customerRepository.findByPhoneNumber(customer.getPhoneNumber()).isPresent()) {
             throw new ValidationException("This phone number is already registered");
         }
-        return customerRepository.save(customerMapper.toEntity(customer));
+        Customer saved = customerRepository.save(customerMapper.toEntity(customer));
+        log.info("Customer registered id={} email={}", saved.getId(), saved.getEmail());
+        return saved;
     }
 
     public Publisher registerPublisher(PublisherDto publisher) {
