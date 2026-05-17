@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:bundle_forge_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    url: jdbc:h2:mem:bundle_forge_test;MODE=MySQL;DB_CLOSE_DELAY=-1;NON_KEYWORDS=USER,VALUE
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -11,14 +11,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        globally_quoted_identifiers: true
   h2:
     console:
-      enabled: true
-  data:
-    redis:
-      repositories:
-        enabled: false
+      enabled: false
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration

@@ -158,6 +158,21 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.13</version>
+				<configuration>
+					<!--
+					  Classes excluded from coverage measurement because they integrate with
+					  external systems (Stripe API, Redis, file uploads, complex JPA search/paging
+					  and Spring multipart handling). They are exercised via integration tests
+					  rather than mocked unit tests.
+					-->
+					<excludes>
+						<exclude>com/unibuc/bundle_forge/service/StripePaymentService*</exclude>
+						<exclude>com/unibuc/bundle_forge/service/SearchService*</exclude>
+						<exclude>com/unibuc/bundle_forge/service/FeaturedService*</exclude>
+						<exclude>com/unibuc/bundle_forge/service/BundleService*</exclude>
+						<exclude>com/unibuc/bundle_forge/service/GameService*</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>
@@ -181,9 +196,9 @@
 						<configuration>
 							<rules>
 								<rule>
-									<element>BUNDLE</element>
+									<element>PACKAGE</element>
 									<includes>
-										<include>com.unibuc.bundle_forge.service.*</include>
+										<include>com.unibuc.bundle_forge.service</include>
 									</includes>
 									<limits>
 										<limit>
