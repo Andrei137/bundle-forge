@@ -1,0 +1,141 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: bundleforge-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required, see .env.example}
+      MYSQL_DATABASE: ${DB_NAME:-bundle_forge}
+      MYSQL_USER: ${DB_USER:-bundle_forge}
+      MYSQL_PASSWORD: ${DB_PASS:?DB_PASS is required, see .env.example}
+    ports:
+      # Host 3307 → container 3306, so we don't collide with a host-installed
+      # mysqld on 3306. Backend talks to MySQL over the docker network on 3306.
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - bundleforge
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: bundleforge-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - bundleforge
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend/bundle-forge
+      dockerfile: Dockerfile
+    container_name: bundleforge-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      # Only present under the `stripe` profile. `required: false` lets the
+      # backend start normally when the profile isn't active.
+      stripe-cli:
+        condition: service_healthy
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-bundle_forge}
+      DB_USER: ${DB_USER:-bundle_forge}
+      DB_PASS: ${DB_PASS:?DB_PASS is required, see .env.example}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required, see .env.example}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      STRIPE_API_KEY: ${STRIPE_API_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8081}
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend-uploads:/app/uploads
+      # Written by the stripe-cli sidecar when the `stripe` profile is active.
+      # Empty otherwise; backend entrypoint falls back to $STRIPE_WEBHOOK_SECRET.
+      - stripe-secret:/secrets:ro
+    networks:
+      - bundleforge
+    healthcheck:
+      # /dev/tcp is a bash builtin — CMD-SHELL would invoke dash and always fail.
+      test: ["CMD", "bash", "-c", "(echo > /dev/tcp/127.0.0.1/8080) 2>/dev/null"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY:-}
+    container_name: bundleforge-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "8081:80"
+    networks:
+      - bundleforge
+
+  # Stripe CLI sidecar — opt-in via the `stripe` compose profile. On start it
+  # pulls the live webhook signing secret, publishes it to a shared volume the
+  # backend reads, syncs it back into the host .env for persistence, then
+  # forwards live Stripe events to the backend's /payment/webhook/stripe.
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: bundleforge-stripe-cli
+    restart: unless-stopped
+    environment:
+      STRIPE_API_KEY: ${STRIPE_API_KEY:?STRIPE_API_KEY is required, see .env.example}
+    volumes:
+      - ./.env:/host/.env
+      - stripe-secret:/secrets
+      - stripe-cli-config:/root/.config/stripe
+      - ./scripts/stripe-cli-entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    networks:
+      - bundleforge
+    profiles:
+      - stripe
+    healthcheck:
+      # Healthy once the secret has been published — gates backend startup.
+      test: ["CMD", "test", "-s", "/secrets/webhook-secret"]
+      interval: 2s
+      timeout: 1s
+      retries: 30
+      start_period: 5s
+
+networks:
+  bundleforge:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
+  backend-uploads:
+  stripe-secret:
+  stripe-cli-config:
