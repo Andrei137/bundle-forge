@@ -102,32 +102,6 @@ export const authService = {
     return data;
   },
 
-  signUpPublisher: async (email, password, website, displayName) => {
-    const response = await fetch(`${API_URL}/auth/request/publisher`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, website, displayName }),
-    });
-    if (!response.ok) {
-      let errorMessage = 'Publisher signup failed';
-      try {
-        const errorData = await response.json();
-        if (typeof errorData === 'string') {
-          errorMessage = errorData;
-        } else if (errorData.error) {
-          errorMessage = typeof errorData.error === 'string' ? errorData.error : errorData.error[0];
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        }
-      } catch (e) {
-        errorMessage = `Server error: ${response.status}`;
-      }
-      throw new Error(errorMessage);
-    }
-    const data = await response.json();
-    return data;
-  },
-
   setToken: (token, remember = isRemembered()) => {
     writeStorage(remember).setItem(TOKEN_KEY, token);
   },
@@ -162,8 +136,6 @@ export const authService = {
       endpoint = '/customers/me';
     } else if (userType === 'DEVELOPER') {
       endpoint = '/developers/me';
-    } else if (userType === 'PUBLISHER') {
-      endpoint = '/publishers/me';
     }
 
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -238,8 +210,6 @@ export const authService = {
     let endpoint = '/customers';
     if (userType === 'DEVELOPER') {
       endpoint = '/developers';
-    } else if (userType === 'PUBLISHER') {
-      endpoint = '/publishers';
     }
 
     const response = await fetch(`${API_URL}${endpoint}`, {

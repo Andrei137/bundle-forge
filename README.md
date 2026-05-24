@@ -77,8 +77,6 @@ docker compose down                    # otherwise
 - `public` — no token required
 - `Customer` — JWT Bearer token, CUSTOMER role
 - `Developer` — JWT Bearer token, DEVELOPER role
-- `Publisher` — JWT Bearer token, PUBLISHER role
-- `Dev | Pub` — JWT Bearer token, DEVELOPER or PUBLISHER role
 - `Admin` — JWT Bearer token, ADMIN role
 
 ---
@@ -90,7 +88,6 @@ docker compose down                    # otherwise
 | POST | `/auth/signin` | public | Sign in, returns JWT token and user type |
 | POST | `/auth/signup` | public | Register a new customer account |
 | POST | `/auth/request/developer` | public | Submit a developer account request |
-| POST | `/auth/request/publisher` | public | Submit a publisher account request |
 | POST | `/auth/check-email` | public | Check if an email is already registered |
 | POST | `/auth/check-displayname` | public | Check if a display name is already taken |
 
@@ -112,9 +109,9 @@ docker compose down                    # otherwise
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | GET | `/developers` | public | List all accepted developers |
-| GET | `/developers/me` | Dev \| Pub | Get the authenticated developer's profile |
+| GET | `/developers/me` | Developer | Get the authenticated developer's profile |
 | GET | `/developers/{providerId}` | public | Get a developer by ID |
-| PUT | `/developers` | Dev \| Pub | Update the authenticated developer's profile |
+| PUT | `/developers` | Developer | Update the authenticated developer's profile |
 | POST | `/developers/games` | Developer | Announce a new game (multipart: `game`, `cover`, `images`) |
 | GET | `/developers/games` | Developer | List the authenticated developer's games (filter by `status`, `title`) |
 | PUT | `/developers/games/{gameId}` | Developer | Update a game (multipart: `game`, `cover?`, `images?`) |
@@ -201,17 +198,6 @@ Query params: `q`, `type`, `tagIds`, `developer`, `platforms`, `page` (default 0
 |---|---|---|---|
 | GET | `/coupons/{code}` | public | Validate a coupon code |
 | GET | `/coupons/my` | Customer | List coupons available to the authenticated customer |
-
----
-
-## Contracts — `/contracts`
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/contracts` | Dev \| Pub | List contracts for the authenticated provider |
-| POST | `/contracts/{gameId}` | Publisher | Issue a contract offer for a game |
-| PUT | `/contracts/{gameId}` | Publisher | Update a contract offer |
-| DELETE | `/contracts/{gameId}` | Publisher | Withdraw a contract offer |
 
 ---
 

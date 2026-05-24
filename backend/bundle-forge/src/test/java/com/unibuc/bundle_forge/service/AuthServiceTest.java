@@ -3,18 +3,14 @@ package com.unibuc.bundle_forge.service;
 import com.unibuc.bundle_forge.dto.CredentialsDto;
 import com.unibuc.bundle_forge.dto.CustomerDto;
 import com.unibuc.bundle_forge.dto.DeveloperDto;
-import com.unibuc.bundle_forge.dto.PublisherDto;
 import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.mapper.CustomerMapper;
 import com.unibuc.bundle_forge.mapper.DeveloperMapper;
-import com.unibuc.bundle_forge.mapper.PublisherMapper;
 import com.unibuc.bundle_forge.model.Customer;
 import com.unibuc.bundle_forge.model.Developer;
 import com.unibuc.bundle_forge.model.Provider;
-import com.unibuc.bundle_forge.model.Publisher;
 import com.unibuc.bundle_forge.repository.CustomerRepository;
 import com.unibuc.bundle_forge.repository.DeveloperRepository;
-import com.unibuc.bundle_forge.repository.PublisherRepository;
 import com.unibuc.bundle_forge.repository.UserRepository;
 import com.unibuc.bundle_forge.utils.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -37,11 +33,9 @@ class AuthServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private CustomerRepository customerRepository;
-    @Mock private PublisherRepository publisherRepository;
     @Mock private DeveloperRepository developerRepository;
     @Mock private JwtService jwtService;
     @Mock private CustomerMapper customerMapper;
-    @Mock private PublisherMapper publisherMapper;
     @Mock private DeveloperMapper developerMapper;
 
     @InjectMocks
@@ -123,20 +117,6 @@ class AuthServiceTest {
     }
 
     @Test
-    void signin_publisherRejected_blocked() {
-        Publisher pub = TestUtils.newPublisher(3, "pub@test.com", Provider.Status.REJECTED);
-        CredentialsDto creds = new CredentialsDto(pub.getEmail(), TestUtils.RAW_PASSWORD, false);
-        when(userRepository.findByEmail(pub.getEmail())).thenReturn(pub);
-        when(jwtService.getToken(any(), eq(false))).thenReturn("tok-pub");
-
-        Map<String, Object> res = authService.signin(creds);
-
-        assertThat(res.get("userType")).isEqualTo("PUBLISHER");
-        assertThat(res.get("blocked")).isEqualTo(true);
-        assertThat(res.get("statusMessage")).isEqualTo("Account rejected");
-    }
-
-    @Test
     void signupCustomer_savesWhenPhoneFree() {
         CustomerDto dto = new CustomerDto();
         dto.setPhoneNumber("0712345678");
@@ -162,28 +142,6 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.signupCustomer(dto))
                 .isInstanceOf(ValidationException.class)
                 .hasMessageContaining("phone");
-    }
-
-    @Test
-    void registerPublisher_uniqueDisplayName_saves() {
-        PublisherDto dto = PublisherDto.builder().displayName("MyStudio").build();
-        Publisher entity = TestUtils.newPublisher(5, "pub@test.com", Provider.Status.PENDING);
-
-        when(publisherRepository.findByDisplayName("MyStudio")).thenReturn(Optional.empty());
-        when(publisherMapper.toEntity(dto)).thenReturn(entity);
-        when(publisherRepository.save(entity)).thenReturn(entity);
-
-        assertThat(authService.registerPublisher(dto)).isSameAs(entity);
-    }
-
-    @Test
-    void registerPublisher_displayNameTaken_throws() {
-        PublisherDto dto = PublisherDto.builder().displayName("Taken").build();
-        when(publisherRepository.findByDisplayName("Taken"))
-                .thenReturn(Optional.of(TestUtils.newPublisher(1, "p@test.com", Provider.Status.ACCEPTED)));
-
-        assertThatThrownBy(() -> authService.registerPublisher(dto))
-                .isInstanceOf(ValidationException.class);
     }
 
     @Test
@@ -223,15 +181,6 @@ class AuthServiceTest {
     }
 
     @Test
-    void checkDisplayName_takenByPublisher() {
-        when(developerRepository.findByDisplayName("name")).thenReturn(Optional.empty());
-        when(publisherRepository.findByDisplayName("name"))
-                .thenReturn(Optional.of(TestUtils.newPublisher(1, "p@test.com", Provider.Status.ACCEPTED)));
-
-        assertThat(authService.checkDisplayName("name").get("exists")).isTrue();
-    }
-
-    @Test
     void checkDisplayName_takenByDeveloper() {
         when(developerRepository.findByDisplayName("name"))
                 .thenReturn(Optional.of(TestUtils.newDeveloper(1, "d@test.com", Provider.Status.ACCEPTED)));
@@ -242,7 +191,6 @@ class AuthServiceTest {
     @Test
     void checkDisplayName_free() {
         when(developerRepository.findByDisplayName("name")).thenReturn(Optional.empty());
-        when(publisherRepository.findByDisplayName("name")).thenReturn(Optional.empty());
 
         assertThat(authService.checkDisplayName("name").get("exists")).isFalse();
     }

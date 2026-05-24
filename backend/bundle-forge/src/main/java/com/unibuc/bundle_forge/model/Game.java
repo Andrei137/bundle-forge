@@ -108,15 +108,6 @@ public class Game implements EnumUtils.HasStatus<Game.Status> {
     @JsonIgnore
     private Developer developer;
 
-    @ManyToOne
-    @JoinColumn(name = "publisher_id")
-    @JsonIgnore
-    private Provider publisher;
-
-    @OneToMany(mappedBy = "game")
-    @JsonIgnore
-    private List<Contract> contracts;
-
     @Column(nullable = false)
     @Builder.Default
     private Integer salesCount = 0;

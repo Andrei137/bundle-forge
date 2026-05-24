@@ -156,7 +156,6 @@ function AboutTab({ game }) {
     Platform:       game.about.details.Platform,
     'Release Date': game.about.details['Release Date'],
     Developer:      game.about.details.Developer,
-    Publisher:      game.about.details.Publisher,
     Link:           game.about.details.Link ?? null,
   };
 
@@ -339,7 +338,6 @@ const fetchGame = async (gameId) => {
         Platform:       'Steam',
         'Release Date': data.releaseDate,
         Developer:      data.developer,
-        Publisher:      data.publisher ? data.publisher : data.developer,
         Languages:      data.languages.join(', '),
         Link:           data.link,
       },

@@ -5,12 +5,9 @@ import com.unibuc.bundle_forge.dto.CustomerDto;
 import com.unibuc.bundle_forge.dto.DeveloperDto;
 import com.unibuc.bundle_forge.dto.DisplayNameCheckDto;
 import com.unibuc.bundle_forge.dto.EmailCheckDto;
-import com.unibuc.bundle_forge.dto.PublisherDto;
 import com.unibuc.bundle_forge.dto.TokenDto;
 import com.unibuc.bundle_forge.model.Customer;
 import com.unibuc.bundle_forge.model.Developer;
-import com.unibuc.bundle_forge.model.Publisher;
-import com.unibuc.bundle_forge.model.User;
 import com.unibuc.bundle_forge.service.AuthService;
 import com.unibuc.bundle_forge.service.JwtService;
 import com.unibuc.bundle_forge.utils.ResponseUtils;
@@ -19,7 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,13 +49,6 @@ public class AuthController {
             @RequestBody @Valid @Validated(ValidationUtils.Create.class) DeveloperDto developerDto
     ) {
         return ResponseUtils.created(authService.registerDeveloper(developerDto));
-    }
-
-    @PostMapping("/request/publisher")
-    public ResponseEntity<Publisher> requestPublisher(
-            @RequestBody @Valid @Validated(ValidationUtils.Create.class) PublisherDto publisherDto
-    ) {
-        return ResponseUtils.created(authService.registerPublisher(publisherDto));
     }
 
     @PostMapping("/check-email")

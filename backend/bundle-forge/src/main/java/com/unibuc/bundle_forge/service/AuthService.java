@@ -3,21 +3,15 @@ package com.unibuc.bundle_forge.service;
 import com.unibuc.bundle_forge.dto.CredentialsDto;
 import com.unibuc.bundle_forge.dto.CustomerDto;
 import com.unibuc.bundle_forge.dto.DeveloperDto;
-import com.unibuc.bundle_forge.dto.PublisherDto;
-import com.unibuc.bundle_forge.dto.TokenDto;
-import com.unibuc.bundle_forge.exception.ForbiddenException;
 import com.unibuc.bundle_forge.exception.ValidationException;
 import com.unibuc.bundle_forge.mapper.CustomerMapper;
 import com.unibuc.bundle_forge.mapper.DeveloperMapper;
-import com.unibuc.bundle_forge.mapper.PublisherMapper;
 import com.unibuc.bundle_forge.model.Customer;
 import com.unibuc.bundle_forge.model.Developer;
 import com.unibuc.bundle_forge.model.Provider;
-import com.unibuc.bundle_forge.model.Publisher;
 import com.unibuc.bundle_forge.model.User;
 import com.unibuc.bundle_forge.repository.CustomerRepository;
 import com.unibuc.bundle_forge.repository.DeveloperRepository;
-import com.unibuc.bundle_forge.repository.PublisherRepository;
 import com.unibuc.bundle_forge.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +27,9 @@ public final class AuthService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
-    private final PublisherRepository publisherRepository;
     private final DeveloperRepository developerRepository;
     private final JwtService jwtService;
     private final CustomerMapper customerMapper;
-    private final PublisherMapper publisherMapper;
     private final DeveloperMapper developerMapper;
 
     public Map<String, Object> signin(CredentialsDto credentials) {
@@ -54,7 +46,6 @@ public final class AuthService {
         String token = jwtService.getToken(String.valueOf(user.getId()), credentials.isRememberMe());
         response.put("token", token);
 
-        // Determine user type
         if (user instanceof Customer) {
             response.put("userType", "CUSTOMER");
             response.put("blocked", false);
@@ -62,21 +53,6 @@ public final class AuthService {
             response.put("userType", "DEVELOPER");
             response.put("status", developer.getStatus().toString());
             String message = switch (developer.getStatus()) {
-                case BANNED -> "Banned account";
-                case PENDING -> "Account awaiting approval";
-                case REJECTED -> "Account rejected";
-                default -> null;
-            };
-            if (message != null) {
-                response.put("statusMessage", message);
-                response.put("blocked", true);
-            } else {
-                response.put("blocked", false);
-            }
-        } else if (user instanceof Publisher publisher) {
-            response.put("userType", "PUBLISHER");
-            response.put("status", publisher.getStatus().toString());
-            String message = switch (publisher.getStatus()) {
                 case BANNED -> "Banned account";
                 case PENDING -> "Account awaiting approval";
                 case REJECTED -> "Account rejected";
@@ -102,13 +78,6 @@ public final class AuthService {
         return saved;
     }
 
-    public Publisher registerPublisher(PublisherDto publisher) {
-        if (publisherRepository.findByDisplayName(publisher.getDisplayName()).isPresent()) {
-            throw new ValidationException("This display name is already registered");
-        }
-        return publisherRepository.save(publisherMapper.toEntity(publisher));
-    }
-
     public Developer registerDeveloper(DeveloperDto developer) {
         if (developerRepository.findByDisplayName(developer.getDisplayName()).isPresent()) {
             throw new ValidationException("This display name is already registered");
@@ -124,8 +93,7 @@ public final class AuthService {
     }
 
     public Map<String, Boolean> checkDisplayName(String displayName) {
-        boolean exists = developerRepository.findByDisplayName(displayName).isPresent() ||
-                         publisherRepository.findByDisplayName(displayName).isPresent();
+        boolean exists = developerRepository.findByDisplayName(displayName).isPresent();
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
         return response;

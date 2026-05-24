@@ -32,7 +32,6 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/customers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/developers/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/publishers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/games/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/tags/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/bundles/**").permitAll()

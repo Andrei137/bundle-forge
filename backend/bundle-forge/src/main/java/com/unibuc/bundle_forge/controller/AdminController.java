@@ -40,7 +40,7 @@ public class AdminController {
     @PutMapping("/providers/{providerId}")
     @JsonView(ViewUtils.Admin.class)
     @RequireAdmin
-    public ResponseEntity<ProviderResponseDto> changeStatusPublisher(
+    public ResponseEntity<ProviderResponseDto> changeStatusProvider(
             @PathVariable Integer providerId,
             @RequestBody @Valid ProviderUpdateDto providerUpdateDto
     ) {

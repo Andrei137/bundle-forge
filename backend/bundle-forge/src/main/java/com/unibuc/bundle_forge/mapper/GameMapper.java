@@ -73,9 +73,6 @@ public final class GameMapper {
                 .developer(Optional.ofNullable(entity.getDeveloper())
                         .map(Provider::getDisplayName)
                         .orElse(null))
-                .publisher(Optional.ofNullable(entity.getPublisher())
-                        .map(Provider::getDisplayName)
-                        .orElse(null))
                 .build();
     }
 
