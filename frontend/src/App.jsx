@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Header,
@@ -23,6 +24,16 @@ import {
 } from './components'
 import './App.css'
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   const Layout = ({ children }) => (
     <div className="site-dark-theme brand-bundle-forge">
@@ -45,6 +56,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route
           path="/"

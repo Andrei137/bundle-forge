@@ -90,7 +90,7 @@ export const DeveloperAccount = () => {
   });
   const coverFileInputRef = useRef(null);
   const imageFilesInputRef = useRef(null);
-  const imageObjectUrlsRef = useRef({});
+  const [imageObjectUrls, setImageObjectUrls] = useState({});
   const [addGameLoading, setAddGameLoading] = useState(false);
   const [addGameError, setAddGameError] = useState('');
 
@@ -143,19 +143,16 @@ export const DeveloperAccount = () => {
 
   // Create and cache object URLs for image files
   useEffect(() => {
+    const newUrls = {};
     imageFiles.forEach((file, idx) => {
-      if (file instanceof File && !imageObjectUrlsRef.current[idx]) {
-        imageObjectUrlsRef.current[idx] = URL.createObjectURL(file);
+      if (file instanceof File) {
+        newUrls[idx] = URL.createObjectURL(file);
       }
     });
+    setImageObjectUrls(newUrls);
 
     return () => {
-      Object.values(imageObjectUrlsRef.current).forEach(url => {
-        if (typeof url === 'string' && url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-      imageObjectUrlsRef.current = {};
+      Object.values(newUrls).forEach(url => URL.revokeObjectURL(url));
     };
   }, [imageFiles]);
 
@@ -1317,7 +1314,7 @@ export const DeveloperAccount = () => {
                         }
                       }
                       if (actualIdx === -1) return null;
-                      const imageUrl = imageObjectUrlsRef.current[actualIdx] || '';
+                      const imageUrl = imageObjectUrls[actualIdx] || '';
                       return (
                         <div
                           key={actualIdx}

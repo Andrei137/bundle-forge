@@ -91,12 +91,6 @@ export const Checkout = () => {
     [cartItems]
   );
 
-  // Clear the idempotency key when leaving checkout so a returning visit
-  // with a different cart always creates a fresh PaymentIntent.
-  useEffect(() => {
-    return () => { sessionStorage.removeItem('bundleforge_idem_key'); };
-  }, []);
-
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/account/login');

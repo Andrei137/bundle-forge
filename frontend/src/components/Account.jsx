@@ -5,6 +5,14 @@ import { setUser } from '@/redux/slices/authSlice';
 import { authService } from '@/services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+const ORDER_STATUS = {
+  PAYMENT_SUCCEEDED: { label: 'Succeeded', cls: 'succeeded' },
+  PAYMENT_FAILED:    { label: 'Failed',    cls: 'failed'    },
+  CREATED:           { label: 'Pending',   cls: 'pending'   },
+};
+const orderStatus = (raw) => ORDER_STATUS[raw] ?? { label: raw, cls: 'pending' };
+
 import AccountIcon from '@/assets/icons/account.svg?react';
 import LoginSecurityIcon from '@/assets/icons/login_security.svg?react';
 import PaymentIcon from '@/assets/icons/payment_information.svg?react';
@@ -286,8 +294,8 @@ export const Account = () => {
                       <span className="latest-order-date">
                         {new Date(latestOrder.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </span>
-                      <span className={`latest-order-status latest-order-status--${latestOrder.status.toLowerCase()}`}>
-                        {latestOrder.status}
+                      <span className={`latest-order-status latest-order-status--${orderStatus(latestOrder.status).cls}`}>
+                        {orderStatus(latestOrder.status).label}
                       </span>
                     </div>
 
@@ -303,9 +311,6 @@ export const Account = () => {
                           )}
                           <div className="latest-order-item-info">
                             <span className="latest-order-item-title">{item.title}</span>
-                            {item.gameKey && (
-                              <span className="latest-order-item-key">{item.gameKey}</span>
-                            )}
                           </div>
                           <span className="latest-order-item-price">
                             {latestOrder.currency.toUpperCase()} {(item.unitAmount / 100).toFixed(2)}

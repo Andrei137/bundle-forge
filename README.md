@@ -238,8 +238,23 @@ Query params: `q`, `type`, `tagIds`, `developer`, `platforms`, `page` (default 0
 
 
 # Screenshots
+## Game page 
 ![Game page](docs/ss1.png)
 
+## Bundle page
+![Bundle page](docs/ss2.png)
+
+## Store page
+![Store page](docs/ss6.png)
+
+## Search page
+![Search page](docs/ss3.png)
+
+## Developer page
+![Developer page](docs/ss4.png)
+
+## Customer page
+![Customer page](docs/ss5.png)
 
 # Contributii
 ## Mihalache Sebastian-Stefan
