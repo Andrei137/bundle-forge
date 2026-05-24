@@ -39,30 +39,27 @@ body:json {
 body:multipart-form {
   bundle: '''
     {
-      "title": "best-bundle",
-      "shortDescription": "ceva short description",
-      "longDescription": "ceva long description",
+      "title": "Capcom Classics Bundle",
+      "shortDescription": "Get Steam keys for incredible Capcom classics including Pragmata and Resident Evil",
+      "longDescription": "Bolster your Steam games collection with the Capcom Classics Bundle - Steam Edition. Let’s get straight to the titles! Cherrypick your favorites, or buy them all in this world-first build your own bundle promotion!",
       "platformMinPct": 10,
       "devMinPct": 20,
-      "gameIds": [3, 4, 6, 7, 8, 9, 10, 11],
+      "gameIds": [1, 2, 3, 4, 5, 6],
       "tiers": [
         {
           "numRequiredGames": 3,
-          "pricePerGame": 13.04
+          "pricePerGame": 60.20
         },
         {
           "numRequiredGames": 5,
-          "pricePerGame": 12.01
-        },
-        {
-          "numRequiredGames": 7,
-          "pricePerGame": 11.74
+          "pricePerGame": 50.00
         }
       ],
-      "charityFounderId": 1
+      "charityFounderId": 1,
+      "daysLeft": 24
     }
   ''' @contentType(application/json)
-  cover: @file(/home/seb/Downloads/build-your-own-killer-bundle.jpeg)
+  cover: @file(/home/seb/Downloads/capcom-bundle.jpeg)
 }
 
 settings {

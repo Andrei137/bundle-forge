@@ -154,7 +154,7 @@ const RegisterEmailContent = ({ onNext }) => {
         throw new Error('This email is already registered. Please sign in or use a different email.');
       }
 
-      onNext({ email, password });
+      onNext({ email, password, keepSignedIn });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -200,7 +200,7 @@ const RegisterEmailContent = ({ onNext }) => {
 };
 
 /* ── Register profile form ── */
-const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) => {
+const RegisterProfileContent = ({ email, password, keepSignedIn, userType, onBack, onClose }) => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -591,6 +591,7 @@ export const SignInModal = ({ isOpen, onClose }) => {
               <RegisterProfileContent
                 email={registrationData?.email}
                 password={registrationData?.password}
+                keepSignedIn={registrationData?.keepSignedIn ?? true}
                 userType="customer"
                 onBack={handleRegistrationBack}
                 onClose={onClose}
@@ -600,6 +601,7 @@ export const SignInModal = ({ isOpen, onClose }) => {
               <RegisterProfileContent
                 email={registrationData?.email}
                 password={registrationData?.password}
+                keepSignedIn={registrationData?.keepSignedIn ?? true}
                 userType="developer"
                 onBack={handleRegistrationBack}
                 onClose={onClose}
