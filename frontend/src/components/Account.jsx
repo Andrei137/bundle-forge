@@ -9,7 +9,6 @@ import PaymentIcon from '@/assets/icons/payment_information.svg?react';
 import OrdersIcon from '@/assets/icons/order_history_keys.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
 import CouponsIcon from '@/assets/icons/coupoun_rewards.svg?react';
-import SupportIcon from '@/assets/icons/support.svg?react';
 import './Account.css';
 
 export const Account = () => {
@@ -233,9 +232,7 @@ export const Account = () => {
     { id: 'security', label: 'Login & Security', icon: LoginSecurityIcon, action: () => setActiveSection('security'), isChild: true },
     { id: 'payment', label: 'Payment Information', icon: PaymentIcon, action: () => setActiveSection('payment'), isChild: true },
     { id: 'orders', label: 'Order History & Keys', icon: OrdersIcon, action: () => navigate('/orders') },
-    { id: 'library', label: 'Product Library', icon: LibraryIcon, action: () => navigate('/product-library') },
     { id: 'coupons', label: 'Coupons & Rewards', icon: CouponsIcon, action: () => navigate('/coupons-rewards') },
-    { id: 'support', label: 'Support', icon: SupportIcon, action: () => navigate('/support') },
   ];
 
   return (

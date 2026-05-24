@@ -5,16 +5,16 @@ import { setUser } from '@/redux/slices/authSlice';
 import { authService } from '@/services/authService';
 import { TagPickerModal } from './TagPickerModal';
 
-const API_URL = import.meta.env.VITE_API_URL;
 import AccountIcon from '@/assets/icons/account.svg?react';
 import LoginSecurityIcon from '@/assets/icons/login_security.svg?react';
 import LibraryIcon from '@/assets/icons/library.svg?react';
-import SupportIcon from '@/assets/icons/support.svg?react';
 import AddDocumentIcon from '@/assets/icons/add-document-icon.svg?react';
 import EditDocumentIcon from '@/assets/icons/edit-document-icon.svg?react';
 import RemoveDocumentIcon from '@/assets/icons/remove-document-icon.svg?react';
 import RedYoutubeIcon from '@/assets/icons/red-youtube.svg?react';
 import './Account.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const STATUS_TRANSITIONS = {
   ANNOUNCED: ['PUBLISHED', 'DELISTED'],
@@ -689,7 +689,6 @@ export const DeveloperAccount = () => {
     { id: 'add-game', label: 'Add New Game', icon: AddDocumentIcon, action: () => navigate('/dev/add'), isChild: true },
     { id: 'update-game', label: 'Update Game', icon: EditDocumentIcon, action: () => navigate('/dev/update'), isChild: true },
     { id: 'remove-game', label: 'Remove Game', icon: RemoveDocumentIcon, action: () => navigate('/dev/remove'), isChild: true },
-    { id: 'support', label: 'Support', icon: SupportIcon, action: () => setActiveSection('support') },
   ];
 
   if (!isAuthenticated) {

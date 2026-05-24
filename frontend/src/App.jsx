@@ -15,9 +15,7 @@ import {
   Account,
   DeveloperAccount,
   Orders,
-  ProductLibrary,
   CouponsRewards,
-  Support,
   CartPage,
   Checkout,
   CheckoutSuccess,
@@ -154,28 +152,10 @@ function App() {
         />
 
         <Route
-          path="/product-library"
-          element={
-            <Layout>
-              <ProductLibrary />
-            </Layout>
-          }
-        />
-
-        <Route
           path="/coupons-rewards"
           element={
             <Layout>
               <CouponsRewards />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/support"
-          element={
-            <Layout>
-              <Support />
             </Layout>
           }
         />
