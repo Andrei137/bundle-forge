@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { setUser } from '@/redux/slices/authSlice';
 import { authService } from '@/services/authService';
+
+const API_URL = import.meta.env.VITE_API_URL;
 import AccountIcon from '@/assets/icons/account.svg?react';
 import LoginSecurityIcon from '@/assets/icons/login_security.svg?react';
 import PaymentIcon from '@/assets/icons/payment_information.svg?react';
@@ -28,6 +30,8 @@ export const Account = () => {
   const [changeFirstNameModal, setChangeFirstNameModal] = useState(false);
   const [changeLastNameModal, setChangeLastNameModal] = useState(false);
   const [changePhoneModal, setChangePhoneModal] = useState(false);
+  const [latestOrder, setLatestOrder] = useState(null);
+  const [latestOrderLoading, setLatestOrderLoading] = useState(true);
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -53,8 +57,20 @@ export const Account = () => {
       }
     };
 
+    const loadLatestOrder = async () => {
+      try {
+        const orders = await authService.getOrders();
+        setLatestOrder(orders.length > 0 ? orders[0] : null);
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+      } finally {
+        setLatestOrderLoading(false);
+      }
+    };
+
     if (isAuthenticated) {
       loadCustomerProfile();
+      loadLatestOrder();
     }
   }, [isAuthenticated, dispatch]);
 
@@ -258,24 +274,52 @@ export const Account = () => {
               <h1>Account Overview</h1>
               <p className="account-email">{userEmail}</p>
 
-              <div className="account-stats">
-                <div className="stat-card">
-                  <span className="stat-icon">❤️</span>
-                  <span className="stat-number">0</span>
-                  <span className="stat-label">WISHLIST</span>
-                  <a href="/wishlist" className="stat-link">VIEW WISHLIST</a>
-                </div>
-                <div className="stat-card">
-                  <span className="stat-icon">⭐</span>
-                  <span className="stat-number">0</span>
-                  <span className="stat-label">PRODUCT REVIEWS</span>
-                  <a href="#" className="stat-link">VIEW REVIEWS</a>
-                </div>
-              </div>
-
               <div className="account-section">
                 <h3>Your Latest Order</h3>
-                <p>No orders yet. Start browsing games to make your first purchase!</p>
+                {latestOrderLoading ? (
+                  <p>Loading...</p>
+                ) : !latestOrder ? (
+                  <p>No orders yet. Start browsing games to make your first purchase!</p>
+                ) : (
+                  <div className="latest-order">
+                    <div className="latest-order-meta">
+                      <span className="latest-order-date">
+                        {new Date(latestOrder.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </span>
+                      <span className={`latest-order-status latest-order-status--${latestOrder.status.toLowerCase()}`}>
+                        {latestOrder.status}
+                      </span>
+                    </div>
+
+                    <div className="latest-order-items">
+                      {latestOrder.items.map((item, i) => (
+                        <div key={i} className="latest-order-item">
+                          {item.cover && (
+                            <img
+                              src={`${API_URL}${item.cover}`}
+                              alt={item.title}
+                              className="latest-order-item-cover"
+                            />
+                          )}
+                          <div className="latest-order-item-info">
+                            <span className="latest-order-item-title">{item.title}</span>
+                            {item.gameKey && (
+                              <span className="latest-order-item-key">{item.gameKey}</span>
+                            )}
+                          </div>
+                          <span className="latest-order-item-price">
+                            {latestOrder.currency.toUpperCase()} {(item.unitAmount / 100).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="latest-order-total">
+                      <span>Total</span>
+                      <span>{latestOrder.currency.toUpperCase()} {(latestOrder.amount / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
