@@ -609,12 +609,18 @@
 .SliderVideo {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
-.SliderVideo__slide { position: relative; }
+.SliderVideo__slide {
+  position: relative;
+  height: 100%;
+}
 
 .SliderVideo__img {
   width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
   border-radius: 8px;
 }

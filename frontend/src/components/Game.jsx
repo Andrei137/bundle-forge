@@ -9,7 +9,6 @@ import WindowsIcon from '../assets/icons/windows.svg?react';
 import AppleIcon from '../assets/icons/apple.svg?react';
 import LinuxIcon from '../assets/icons/linux.svg?react';
 import SteamIcon from '../assets/icons/steam.svg?react';
-import MetacriticIcon from '../assets/icons/metacritic.svg?react';
 import './Game.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -309,11 +308,6 @@ const fetchGame = async (gameId) => {
     price: data.price,
     originalPrice: data.initialPrice,
     discount: data.discountPercentage,
-    rating: 4.6, // TODO
-    userRatings: 1, // TODO
-    metacritic: 88, // TODO
-    steamRating: { score: 97, label: 'Overwhelmingly Positive' }, // TODO
-    recommendPercent: 100, // TODO
     tags: data.tags ?? [],
     description: data.shortDescription,
     media: [
@@ -381,7 +375,7 @@ export const Game = () => {
           <h1 className="gp-title">{game.title}</h1>
         </div>
 
-        <div className="gp-rating-bar">
+        {/* <div className="gp-rating-bar">
           <StarRating rating={game.rating} />
           <span className="gp-rating-val">{game.rating}</span>
           <span className="gp-rating-count">{game.userRatings} User Rating</span>
@@ -402,7 +396,7 @@ export const Game = () => {
             <ThumbsUpIcon />
             <span>{game.recommendPercent}% of users recommend this</span>
           </div>
-        </div>
+        </div> */}
 
         <div className="gp-content-grid">
           <div className="gp-media-col">
