@@ -188,12 +188,6 @@ export const Orders = () => {
           </div>
 
           {renderTable()}
-
-          <div className="steam-sync-section">
-            <h3>Sync your Steam Wishlist</h3>
-            <p>Connect your steam account and you can import your games from your Steam Wishlist</p>
-            <button className="btn-steam">SYNC STEAM WISHLIST</button>
-          </div>
         </main>
       </div>
     </div>

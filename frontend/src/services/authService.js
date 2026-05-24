@@ -408,6 +408,28 @@ export const authService = {
     return await response.json();
   },
 
+  getOrders: async () => {
+    const token = authService.getToken();
+    const response = await fetch(`${API_URL}/payment/orders`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch orders';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  },
+
   deleteGame: async (gameId) => {
     const token = authService.getToken();
     const response = await fetch(`${API_URL}/developers/games/${gameId}`, {
