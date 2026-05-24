@@ -148,7 +148,6 @@ export const CheckoutSuccess = () => {
 
             <div className="checkout-success-actions">
               <Link className="primary" to="/orders">View all orders</Link>
-              <Link className="secondary" to="/product-library">Open library</Link>
             </div>
           </>
         )}

@@ -19,4 +19,12 @@ public class CartItemDto {
     @NotNull
     @Min(1)
     private Integer quantity;
+
+    private Integer bundleId;
+
+    private Integer platformPct;
+
+    private Integer devPct;
+
+    private Long unitAmount;
 }

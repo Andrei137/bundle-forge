@@ -98,11 +98,22 @@ export const Checkout = () => {
     }
     if (payableItems.length === 0) return;
 
-    const items = payableItems.map((i) => ({ gameId: i.id, quantity: i.quantity }));
+    const items = payableItems.map((i) => ({
+      gameId: i.id,
+      quantity: i.quantity,
+      ...(i.bundleId != null ? {
+        bundleId: i.bundleId,
+        platformPct: i.platformPct,
+        devPct: i.devPct,
+        unitAmount: i.unitAmount,
+      } : {}),
+    }));
 
     // Reuse the key only when the cart contents haven't changed (retry safety).
     // If the cart changed, generate a new key so a fresh PaymentIntent is created.
-    const cartHash = payableItems.map((i) => `${i.id}:${i.quantity}`).join(',');
+    const cartHash = payableItems
+      .map((i) => `${i.id}:${i.quantity}:${i.bundleId ?? ''}:${i.platformPct ?? ''}:${i.devPct ?? ''}:${i.unitAmount ?? ''}`)
+      .join(',');
     const storedKey = sessionStorage.getItem('bundleforge_idem_key');
     const storedHash = sessionStorage.getItem('bundleforge_idem_hash');
     const idempotencyKey = (storedKey && storedHash === cartHash)
@@ -176,14 +187,31 @@ export const Checkout = () => {
         <div className="checkout-card">
           <div className="checkout-card__title">Order Summary</div>
           <div className="checkout-summary__items">
-            {cartItems.map((item) => (
-              <div key={item.id} className="checkout-summary__line">
-                <span className="checkout-summary__item-name">
-                  {item.title}{item.quantity > 1 ? ` ×${item.quantity}` : ''}
-                </span>
-                <span className="checkout-summary__item-price">RON {(item.price * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
+            {cartItems.map((item) => {
+              const displayPrice = item.bundleId != null && item.tierPrice != null
+                ? item.tierPrice
+                : item.price;
+              return (
+                <div key={item.cartKey ?? item.id} className="checkout-summary__line">
+                  <span className="checkout-summary__item-name">
+                    {item.title}{item.quantity > 1 ? ` ×${item.quantity}` : ''}
+                  </span>
+                  <span className="checkout-summary__item-price">RON {(displayPrice * item.quantity).toFixed(2)}</span>
+                </div>
+              );
+            })}
+            {(() => {
+              const bonusTotal = cartItems.reduce((sum, i) => {
+                if (i.bundleId == null || i.tierPrice == null) return sum;
+                return sum + (i.price - i.tierPrice) * i.quantity;
+              }, 0);
+              return bonusTotal > 0 ? (
+                <div className="checkout-summary__line checkout-summary__line--bonus">
+                  <span>Bonus donations</span>
+                  <span className="checkout-summary__bonus-val">+RON {bonusTotal.toFixed(2)}</span>
+                </div>
+              ) : null;
+            })()}
             {couponDiscount > 0 && (
               <div className="checkout-summary__line checkout-summary__line--coupon">
                 <span>Coupon savings{coupon?.name ? ` (${coupon.name})` : ''}</span>

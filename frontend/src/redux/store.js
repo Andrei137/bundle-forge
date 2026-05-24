@@ -8,7 +8,15 @@ import authReducer from './slices/authSlice';
 const loadCart = () => {
   try {
     const raw = localStorage.getItem('bf_cart');
-    return raw ? JSON.parse(raw) : undefined;
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed?.items)) {
+      parsed.items = parsed.items.map((i) => ({
+        ...i,
+        cartKey: i.cartKey ?? (i.bundleId != null ? `b-${i.bundleId}-${i.id}` : `g-${i.id}`),
+      }));
+    }
+    return parsed;
   } catch {
     return undefined;
   }

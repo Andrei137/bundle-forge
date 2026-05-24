@@ -37,4 +37,16 @@ public class PaymentItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_key_id")
     private GameKey assignedKey;
+
+    @Column(name = "bundle_id")
+    private Integer bundleId;
+
+    @Column(name = "platform_pct")
+    private Integer platformPct;
+
+    @Column(name = "dev_pct")
+    private Integer devPct;
+
+    @Column(name = "charity_pct")
+    private Integer charityPct;
 }
