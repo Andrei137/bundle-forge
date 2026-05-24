@@ -20,7 +20,7 @@ Aplicatia contine mai multe roluri:
 ![architecture](docs/awbd-architecture.drawio.svg)
 
 # Diagrama Entitate-Relatie
-<img src="https://github.com/Andrei137/bundle-forge/blob/main/docs/bundle-force.drawio.png">
+![Diagrama Entitate-Relatie](docs/ER-Diagram.svg)
 
 # Setup
 

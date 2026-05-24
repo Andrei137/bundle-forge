@@ -7,6 +7,8 @@ import com.unibuc.bundle_forge.dto.OrderItemDto;
 import com.unibuc.bundle_forge.dto.PaymentResponseDto;
 import com.unibuc.bundle_forge.exception.NotFoundException;
 import com.unibuc.bundle_forge.exception.ValidationException;
+import com.unibuc.bundle_forge.model.Bundle;
+import com.unibuc.bundle_forge.model.BundleTier;
 import com.unibuc.bundle_forge.model.Coupon;
 import com.unibuc.bundle_forge.model.Customer;
 import com.unibuc.bundle_forge.model.Game;
@@ -14,6 +16,7 @@ import com.unibuc.bundle_forge.model.GameKey;
 import com.unibuc.bundle_forge.model.Payment;
 import com.unibuc.bundle_forge.model.PaymentItem;
 import com.unibuc.bundle_forge.model.Transaction;
+import com.unibuc.bundle_forge.repository.BundleRepository;
 import com.unibuc.bundle_forge.repository.CouponRepository;
 import com.unibuc.bundle_forge.repository.CustomerRepository;
 import com.unibuc.bundle_forge.repository.GameKeyRepository;
@@ -41,7 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,10 +63,13 @@ public class StripePaymentService {
     private final GameKeyRepository gameKeyRepository;
     private final CustomerRepository customerRepository;
     private final CouponRepository couponRepository;
+    private final BundleRepository bundleRepository;
     private final CouponService couponService;
     private final IdempotencyService idempotencyService;
     private final JwtService jwtService;
     private final PaymentSaveHelper paymentSaveHelper;
+
+    private record BundleSplit(Integer bundleId, Integer platformPct, Integer devPct) {}
 
     @Value("${stripe.api-key:}")
     private String stripeApiKey;
@@ -100,19 +105,31 @@ public class StripePaymentService {
         }
 
         Map<Integer, Integer> aggregated = aggregate(request.getItems());
+        validateBundles(request.getItems());
         List<Game> games = loadAndValidateGames(aggregated);
+        Map<Integer, Game> gameById = games.stream()
+                .collect(java.util.stream.Collectors.toMap(Game::getId, g -> g));
 
         long total = 0L;
         List<PaymentItem> items = new ArrayList<>();
         String description = buildDescription(games, aggregated);
-        for (Game game : games) {
-            int quantity = aggregated.get(game.getId());
-            long unit = priceCents(game);
+        for (CartItemDto cartItem : request.getItems()) {
+            Game game = gameById.get(cartItem.getGameId());
+            long unit = (cartItem.getBundleId() != null && cartItem.getUnitAmount() != null)
+                    ? cartItem.getUnitAmount()
+                    : priceCents(game);
+            int quantity = cartItem.getQuantity();
             total += unit * quantity;
+            Integer platformPct = cartItem.getPlatformPct();
+            Integer devPct = cartItem.getDevPct();
             items.add(PaymentItem.builder()
                     .game(game)
                     .quantity(quantity)
                     .unitAmount(unit)
+                    .bundleId(cartItem.getBundleId())
+                    .platformPct(platformPct)
+                    .devPct(devPct)
+                    .charityPct(cartItem.getBundleId() != null ? 100 - platformPct - devPct : null)
                     .build());
         }
 
@@ -390,6 +407,78 @@ public class StripePaymentService {
             map.merge(item.getGameId(), item.getQuantity(), Integer::sum);
         }
         return map;
+    }
+
+    private void validateBundles(List<CartItemDto> items) {
+        Map<Integer, List<CartItemDto>> itemsByBundle = items.stream()
+                .filter(i -> i.getBundleId() != null)
+                .collect(java.util.stream.Collectors.groupingBy(CartItemDto::getBundleId));
+        if (itemsByBundle.isEmpty()) return;
+
+        for (CartItemDto item : items) {
+            if (item.getBundleId() == null) continue;
+            if (item.getPlatformPct() == null || item.getDevPct() == null) {
+                throw new ValidationException("Bundle items must include platformPct and devPct");
+            }
+            if (item.getUnitAmount() == null || item.getUnitAmount() <= 0) {
+                throw new ValidationException("Bundle items must include a positive unitAmount");
+            }
+        }
+
+        Map<Integer, Bundle> bundles = bundleRepository.findAllById(itemsByBundle.keySet())
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(Bundle::getId, b -> b));
+
+        for (Map.Entry<Integer, List<CartItemDto>> entry : itemsByBundle.entrySet()) {
+            Integer bundleId = entry.getKey();
+            Bundle bundle = bundles.get(bundleId);
+            if (bundle == null) throw new ValidationException("Bundle " + bundleId + " not found");
+
+            List<CartItemDto> bundleEntries = entry.getValue();
+            BundleSplit reference = new BundleSplit(bundleId,
+                    bundleEntries.get(0).getPlatformPct(),
+                    bundleEntries.get(0).getDevPct());
+            for (CartItemDto i : bundleEntries) {
+                BundleSplit current = new BundleSplit(bundleId, i.getPlatformPct(), i.getDevPct());
+                if (!current.equals(reference)) {
+                    throw new ValidationException("Inconsistent split for bundle " + bundleId);
+                }
+            }
+
+            int p = reference.platformPct();
+            int d = reference.devPct();
+            if (p < 0 || d < 0 || p + d > 100) {
+                throw new ValidationException("Invalid split for bundle " + bundleId);
+            }
+            if (p < bundle.getPlatformMinPct()) {
+                throw new ValidationException("Platform share below minimum for bundle " + bundleId);
+            }
+            if (d < bundle.getDevMinPct()) {
+                throw new ValidationException("Developer share below minimum for bundle " + bundleId);
+            }
+
+            if (bundle.getTiers().isEmpty()) {
+                throw new ValidationException("Bundle " + bundleId + " has no tiers configured");
+            }
+            int count = bundleEntries.stream().mapToInt(CartItemDto::getQuantity).sum();
+            long totalCents = bundleEntries.stream()
+                    .mapToLong(i -> i.getUnitAmount() * i.getQuantity())
+                    .sum();
+            BundleTier smallestTier = bundle.getTiers().stream()
+                    .min(Comparator.comparingInt(BundleTier::getNumRequiredGames))
+                    .orElseThrow();
+            if (count < smallestTier.getNumRequiredGames()) {
+                throw new ValidationException("Bundle " + bundleId + " requires at least " + smallestTier.getNumRequiredGames() + " games");
+            }
+            BundleTier activeTier = bundle.getTiers().stream()
+                    .filter(t -> count >= t.getNumRequiredGames())
+                    .max(Comparator.comparingInt(BundleTier::getNumRequiredGames))
+                    .orElse(smallestTier);
+            long minTotalCents = (long) count * Math.round(activeTier.getPricePerGame() * 100);
+            if (totalCents < minTotalCents) {
+                throw new ValidationException("Bundle " + bundleId + " amount below minimum");
+            }
+        }
     }
 
     private List<Game> loadAndValidateGames(Map<Integer, Integer> aggregated) {

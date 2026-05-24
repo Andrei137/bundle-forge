@@ -36,13 +36,13 @@ export const ShoppingCart = () => {
     }
   };
 
-  const handleRemoveItem = (itemId) => {
-    dispatch(removeFromCart(itemId));
+  const handleRemoveItem = (cartKey) => {
+    dispatch(removeFromCart(cartKey));
   };
 
-  const handleQuantityChange = (itemId, quantity) => {
+  const handleQuantityChange = (cartKey, quantity) => {
     if (quantity > 0) {
-      dispatch(updateQuantity({ id: itemId, quantity }));
+      dispatch(updateQuantity({ cartKey, quantity }));
     }
   };
 
@@ -82,7 +82,7 @@ export const ShoppingCart = () => {
           <>
             <div className="cart-items">
               {items.map(item => (
-                <div key={item.id} className="cart-item">
+                <div key={item.cartKey} className="cart-item">
                   <img src={item.image} alt={item.title} className="cart-item-image" />
 
                   <div className="cart-item-details">
@@ -93,18 +93,20 @@ export const ShoppingCart = () => {
                   <div className="cart-item-quantity">
                     <button
                       onClick={() =>
-                        handleQuantityChange(item.id, item.quantity - 1)
+                        handleQuantityChange(item.cartKey, item.quantity - 1)
                       }
                       className="qty-btn"
+                      disabled={item.bundleId != null}
                     >
                       −
                     </button>
                     <span className="qty-value">{item.quantity}</span>
                     <button
                       onClick={() =>
-                        handleQuantityChange(item.id, item.quantity + 1)
+                        handleQuantityChange(item.cartKey, item.quantity + 1)
                       }
                       className="qty-btn"
+                      disabled={item.bundleId != null}
                     >
                       +
                     </button>
@@ -112,7 +114,7 @@ export const ShoppingCart = () => {
 
                   <button
                     className="cart-remove"
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={() => handleRemoveItem(item.cartKey)}
                   >
                     🗑️
                   </button>

@@ -107,6 +107,17 @@
   white-space: nowrap;
 }
 
+.checkout-summary__line--bonus {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.checkout-summary__bonus-val {
+  color: #4ade80;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .checkout-summary__total {
   display: flex;
   justify-content: space-between;

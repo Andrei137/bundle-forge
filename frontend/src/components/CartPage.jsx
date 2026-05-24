@@ -45,6 +45,7 @@ const RemoveBtn = ({ onClick, label }) => (
 const GameRow = ({ item, inBundle }) => {
   const dispatch = useDispatch();
   const discount = calcDiscount(item);
+  const displayPrice = inBundle && item.tierPrice != null ? item.tierPrice : item.price;
 
   return (
     <div className={`cp-game-row${inBundle ? ' cp-game-row--bundled' : ''}`}>
@@ -63,28 +64,28 @@ const GameRow = ({ item, inBundle }) => {
         {item.originalPrice && item.originalPrice > item.price && (
           <span className="cp-price-was">RON {Number(item.originalPrice).toFixed(2)}</span>
         )}
-        <span className="cp-price-now">RON {Number(item.price).toFixed(2)}</span>
+        <span className="cp-price-now">RON {Number(displayPrice).toFixed(2)}</span>
       </div>
 
       {!inBundle && (
         <div className="cp-qty" role="group" aria-label={`Quantity for ${item.title}`}>
           <button
             className="cp-qty-btn"
-            onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}
+            onClick={() => dispatch(updateQuantity({ cartKey: item.cartKey, quantity: item.quantity - 1 }))}
             disabled={item.quantity <= 1}
             aria-label="Decrease quantity"
           >−</button>
           <span className="cp-qty-val" aria-live="polite">{item.quantity}</span>
           <button
             className="cp-qty-btn"
-            onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
+            onClick={() => dispatch(updateQuantity({ cartKey: item.cartKey, quantity: item.quantity + 1 }))}
             aria-label="Increase quantity"
           >+</button>
         </div>
       )}
 
       <RemoveBtn
-        onClick={() => dispatch(removeFromCart(item.id))}
+        onClick={() => dispatch(removeFromCart(item.cartKey))}
         label={`Remove ${item.title}`}
       />
     </div>
@@ -94,9 +95,14 @@ const GameRow = ({ item, inBundle }) => {
 const BundleGroup = ({ group }) => {
   const dispatch = useDispatch();
   const bundleTotal = group.items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const tierTotal = group.items.reduce(
+    (s, i) => s + (i.tierPrice ?? i.price) * i.quantity,
+    0
+  );
+  const bonus = Math.max(0, bundleTotal - tierTotal);
 
   const removeAll = () =>
-    group.items.forEach(item => dispatch(removeFromCart(item.id)));
+    group.items.forEach(item => dispatch(removeFromCart(item.cartKey)));
 
   return (
     <section className="cp-bundle-group" aria-label={`Bundle: ${group.bundleName}`}>
@@ -110,8 +116,16 @@ const BundleGroup = ({ group }) => {
 
       <div className="cp-bundle-games">
         {group.items.map(item => (
-          <GameRow key={item.id} item={item} inBundle />
+          <GameRow key={item.cartKey} item={item} inBundle />
         ))}
+        {bonus > 0 && (
+          <div className="cp-bundle-bonus" aria-label="Bonus contribution">
+            <span className="cp-bundle-bonus-label">
+              Bonus to support developers &amp; charity
+            </span>
+            <span className="cp-bundle-bonus-amount">+RON {bonus.toFixed(2)}</span>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -261,7 +275,7 @@ export const CartPage = () => {
           {individualItems.length > 0 && (
             <section className="cp-individual-section" aria-label="Individual games">
               {individualItems.map(item => (
-                <GameRow key={item.id} item={item} inBundle={false} />
+                <GameRow key={item.cartKey} item={item} inBundle={false} />
               ))}
             </section>
           )}

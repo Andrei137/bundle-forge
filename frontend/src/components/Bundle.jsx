@@ -263,15 +263,32 @@ export const Bundle = () => {
 
   const handleGoToCart = () => {
     if (!canCheckout) return;
-    games.filter(g => selected.has(g.id)).forEach(game => {
+    const platformPctInt = Math.round(platformPct * 100);
+    const devPctInt = Math.round(devPct * 100);
+
+    const selectedGames = games.filter(g => selected.has(g.id));
+    const numGames = selectedGames.length;
+    // total can exceed basePrice when the customer chose to pay more — distribute
+    // the extra evenly across selected games (with the rounding remainder absorbed
+    // by the first few items so the sum exactly matches the customer's chosen total).
+    const totalCents = Math.round(total * 100);
+    const perGameCents = Math.floor(totalCents / numGames);
+    const remainderCents = totalCents - perGameCents * numGames;
+
+    selectedGames.forEach((game, index) => {
+      const unitAmountCents = perGameCents + (index < remainderCents ? 1 : 0);
       dispatch(addToCart({
         id: game.id,
         title: game.title,
-        price: activeTier.pricePerGame,
+        price: unitAmountCents / 100,
+        tierPrice: activeTier.pricePerGame,
         image: game.cover ? `${API_URL}${game.cover}` : '',
         quantity: 1,
-        bundleId: String(bundle.id),
+        bundleId: bundle.id,
         bundleName: bundle.title,
+        platformPct: platformPctInt,
+        devPct: devPctInt,
+        unitAmount: unitAmountCents,
       }));
     });
   };
