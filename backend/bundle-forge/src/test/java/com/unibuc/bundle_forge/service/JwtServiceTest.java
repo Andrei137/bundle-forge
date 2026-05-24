@@ -6,6 +6,9 @@ import com.unibuc.bundle_forge.model.Developer;
 import com.unibuc.bundle_forge.model.Provider;
 import com.unibuc.bundle_forge.repository.UserRepository;
 import com.unibuc.bundle_forge.utils.TestUtils;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.crypto.SecretKey;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +32,8 @@ class JwtServiceTest {
 
     private static final String TEST_SECRET =
             "dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdGVzdGluZy1wdXJwb3Nlcy1vbmx5LXBsZWFzZS1jaGFuZ2U=";
+    private static final long SHORT_TTL_MS = 60_000L;          // 1 min
+    private static final long LONG_TTL_MS  = 7L * 24 * 3600_000L; // 7 days
 
     @Mock
     private UserRepository userRepository;
@@ -35,8 +42,14 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(TEST_SECRET);
+        jwtService = new JwtService(TEST_SECRET, SHORT_TTL_MS, LONG_TTL_MS);
         ReflectionTestUtils.setField(jwtService, "userRepository", userRepository);
+    }
+
+    private Date expiryOf(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TEST_SECRET));
+        return Jwts.parser().verifyWith(key).build()
+                .parseSignedClaims(token).getPayload().getExpiration();
     }
 
     @AfterEach
@@ -61,6 +74,22 @@ class JwtServiceTest {
     void getToken_andExtract_roundtrip() {
         String token = jwtService.getToken("42");
         assertThat(jwtService.extractUserId(token)).isEqualTo("42");
+    }
+
+    @Test
+    void getToken_rememberMeFalse_usesShortTtl() {
+        long before = System.currentTimeMillis();
+        Date exp = expiryOf(jwtService.getToken("1", false));
+        long ttl = exp.getTime() - before;
+        assertThat(ttl).isBetween(SHORT_TTL_MS - 1_000, SHORT_TTL_MS + 1_000);
+    }
+
+    @Test
+    void getToken_rememberMeTrue_usesLongTtl() {
+        long before = System.currentTimeMillis();
+        Date exp = expiryOf(jwtService.getToken("1", true));
+        long ttl = exp.getTime() - before;
+        assertThat(ttl).isBetween(LONG_TTL_MS - 1_000, LONG_TTL_MS + 1_000);
     }
 
     @Test

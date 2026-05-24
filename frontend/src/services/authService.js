@@ -3,12 +3,26 @@ const TOKEN_KEY = 'bundleforge_token';
 const USER_KEY = 'bundleforge_user';
 const USER_TYPE_KEY = 'bundleforge_usertype';
 
+// localStorage = "Keep me signed in" (survives browser close).
+// sessionStorage = tab-scoped session (dies with the tab).
+// Reads check local first, then session; removes clear both.
+const writeStorage = (remember) => (remember ? localStorage : sessionStorage);
+const readFromStorages = (key) =>
+  localStorage.getItem(key) ?? sessionStorage.getItem(key);
+const removeFromStorages = (key) => {
+  localStorage.removeItem(key);
+  sessionStorage.removeItem(key);
+};
+// Was the current session created with "Keep me signed in"? Used so that
+// re-saving the user profile after an update lands in the same storage tier.
+const isRemembered = () => localStorage.getItem(TOKEN_KEY) !== null;
+
 export const authService = {
-  signIn: async (email, password) => {
+  signIn: async (email, password, rememberMe = false) => {
     const response = await fetch(`${API_URL}/auth/signin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     });
     if (!response.ok) {
       let errorMessage = 'Sign in failed. Please check your credentials and try again.';
@@ -30,11 +44,16 @@ export const authService = {
       throw error;
     }
 
-    authService.setToken(data.token);
+    // Make sure stale entries in the other storage don't shadow this session.
+    removeFromStorages(TOKEN_KEY);
+    removeFromStorages(USER_TYPE_KEY);
+    removeFromStorages(USER_KEY);
+
+    authService.setToken(data.token, rememberMe);
     if (data.userType) {
-      authService.setUserType(data.userType);
+      authService.setUserType(data.userType, rememberMe);
     }
-    return data;
+    return { ...data, rememberMe };
   },
 
   signUpCustomer: async (email, password, firstName, lastName, phoneNumber) => {
@@ -109,44 +128,32 @@ export const authService = {
     return data;
   },
 
-  setToken: (token) => {
-    localStorage.setItem(TOKEN_KEY, token);
+  setToken: (token, remember = isRemembered()) => {
+    writeStorage(remember).setItem(TOKEN_KEY, token);
   },
 
-  getToken: () => {
-    return localStorage.getItem(TOKEN_KEY);
-  },
+  getToken: () => readFromStorages(TOKEN_KEY),
 
-  removeToken: () => {
-    localStorage.removeItem(TOKEN_KEY);
-  },
+  removeToken: () => removeFromStorages(TOKEN_KEY),
 
-  setUser: (user) => {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  setUser: (user, remember = isRemembered()) => {
+    writeStorage(remember).setItem(USER_KEY, JSON.stringify(user));
   },
 
   getUser: () => {
-    const userJson = localStorage.getItem(USER_KEY);
+    const userJson = readFromStorages(USER_KEY);
     return userJson ? JSON.parse(userJson) : null;
   },
 
-  removeUser: () => {
-    localStorage.removeItem(USER_KEY);
+  removeUser: () => removeFromStorages(USER_KEY),
+
+  setUserType: (userType, remember = isRemembered()) => {
+    if (userType) writeStorage(remember).setItem(USER_TYPE_KEY, userType);
   },
 
-  setUserType: (userType) => {
-    if (userType) {
-      localStorage.setItem(USER_TYPE_KEY, userType);
-    }
-  },
+  getUserType: () => readFromStorages(USER_TYPE_KEY),
 
-  getUserType: () => {
-    return localStorage.getItem(USER_TYPE_KEY);
-  },
-
-  removeUserType: () => {
-    localStorage.removeItem(USER_TYPE_KEY);
-  },
+  removeUserType: () => removeFromStorages(USER_TYPE_KEY),
 
   getUserProfile: async (userType) => {
     const token = authService.getToken();

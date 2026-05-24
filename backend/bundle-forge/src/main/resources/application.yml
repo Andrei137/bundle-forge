@@ -19,6 +19,10 @@ file:
 security:
   jwt:
     secret-key: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdGVzdGluZy1wdXJwb3Nlcy1vbmx5LXBsZWFzZS1jaGFuZ2U=}
+    # Lifetime of a normal session JWT (no "Keep me signed in"). Default 8h.
+    expiration-ms: ${JWT_EXPIRATION_MS:28800000}
+    # Lifetime when the user opts into "Keep me signed in". Default 30d.
+    long-expiration-ms: ${JWT_LONG_EXPIRATION_MS:2592000000}
 
 app:
   cors:

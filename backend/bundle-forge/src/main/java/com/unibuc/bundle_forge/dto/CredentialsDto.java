@@ -18,4 +18,6 @@ public final class CredentialsDto {
     @NotBlank(message = "password is required and cannot be blank")
     private String password;
 
+    private boolean rememberMe;
+
 }

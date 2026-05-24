@@ -29,6 +29,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,10 +50,10 @@ class AuthServiceTest {
     @Test
     void signin_validCustomer_returnsTokenAndType() {
         Customer customer = TestUtils.newCustomer(1, "cust@test.com");
-        CredentialsDto creds = new CredentialsDto(customer.getEmail(), TestUtils.RAW_PASSWORD);
+        CredentialsDto creds = new CredentialsDto(customer.getEmail(), TestUtils.RAW_PASSWORD, false);
 
         when(userRepository.findByEmail(creds.getEmail())).thenReturn(customer);
-        when(jwtService.getToken(String.valueOf(customer.getId()))).thenReturn("tok-1");
+        when(jwtService.getToken(String.valueOf(customer.getId()), false)).thenReturn("tok-1");
 
         Map<String, Object> response = authService.signin(creds);
 
@@ -63,7 +64,7 @@ class AuthServiceTest {
 
     @Test
     void signin_unknownEmail_throws() {
-        CredentialsDto creds = new CredentialsDto("missing@test.com", "any");
+        CredentialsDto creds = new CredentialsDto("missing@test.com", "any", false);
         when(userRepository.findByEmail("missing@test.com")).thenReturn(null);
 
         assertThatThrownBy(() -> authService.signin(creds))
@@ -74,7 +75,7 @@ class AuthServiceTest {
     @Test
     void signin_wrongPassword_throws() {
         Customer customer = TestUtils.newCustomer(1, "cust@test.com");
-        CredentialsDto creds = new CredentialsDto(customer.getEmail(), "wrong");
+        CredentialsDto creds = new CredentialsDto(customer.getEmail(), "wrong", false);
         when(userRepository.findByEmail(customer.getEmail())).thenReturn(customer);
 
         assertThatThrownBy(() -> authService.signin(creds))
@@ -84,9 +85,9 @@ class AuthServiceTest {
     @Test
     void signin_developerAccepted_unblocked() {
         Developer dev = TestUtils.newDeveloper(2, "dev@test.com", Provider.Status.ACCEPTED);
-        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD);
+        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD, false);
         when(userRepository.findByEmail(dev.getEmail())).thenReturn(dev);
-        when(jwtService.getToken("2")).thenReturn("tok-dev");
+        when(jwtService.getToken("2", false)).thenReturn("tok-dev");
 
         Map<String, Object> res = authService.signin(creds);
 
@@ -98,9 +99,9 @@ class AuthServiceTest {
     @Test
     void signin_developerBanned_blocked() {
         Developer dev = TestUtils.newDeveloper(2, "dev@test.com", Provider.Status.BANNED);
-        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD);
+        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD, false);
         when(userRepository.findByEmail(dev.getEmail())).thenReturn(dev);
-        when(jwtService.getToken(any())).thenReturn("tok-dev");
+        when(jwtService.getToken(any(), eq(false))).thenReturn("tok-dev");
 
         Map<String, Object> res = authService.signin(creds);
 
@@ -111,9 +112,9 @@ class AuthServiceTest {
     @Test
     void signin_developerPending_blocked() {
         Developer dev = TestUtils.newDeveloper(2, "dev@test.com", Provider.Status.PENDING);
-        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD);
+        CredentialsDto creds = new CredentialsDto(dev.getEmail(), TestUtils.RAW_PASSWORD, false);
         when(userRepository.findByEmail(dev.getEmail())).thenReturn(dev);
-        when(jwtService.getToken(any())).thenReturn("tok-dev");
+        when(jwtService.getToken(any(), eq(false))).thenReturn("tok-dev");
 
         Map<String, Object> res = authService.signin(creds);
 
@@ -124,9 +125,9 @@ class AuthServiceTest {
     @Test
     void signin_publisherRejected_blocked() {
         Publisher pub = TestUtils.newPublisher(3, "pub@test.com", Provider.Status.REJECTED);
-        CredentialsDto creds = new CredentialsDto(pub.getEmail(), TestUtils.RAW_PASSWORD);
+        CredentialsDto creds = new CredentialsDto(pub.getEmail(), TestUtils.RAW_PASSWORD, false);
         when(userRepository.findByEmail(pub.getEmail())).thenReturn(pub);
-        when(jwtService.getToken(any())).thenReturn("tok-pub");
+        when(jwtService.getToken(any(), eq(false))).thenReturn("tok-pub");
 
         Map<String, Object> res = authService.signin(creds);
 

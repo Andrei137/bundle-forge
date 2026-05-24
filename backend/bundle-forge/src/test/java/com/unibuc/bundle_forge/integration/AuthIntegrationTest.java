@@ -83,7 +83,7 @@ class AuthIntegrationTest {
         MvcResult signinResult = mockMvc.perform(post("/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new CredentialsDto("alice@test.com", "Secret__123"))))
+                                new CredentialsDto("alice@test.com", "Secret__123", false))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.userType").value("CUSTOMER"))
@@ -120,7 +120,7 @@ class AuthIntegrationTest {
         mockMvc.perform(post("/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new CredentialsDto("bob@test.com", "wrong-password"))))
+                                new CredentialsDto("bob@test.com", "wrong-password", false))))
                 .andExpect(status().isBadRequest());
     }
 
