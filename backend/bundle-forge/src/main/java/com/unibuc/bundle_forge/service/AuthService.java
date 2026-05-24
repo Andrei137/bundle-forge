@@ -51,7 +51,7 @@ public final class AuthService {
         log.info("User id={} signed in", user.getId());
 
         Map<String, Object> response = new HashMap<>();
-        String token = jwtService.getToken(String.valueOf(user.getId()));
+        String token = jwtService.getToken(String.valueOf(user.getId()), credentials.isRememberMe());
         response.put("token", token);
 
         // Determine user type

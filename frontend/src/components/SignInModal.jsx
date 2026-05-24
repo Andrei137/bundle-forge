@@ -75,9 +75,14 @@ const SignInContent = ({ onForgot, onClose, onShowPendingAccount }) => {
     setError('');
     setIsLoading(true);
     try {
-      const signInResult = await authService.signIn(email, password);
+      const signInResult = await authService.signIn(email, password, keepSignedIn);
       const userProfile = await authService.getUserProfile(signInResult.userType);
-      dispatch(login({ token: signInResult.token, user: userProfile, userType: signInResult.userType }));
+      dispatch(login({
+        token: signInResult.token,
+        user: userProfile,
+        userType: signInResult.userType,
+        rememberMe: keepSignedIn,
+      }));
       onClose();
     } catch (err) {
       if (err.blocked) {
@@ -224,8 +229,13 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
         }
         result = await authService.signUpCustomer(email, password, formData.firstName, formData.lastName, formData.phoneNumber);
         // Auto sign-in for customers
-        const signInResult = await authService.signIn(email, password);
-        dispatch(login({ token: signInResult.token, user: result, userType: 'CUSTOMER' }));
+        const signInResult = await authService.signIn(email, password, keepSignedIn);
+        dispatch(login({
+          token: signInResult.token,
+          user: result,
+          userType: 'CUSTOMER',
+          rememberMe: keepSignedIn,
+        }));
         onClose();
       } else if (userType === 'developer') {
         if (!formData.website || !formData.displayName) {
@@ -248,8 +258,13 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
         }
         result = await authService.signUpPublisher(email, password, formData.website, formData.displayName);
         // Auto sign-in for publishers
-        const signInResult = await authService.signIn(email, password);
-        dispatch(login({ token: signInResult.token, user: result, userType: 'PUBLISHER' }));
+        const signInResult = await authService.signIn(email, password, keepSignedIn);
+        dispatch(login({
+          token: signInResult.token,
+          user: result,
+          userType: 'PUBLISHER',
+          rememberMe: keepSignedIn,
+        }));
         onClose();
       }
     } catch (err) {

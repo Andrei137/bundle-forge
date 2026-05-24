@@ -16,20 +16,29 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.util.Date;
 import java.util.Optional;
 
 @Service
 public final class JwtService {
 
     private final String secretKey;
+    private final long expirationMs;
+    private final long longExpirationMs;
     private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    public JwtService(@Value("${security.jwt.secret-key}") String secretKey) {
+    public JwtService(
+            @Value("${security.jwt.secret-key}") String secretKey,
+            @Value("${security.jwt.expiration-ms:28800000}") long expirationMs,
+            @Value("${security.jwt.long-expiration-ms:2592000000}") long longExpirationMs
+    ) {
         this.secretKey = secretKey;
+        this.expirationMs = expirationMs;
+        this.longExpirationMs = longExpirationMs;
     }
 
     private SecretKey getSecretKey() {
@@ -44,12 +53,20 @@ public final class JwtService {
         throw new UnauthorizedException();
     }
 
-    public String getToken(String id) {
+    public String getToken(String id, boolean rememberMe) {
+        long ttl = rememberMe ? longExpirationMs : expirationMs;
+        Date now = new Date();
         return Jwts
                 .builder()
                 .claim("userId", id)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + ttl))
                 .signWith(getSecretKey())
                 .compact();
+    }
+
+    public String getToken(String id) {
+        return getToken(id, false);
     }
 
     public String extractUserId(String token) {
