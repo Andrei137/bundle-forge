@@ -18,8 +18,6 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
 
     List<Game> getGamesByDeveloperId(Integer id);
 
-    List<Game> getGamesByPublisherId(Integer id);
-
     Optional<Game> findByTitle(String title);
 
     @Query("SELECT g FROM Game g " +

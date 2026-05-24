@@ -91,6 +91,12 @@ export const Checkout = () => {
     [cartItems]
   );
 
+  // Clear the idempotency key when leaving checkout so a returning visit
+  // with a different cart always creates a fresh PaymentIntent.
+  useEffect(() => {
+    return () => { sessionStorage.removeItem('bundleforge_idem_key'); };
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/account/login');
@@ -99,8 +105,17 @@ export const Checkout = () => {
     if (payableItems.length === 0) return;
 
     const items = payableItems.map((i) => ({ gameId: i.id, quantity: i.quantity }));
-    const idempotencyKey = sessionStorage.getItem('bundleforge_idem_key') || generateIdempotencyKey();
+
+    // Reuse the key only when the cart contents haven't changed (retry safety).
+    // If the cart changed, generate a new key so a fresh PaymentIntent is created.
+    const cartHash = payableItems.map((i) => `${i.id}:${i.quantity}`).join(',');
+    const storedKey = sessionStorage.getItem('bundleforge_idem_key');
+    const storedHash = sessionStorage.getItem('bundleforge_idem_hash');
+    const idempotencyKey = (storedKey && storedHash === cartHash)
+      ? storedKey
+      : generateIdempotencyKey();
     sessionStorage.setItem('bundleforge_idem_key', idempotencyKey);
+    sessionStorage.setItem('bundleforge_idem_hash', cartHash);
 
     let cancelled = false;
     setCreating(true);
@@ -121,6 +136,7 @@ export const Checkout = () => {
 
   const handleSuccess = () => {
     sessionStorage.removeItem('bundleforge_idem_key');
+    sessionStorage.removeItem('bundleforge_idem_hash');
     dispatch(clearCart());
     navigate(`/checkout/success?paymentUuid=${encodeURIComponent(paymentUuid)}`);
   };

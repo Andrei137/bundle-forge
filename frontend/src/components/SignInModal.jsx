@@ -248,24 +248,6 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
         result = await authService.signUpDeveloper(email, password, formData.website, formData.displayName);
         // Show validation message for developers
         window.dispatchEvent(new CustomEvent('developer-signup-success'));
-      } else if (userType === 'publisher') {
-        if (!formData.website || !formData.displayName) {
-          throw new Error('Please fill in all required fields');
-        }
-        const displayNameExists = await authService.checkDisplayNameExists(formData.displayName);
-        if (displayNameExists) {
-          throw new Error('This display name is already registered');
-        }
-        result = await authService.signUpPublisher(email, password, formData.website, formData.displayName);
-        // Auto sign-in for publishers
-        const signInResult = await authService.signIn(email, password, keepSignedIn);
-        dispatch(login({
-          token: signInResult.token,
-          user: result,
-          userType: 'PUBLISHER',
-          rememberMe: keepSignedIn,
-        }));
-        onClose();
       }
     } catch (err) {
       setError(err.message);
@@ -281,7 +263,7 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
       </button>
 
       <h2 className="sim-title">
-        {userType === 'customer' ? 'COMPLETE PROFILE' : userType === 'developer' ? 'DEVELOPER INFO' : 'PUBLISHER INFO'}
+        {userType === 'customer' ? 'COMPLETE PROFILE' : 'DEVELOPER INFO'}
       </h2>
 
       <form className="sim-form" onSubmit={handleSubmit}>
@@ -303,7 +285,7 @@ const RegisterProfileContent = ({ email, password, userType, onBack, onClose }) 
           </>
         )}
 
-        {(userType === 'developer' || userType === 'publisher') && (
+        {userType === 'developer' && (
           <>
             <label className="sim-label" htmlFor="reg-website">Website</label>
             <input id="reg-website" type="url" className="sim-input" name="website" value={formData.website}
@@ -402,13 +384,6 @@ const RIGHT_PANEL = {
     next: 'signin',
   },
   'register-profile-developer': {
-    cls: 'sim-right--register',
-    title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
-    desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
-    cta: 'SIGN IN',
-    next: 'signin',
-  },
-  'register-profile-publisher': {
     cls: 'sim-right--register',
     title: <>ALREADY HAVE<br />AN ACCOUNT?</>,
     desc: 'If you already have a Bundle Forge account, use this option to access the sign in form.',
@@ -589,7 +564,7 @@ export const SignInModal = ({ isOpen, onClose }) => {
                 <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e0e0e0' }}>
                   <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '1rem' }}>I am a:</p>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    {['customer', 'developer', 'publisher'].map(type => (
+                    {['customer', 'developer'].map(type => (
                       <button
                         key={type}
                         type="button"
@@ -626,15 +601,6 @@ export const SignInModal = ({ isOpen, onClose }) => {
                 email={registrationData?.email}
                 password={registrationData?.password}
                 userType="developer"
-                onBack={handleRegistrationBack}
-                onClose={onClose}
-              />
-            )}
-            {mode === 'register-profile-publisher' && (
-              <RegisterProfileContent
-                email={registrationData?.email}
-                password={registrationData?.password}
-                userType="publisher"
                 onBack={handleRegistrationBack}
                 onClose={onClose}
               />

@@ -5,7 +5,6 @@ import com.unibuc.bundle_forge.annotation.RequireProvider;
 import com.unibuc.bundle_forge.dto.ProviderCreateDto;
 import com.unibuc.bundle_forge.model.Developer;
 import com.unibuc.bundle_forge.model.Provider;
-import com.unibuc.bundle_forge.model.Publisher;
 import com.unibuc.bundle_forge.service.ProviderService;
 import com.unibuc.bundle_forge.utils.ResponseUtils;
 import com.unibuc.bundle_forge.utils.ValidationUtils;
@@ -33,7 +32,7 @@ public abstract class ProviderController<P extends Provider, D extends ProviderC
 
     @GetMapping("/me")
     @JsonView(ViewUtils.Public.class)
-    @RequireProvider({Developer.class, Publisher.class})
+    @RequireProvider({Developer.class})
     public ResponseEntity<P> getCurrent() {
         return ResponseUtils.ok(getService().getCurrentUser());
     }
@@ -46,7 +45,7 @@ public abstract class ProviderController<P extends Provider, D extends ProviderC
 
     @PutMapping("")
     @JsonView(ViewUtils.Public.class)
-    @RequireProvider({Developer.class, Publisher.class})
+    @RequireProvider({Developer.class})
     public ResponseEntity<P> updateCurrent(@RequestBody @Validated(ValidationUtils.Update.class) D dto) {
         return ResponseUtils.ok(getService().updateLoggedUser(dto));
     }

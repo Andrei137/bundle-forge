@@ -69,9 +69,6 @@ public final class GameResponseDto {
     @JsonView(ViewUtils.Public.class)
     private String developer;
 
-    @JsonView(ViewUtils.Public.class)
-    private String publisher;
-
     @JsonView(ViewUtils.Provider.class)
     private Long activeKeyCount;
 
