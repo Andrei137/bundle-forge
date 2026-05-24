@@ -38,8 +38,15 @@ public class SystemRequirementsConverter implements AttributeConverter<Map<Strin
                 return new HashMap<>();
             }
 
+            // H2's JSON column type round-trips values as quoted strings
+            // (e.g., "{}" comes back as "\"{}\""), so unwrap one level if needed.
+            String payload = dbData.trim();
+            if (payload.startsWith("\"") && payload.endsWith("\"")) {
+                payload = objectMapper.readValue(payload, String.class);
+            }
+
             return objectMapper.readValue(
-                    dbData,
+                    payload,
                     new TypeReference<Map<String, PlatformRequirements>>() {}
             );
         } catch (Exception e) {
