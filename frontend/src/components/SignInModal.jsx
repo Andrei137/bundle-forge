@@ -122,12 +122,6 @@ const SignInContent = ({ onForgot, onClose, onShowPendingAccount }) => {
           {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
         </button>
       </form>
-
-      <div className="sim-divider"><span>Or sign in with</span></div>
-      <div className="sim-socials">
-        <button className="sim-social-btn" disabled={isLoading}><FacebookIcon /> Sign in with Facebook</button>
-        <button className="sim-social-btn" disabled={isLoading}><GoogleIcon /> Sign in with Google</button>
-      </div>
     </>
   );
 };

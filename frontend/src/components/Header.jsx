@@ -356,7 +356,7 @@ export const Header = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="nav-bar">
+        {/* <nav className="nav-bar">
           <div className="nav-container">
             <ul className="nav-menu">
               <li className="nav-item has-dropdown">
@@ -391,7 +391,7 @@ export const Header = () => {
               <li className="nav-item"><a href="/support" className="nav-link">Support</a></li>
             </ul>
           </div>
-        </nav>
+        </nav> */}
       </header>
 
       {/* Sign In Modal — rendered outside header so it overlays everything */}
