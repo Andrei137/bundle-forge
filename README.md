@@ -19,7 +19,7 @@ Aplicatia contine mai multe roluri:
 # Arhitectura aplicatiei
 ![architecture](docs/awbd-architecture.drawio.svg)
 
-# Diagram Entitate-Relatie
+# Diagrama Entitate-Relatie
 <img src="https://github.com/Andrei137/bundle-forge/blob/main/docs/bundle-force.drawio.png">
 
 # Setup
@@ -238,7 +238,7 @@ Query params: `q`, `type`, `tagIds`, `developer`, `platforms`, `page` (default 0
 
 
 # Screenshots
-TODO
+![Game page](docs/ss1.png)
 
 
 # Contributii
