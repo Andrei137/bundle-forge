@@ -128,25 +128,6 @@ docker compose down                    # otherwise
 
 ---
 
-## Shop — `/shop`
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/shop` | Customer | List all published games the customer does not own |
-| GET | `/shop/{gameId}` | Customer | Get a single shop game (must not be owned) |
-| POST | `/shop/{gameId}/buy` | Customer | Purchase a game directly |
-
----
-
-## Library — `/library`
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/library` | Customer | List all games owned by the authenticated customer |
-| GET | `/library/{gameId}` | Customer | Get a specific owned game |
-
----
-
 ## Payment — `/payment`
 
 | Method | Path | Auth | Description |
