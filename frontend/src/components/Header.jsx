@@ -161,7 +161,7 @@ export const Header = () => {
                             <span className="suggestion-discount">-{item.discountPercentage}%</span>
                           )}
                           <span className="suggestion-amount">
-                            {discountedPrice != null ? `RON ${discountedPrice.toFixed(2)}` : 'Free'}
+                            {discountedPrice != null ? `RON ${discountedPrice.toFixed(2)}` : 'View'}
                           </span>
                         </div>
                       </div>
