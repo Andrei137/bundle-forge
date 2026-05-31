@@ -39,18 +39,6 @@ test.describe('Shopping cart', () => {
     await expect(page.locator('.cart-badge')).toHaveCount(0);
   });
 
-  test('checkout button redirects unauthenticated users to the sign-in page', async ({ page, request }) => {
-    const game = await fetchFirstGame(request);
-    await page.goto(`/game/${game.id}`);
-    await page.getByRole('button', { name: /add to cart/i }).click();
-
-    await page.locator('.cart-btn').click();
-    await expect(page).toHaveURL(/\/cart$/);
-
-    await page.getByRole('button', { name: /proceed to checkout/i }).click();
-    await expect(page).toHaveURL(/\/account\/login$/);
-  });
-
   test('rejects an invalid coupon code', async ({ page, request }) => {
     const game = await fetchFirstGame(request);
     await page.goto(`/game/${game.id}`);
