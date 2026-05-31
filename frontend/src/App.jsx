@@ -20,6 +20,8 @@ import {
   CartPage,
   Checkout,
   CheckoutSuccess,
+  ErrorBoundary,
+  NotFound,
   Footer
 } from './components'
 import './App.css'
@@ -57,6 +59,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ErrorBoundary>
       <Routes>
         <Route
           path="/"
@@ -207,7 +210,17 @@ function App() {
             </Layout>
           }
         />
+
+        <Route
+          path="*"
+          element={
+            <Layout>
+              <NotFound />
+            </Layout>
+          }
+        />
       </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }
