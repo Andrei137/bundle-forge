@@ -1,0 +1,128 @@
+# flyctl launch added from .devbox/.gitignore
+.devbox/**/*
+.devbox/**/.*
+
+# flyctl launch added from .gitignore
+# Env 
+**/.env
+
+# flyctl launch added from backend/.devbox/.gitignore
+backend/.devbox/**/*
+backend/.devbox/**/.*
+
+# flyctl launch added from backend/.gitignore
+# Compiled class file
+backend/**/*.class
+
+# Log file
+backend/**/*.log
+
+# BlueJ files
+backend/**/*.ctxt
+
+# Mobile Tools for Java (J2ME)
+backend/**/.mtj.tmp
+
+# Package Files #
+backend/**/*.jar
+backend/**/*.war
+backend/**/*.nar
+backend/**/*.ear
+backend/**/*.zip
+backend/**/*.tar.gz
+backend/**/*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+backend/**/hs_err_pid*
+backend/**/replay_pid*
+
+# IntelliJ IDEA
+backend/**/.idea
+backend/**/*.iws
+backend/**/*.iml
+backend/**/*.ipr
+
+# Devbox generated files
+backend/**/.devbox
+backend/**/devbox.d
+
+backend/**/todo.txt
+
+# Env 
+backend/**/.env
+
+# Local upload folder
+backend/**/uploads
+
+
+# flyctl launch added from backend/bundle-forge/.gitignore
+backend/bundle-forge/**/HELP.md
+backend/bundle-forge/**/target
+backend/bundle-forge/**/.mvn/wrapper/maven-wrapper.jar
+!backend/bundle-forge/**/**/src/main/**/target
+!backend/bundle-forge/**/**/src/test/**/target
+
+### STS ###
+backend/bundle-forge/**/.apt_generated
+backend/bundle-forge/**/.classpath
+backend/bundle-forge/**/.factorypath
+backend/bundle-forge/**/.project
+backend/bundle-forge/**/.settings
+backend/bundle-forge/**/.springBeans
+backend/bundle-forge/**/.sts4-cache
+
+### IntelliJ IDEA ###
+backend/bundle-forge/**/.idea
+backend/bundle-forge/**/*.iws
+backend/bundle-forge/**/*.iml
+backend/bundle-forge/**/*.ipr
+
+### NetBeans ###
+backend/bundle-forge/nbproject/private
+backend/bundle-forge/nbbuild
+backend/bundle-forge/dist
+backend/bundle-forge/nbdist
+backend/bundle-forge/.nb-gradle
+backend/bundle-forge/**/build
+!backend/bundle-forge/**/**/src/main/**/build
+!backend/bundle-forge/**/**/src/test/**/build
+
+### VS Code ###
+backend/bundle-forge/**/.vscode
+
+### Logs ###
+backend/bundle-forge/**/logs
+backend/bundle-forge/**/*.log
+backend/bundle-forge/**/*.log.gz
+
+# flyctl launch added from frontend/.devbox/.gitignore
+frontend/.devbox/**/*
+frontend/.devbox/**/.*
+
+# flyctl launch added from frontend/.gitignore
+# Logs
+frontend/**/logs
+frontend/**/*.log
+frontend/**/npm-debug.log*
+frontend/**/yarn-debug.log*
+frontend/**/yarn-error.log*
+frontend/**/pnpm-debug.log*
+frontend/**/lerna-debug.log*
+
+frontend/**/node_modules
+frontend/**/dist
+frontend/**/dist-ssr
+frontend/**/*.local
+frontend/**/.env
+
+# Editor directories and files
+frontend/**/.vscode/*
+!frontend/**/.vscode/extensions.json
+frontend/**/.idea
+frontend/**/.DS_Store
+frontend/**/*.suo
+frontend/**/*.ntvs*
+frontend/**/*.njsproj
+frontend/**/*.sln
+frontend/**/*.sw?
+fly.toml
