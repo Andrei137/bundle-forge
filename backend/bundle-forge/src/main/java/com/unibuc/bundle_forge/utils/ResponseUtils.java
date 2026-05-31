@@ -56,4 +56,28 @@ public final class ResponseUtils {
         return error(err, HttpStatus.NOT_FOUND);
     }
 
+    public static <T> ResponseEntity<Map<String, T>> conflict(T err) {
+        return error(err, HttpStatus.CONFLICT);
+    }
+
+    public static <T> ResponseEntity<Map<String, T>> methodNotAllowed(T err) {
+        return error(err, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    public static <T> ResponseEntity<Map<String, T>> unsupportedMediaType(T err) {
+        return error(err, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    public static <T> ResponseEntity<Map<String, T>> payloadTooLarge(T err) {
+        return error(err, HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+    public static <T> ResponseEntity<Map<String, T>> serverError(T err) {
+        return error(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public static <T> ResponseEntity<Map<String, T>> serviceUnavailable(T err) {
+        return error(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
 }
