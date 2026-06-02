@@ -1,0 +1,23 @@
+# Static frontend (Vite build served by Nginx) Fly app.
+# VITE_API_URL is baked into the bundle at build time, so it must point at the
+# backend's public URL. VITE_STRIPE_PUBLISHABLE_KEY is passed via --build-arg
+# at deploy time.
+app = 'bundle-forge-web'
+primary_region = 'fra'
+
+[build]
+  dockerfile = 'Dockerfile'
+  [build.args]
+    VITE_API_URL = 'https://bundle-forge-api.fly.dev'
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256

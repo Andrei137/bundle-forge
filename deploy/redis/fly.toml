@@ -1,0 +1,20 @@
+# Standalone Redis as its own Fly app (private network only).
+# Reached by the backend at bundle-forge-redis.internal:6379.
+# The flyio/redis image reads the REDIS_PASSWORD secret natively and
+# persists data to the volume mounted at /data.
+app = 'bundle-forge-redis'
+primary_region = 'fra'
+
+[build]
+  # flyio/redis publishes no :latest tag; 6.2.6 is the newest available and
+  # reads the REDIS_PASSWORD secret + persists to /data natively.
+  image = 'flyio/redis:6.2.6'
+
+[mounts]
+  source = 'redisdata'
+  destination = '/data'
+
+[[vm]]
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
