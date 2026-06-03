@@ -84,10 +84,12 @@ const GameRow = ({ item, inBundle }) => {
         </div>
       )}
 
-      <RemoveBtn
-        onClick={() => dispatch(removeFromCart(item.cartKey))}
-        label={`Remove ${item.title}`}
-      />
+      {!inBundle && (
+        <RemoveBtn
+          onClick={() => dispatch(removeFromCart(item.cartKey))}
+          label={`Remove ${item.title}`}
+        />
+      )}
     </div>
   );
 };

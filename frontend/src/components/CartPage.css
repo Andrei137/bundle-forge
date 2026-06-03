@@ -137,6 +137,15 @@
   background: oklch(20% 0.015 260);
 }
 
+.cp-game-row--bundled {
+  grid-template-columns: 128px 1fr auto auto auto auto;
+}
+
+.cp-game-row--bundled .cp-game-img {
+  width: 128px;
+  height: 80px;
+}
+
 /* ── Game meta ── */
 .cp-game-meta {
   overflow: hidden;

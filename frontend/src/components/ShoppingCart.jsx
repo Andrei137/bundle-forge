@@ -36,8 +36,15 @@ export const ShoppingCart = () => {
     }
   };
 
-  const handleRemoveItem = (cartKey) => {
-    dispatch(removeFromCart(cartKey));
+  const handleRemoveItem = (item) => {
+    // Bundled games can't be removed individually — remove the whole bundle.
+    if (item.bundleId != null) {
+      items
+        .filter(i => i.bundleId === item.bundleId)
+        .forEach(i => dispatch(removeFromCart(i.cartKey)));
+      return;
+    }
+    dispatch(removeFromCart(item.cartKey));
   };
 
   const handleQuantityChange = (cartKey, quantity) => {
@@ -114,7 +121,8 @@ export const ShoppingCart = () => {
 
                   <button
                     className="cart-remove"
-                    onClick={() => handleRemoveItem(item.cartKey)}
+                    onClick={() => handleRemoveItem(item)}
+                    title={item.bundleId != null ? 'Remove bundle' : 'Remove item'}
                   >
                     🗑️
                   </button>
