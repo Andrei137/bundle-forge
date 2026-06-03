@@ -26,3 +26,4 @@ export { ErrorBoundary } from './ErrorBoundary';
 export { ErrorPage } from './ErrorPage';
 export { NotFound } from './NotFound';
 export { ServerError } from './ServerError';
+export { CustomerOnly } from './CustomerOnly';

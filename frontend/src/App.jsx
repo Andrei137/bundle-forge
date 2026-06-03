@@ -22,6 +22,7 @@ import {
   CheckoutSuccess,
   ErrorBoundary,
   NotFound,
+  CustomerOnly,
   Footer
 } from './components'
 import './App.css'
@@ -143,7 +144,9 @@ function App() {
           path="/cart"
           element={
             <Layout>
-              <CartPage />
+              <CustomerOnly>
+                <CartPage />
+              </CustomerOnly>
             </Layout>
           }
         />
@@ -152,7 +155,9 @@ function App() {
           path="/checkout"
           element={
             <Layout>
-              <Checkout />
+              <CustomerOnly>
+                <Checkout />
+              </CustomerOnly>
             </Layout>
           }
         />
@@ -161,7 +166,9 @@ function App() {
           path="/checkout/success"
           element={
             <Layout>
-              <CheckoutSuccess />
+              <CustomerOnly>
+                <CheckoutSuccess />
+              </CustomerOnly>
             </Layout>
           }
         />
