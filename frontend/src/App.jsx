@@ -23,6 +23,7 @@ import {
   ErrorBoundary,
   NotFound,
   CustomerOnly,
+  Admin,
   Footer
 } from './components'
 import './App.css'
@@ -217,6 +218,10 @@ function App() {
             </Layout>
           }
         />
+
+        {/* Admin runs in its own full-screen shell (no storefront chrome).
+            The trailing /* lets it own its sub-routes (accounts/charity/bundles). */}
+        <Route path="/admin/*" element={<Admin />} />
 
         <Route
           path="*"
