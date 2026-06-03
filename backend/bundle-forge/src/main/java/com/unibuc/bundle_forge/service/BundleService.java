@@ -56,8 +56,13 @@ public class BundleService {
         bundle.setPlatformMinPct(dto.getPlatformMinPct());
         bundle.setDevMinPct(dto.getDevMinPct());
         bundle.setDaysLeft(dto.getDaysLeft());
-        bundle.setGames(gameRepository.findAllById(dto.getGameIds()));
-        bundle.setTiers(toTiers(dto.getTiers()));
+        // Mutate the Hibernate-managed collections in place rather than
+        // reassigning them: replacing the reference (especially with an
+        // immutable Stream.toList()) makes merge fail to clear the collection.
+        bundle.getGames().clear();
+        bundle.getGames().addAll(gameRepository.findAllById(dto.getGameIds()));
+        bundle.getTiers().clear();
+        bundle.getTiers().addAll(toTiers(dto.getTiers()));
         bundle.setCharityFounder(resolveCharity(dto.getCharityFounderId()));
 
         return toResponseDto(bundleRepository.save(bundle));
