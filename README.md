@@ -4,6 +4,8 @@ Aplicatia este un magazin online de jocuri video digitale, cu scopul de a fi cat
 Aplicatia se adreseaza atat dezvoltatorilor carora li se pare prea mare procentajul cerut de magazinele consacrate per vanzare, cat si pentru jucatorii care cauta jocuri la preturi reduse prin pachete promotionale. 
 De asemenea, utilizatorii pot alege sa redirectioneze o parte din suma achitata unei cauze caritabile.
 
+### Aplicatia poate fi accesata la acest [link](https://bundle-forge-web.fly.dev). 
+
 # Roluri
 Aplicatia contine mai multe roluri:
 - Admin: asigura bunul mers al aplicatiei
