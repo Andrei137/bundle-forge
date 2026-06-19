@@ -5,6 +5,7 @@ import com.unibuc.bundle_forge.dto.CharityFounderDto;
 import com.unibuc.bundle_forge.exception.NotFoundException;
 import com.unibuc.bundle_forge.model.CharityFounder;
 import com.unibuc.bundle_forge.repository.CharityFounderRepository;
+import com.unibuc.bundle_forge.utils.MapperUtils;
 import com.unibuc.bundle_forge.utils.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class CharityFounderService {
     public CharityFounderDto create(CharityFounderCreateDto dto) {
         CharityFounder entity = CharityFounder.builder()
                 .name(dto.getName())
-                .website(dto.getWebsite())
+                .website(MapperUtils.applyWebsiteUrl(null, dto.getWebsite()))
                 .shortDescription(dto.getShortDescription())
                 .longDescription(dto.getLongDescription())
                 .build();
@@ -39,7 +40,7 @@ public class CharityFounderService {
     public CharityFounderDto update(Integer id, CharityFounderCreateDto dto) {
         CharityFounder entity = findById(id);
         entity.setName(dto.getName());
-        entity.setWebsite(dto.getWebsite());
+        entity.setWebsite(MapperUtils.applyWebsiteUrl(entity.getWebsite(), dto.getWebsite()));
         entity.setShortDescription(dto.getShortDescription());
         entity.setLongDescription(dto.getLongDescription());
         return toDto(charityFounderRepository.save(entity));
@@ -59,7 +60,7 @@ public class CharityFounderService {
         return CharityFounderDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .website(entity.getWebsite())
+                .website(MapperUtils.websiteUrl(entity.getWebsite()))
                 .shortDescription(entity.getShortDescription())
                 .longDescription(entity.getLongDescription())
                 .build();

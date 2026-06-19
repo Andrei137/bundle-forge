@@ -18,7 +18,9 @@ public class CharityFounder {
     @Column(nullable = false)
     private String name;
 
-    private String website;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "website_id")
+    private Website website;
 
     @Column(nullable = false, length = 250)
     private String shortDescription;

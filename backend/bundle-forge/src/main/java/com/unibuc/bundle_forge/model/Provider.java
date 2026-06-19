@@ -3,12 +3,15 @@ package com.unibuc.bundle_forge.model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.unibuc.bundle_forge.utils.EnumUtils;
 import com.unibuc.bundle_forge.utils.ViewUtils;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,9 +47,10 @@ public abstract class Provider extends User implements EnumUtils.HasStatus<Provi
         }
     }
 
-    @Column
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "website_id")
     @JsonView(ViewUtils.Public.class)
-    private String website;
+    private Website website;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
