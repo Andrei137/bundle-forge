@@ -4,6 +4,7 @@ import com.unibuc.bundle_forge.dto.CharityFounderCreateDto;
 import com.unibuc.bundle_forge.dto.CharityFounderDto;
 import com.unibuc.bundle_forge.exception.NotFoundException;
 import com.unibuc.bundle_forge.model.CharityFounder;
+import com.unibuc.bundle_forge.model.Website;
 import com.unibuc.bundle_forge.repository.CharityFounderRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +35,7 @@ class CharityFounderServiceTest {
         return CharityFounder.builder()
                 .id(id)
                 .name("Charity " + id)
-                .website("https://charity.test")
+                .website(Website.builder().url("https://charity.test").build())
                 .shortDescription("short")
                 .longDescription("long")
                 .build();

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import { addToCart } from '../redux/slices/cartSlice';
 import CartIcon from '../assets/icons/cart.svg?react';
 import SteamIcon from '../assets/icons/steam.svg?react';
@@ -106,6 +106,7 @@ export const Bundle = () => {
   const [bundle, setBundle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [notFound, setNotFound] = useState(false);
 
   const [selected, setSelected] = useState(new Set());
   const [donationOpen, setDonationOpen] = useState(false);
@@ -121,10 +122,16 @@ export const Bundle = () => {
 
     fetch(url)
       .then(res => {
+        // Bundle doesn't exist in the database: redirect to the app's Not Found page.
+        if (res.status === 404) {
+          setNotFound(true);
+          return null;
+        }
         if (!res.ok) throw new Error(`Failed to load bundle (${res.status})`);
         return res.json();
       })
       .then(data => {
+        if (!data) return;
         const b = bundleId ? data : data[0];
         if (!b) throw new Error('No bundles available');
         setBundle(b);
@@ -292,6 +299,8 @@ export const Bundle = () => {
       }));
     });
   };
+
+  if (notFound) return <Navigate to="/404" replace />;
 
   if (loading) {
     return (

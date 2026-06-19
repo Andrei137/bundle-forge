@@ -22,6 +22,7 @@ import com.unibuc.bundle_forge.model.Payment;
 import com.unibuc.bundle_forge.model.PaymentItem;
 import com.unibuc.bundle_forge.model.Provider;
 import com.unibuc.bundle_forge.model.Transaction;
+import com.unibuc.bundle_forge.model.Website;
 import com.unibuc.bundle_forge.repository.BundleRepository;
 import com.unibuc.bundle_forge.repository.CouponRepository;
 import com.unibuc.bundle_forge.repository.CustomerRepository;
@@ -113,7 +114,7 @@ class PaymentIntegrationTest {
                 .email("dev@test.com")
                 .password(JwtService.encryptPassword("Secret__123"))
                 .displayName("Dev One")
-                .website("https://dev.test")
+                .website(Website.builder().url("https://dev.test").build())
                 .status(Provider.Status.ACCEPTED)
                 .build());
         developerToken = jwtService.getToken(String.valueOf(developer.getId()));

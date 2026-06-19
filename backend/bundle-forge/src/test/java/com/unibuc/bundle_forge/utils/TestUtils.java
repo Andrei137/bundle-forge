@@ -3,6 +3,7 @@ package com.unibuc.bundle_forge.utils;
 import com.unibuc.bundle_forge.model.Customer;
 import com.unibuc.bundle_forge.model.Developer;
 import com.unibuc.bundle_forge.model.Provider;
+import com.unibuc.bundle_forge.model.Website;
 import com.unibuc.bundle_forge.service.JwtService;
 
 public final class TestUtils {
@@ -28,7 +29,7 @@ public final class TestUtils {
                 .id(id)
                 .email(email)
                 .password(JwtService.encryptPassword(RAW_PASSWORD))
-                .website("https://" + email.split("@")[0] + ".test")
+                .website(Website.builder().url("https://" + email.split("@")[0] + ".test").build())
                 .displayName("dev-" + id)
                 .status(status)
                 .build();

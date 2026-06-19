@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -299,7 +299,11 @@ function RequirementsTab({ game }) {
 
 const fetchGame = async (gameId) => {
   const response = await fetch(`${API_URL}/games/${gameId}`);
-  if (!response.ok) throw new Error('Failed to fetch game');
+  if (!response.ok) {
+    const error = new Error('Failed to fetch game');
+    error.status = response.status;
+    throw error;
+  }
   const data = await response.json();
 
   return {
@@ -350,7 +354,12 @@ export const Game = () => {
     queryKey: ['game', gameId],
     queryFn: () => fetchGame(gameId),
     enabled: !!gameId,
+    // Don't retry when the game genuinely doesn't exist — go straight to 404.
+    retry: (failureCount, err) => err?.status !== 404 && failureCount < 3,
   });
+
+  // Game doesn't exist in the database: redirect to the app's Not Found page.
+  if (error?.status === 404) return <Navigate to="/404" replace />;
 
   if (isLoading) return <div className="gp-page"><div className="gp-container"><p>Loading...</p></div></div>;
   if (error || !game) return <div className="gp-page"><div className="gp-container"><p>Error: {error?.message ?? 'Game not found'}</p></div></div>;

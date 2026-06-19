@@ -26,4 +26,11 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Playwright specs, helpers and config run in Node, not the browser.
+    files: ['tests/**/*.{js,jsx}', 'playwright.config.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

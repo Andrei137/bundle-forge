@@ -34,6 +34,22 @@ test.describe('404 not-found page', () => {
     await page.goto('/not-a-real-section');
     await expect(page.getByRole('heading', { name: /page not found/i })).toBeVisible();
   });
+
+  test('a game detail page for a non-existent id redirects to the 404 page', async ({ page }) => {
+    // The backend returns 404 for this id; the frontend should detect it and
+    // redirect to the Not Found page rather than render a broken detail page.
+    await page.goto('/game/99999999');
+
+    await expect(page).toHaveURL('/404');
+    await expect(page.getByRole('heading', { name: /page not found/i })).toBeVisible();
+  });
+
+  test('a bundle detail page for a non-existent id redirects to the 404 page', async ({ page }) => {
+    await page.goto('/bundle/99999999');
+
+    await expect(page).toHaveURL('/404');
+    await expect(page.getByRole('heading', { name: /page not found/i })).toBeVisible();
+  });
 });
 
 test.describe('Backend error responses', () => {
